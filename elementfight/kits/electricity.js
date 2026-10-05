@@ -29,7 +29,7 @@ export const ElectricityKit = {
 
     if (fighter.guaranteedCrits > 0) {
 
-      critical = math.Random() < 0.75;
+      critical = Math.random() < 0.75;
 
       fighter.guaranteedCrits -= 1;
 
