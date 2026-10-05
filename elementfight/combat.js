@@ -391,11 +391,16 @@ export class Combat {
         kit.rollDilationHit();
 
 
-      const damage =
+      let damage =
         this.applyDefense(
           result.rawDamage,
           defender
         );
+
+
+      if (defenderHasLightBuff(defender)) {
+        damage = Math.max(1, Math.floor(damage * 1.5));
+      }
 
 
       defender.hp =
