@@ -273,7 +273,47 @@
 
     <section class="battle-area">
 
-      <!-- Enemy -->
+      <!-- Player - LEFT -->
+      <div class="fighter-panel player-panel">
+        <div class="fighter-header">
+          <h2>Player</h2>
+          <span id="playerBlade" class="blade-badge">
+            Blade: Time
+          </span>
+        </div>
+      
+        <div class="stats">
+          <div>
+            <span>HP</span>
+            <strong id="playerHp">1000</strong>
+          </div>
+      
+          <div>
+            <span>Focus</span>
+            <strong id="playerFocus">0</strong>
+          </div>
+        </div>
+      
+        <div class="portrait player-portrait">
+          ⚔️
+        </div>
+      </div>
+      
+      
+      <!-- CENTER -->
+      <div class="center-panel">
+        <div id="battleStatus" class="battle-status">
+          Choose your move.
+        </div>
+      
+        <div class="turn-log-wrap">
+          <h3>Battle Log</h3>
+          <ul id="battleLog" class="battle-log"></ul>
+        </div>
+      </div>
+      
+      
+      <!-- Enemy - RIGHT -->
       <div class="fighter-panel enemy-panel">
         <div class="fighter-header">
           <h2>Enemy</h2>
@@ -281,65 +321,22 @@
             Blade: ???
           </span>
         </div>
-
+      
         <div class="stats">
           <div>
             <span>HP</span>
             <strong id="enemyHp">1000</strong>
           </div>
-
+      
           <div>
             <span>Focus</span>
             <strong id="enemyFocus">0</strong>
           </div>
         </div>
-
+      
         <div class="portrait enemy-portrait">
           ⚔️
         </div>
-      </div>
-
-      <!-- Center -->
-      <div class="center-panel">
-
-        <div id="battleStatus" class="battle-status">
-          Choose your move.
-        </div>
-
-        <div class="turn-log-wrap">
-          <h3>Battle Log</h3>
-          <ul id="battleLog" class="battle-log"></ul>
-        </div>
-
-      </div>
-
-      <!-- Player -->
-      <div class="fighter-panel player-panel">
-
-        <div class="fighter-header">
-          <h2>Player</h2>
-
-          <span id="playerBlade" class="blade-badge">
-            Blade: Time
-          </span>
-        </div>
-
-        <div class="stats">
-          <div>
-            <span>HP</span>
-            <strong id="playerHp">1000</strong>
-          </div>
-
-          <div>
-            <span>Focus</span>
-            <strong id="playerFocus">0</strong>
-          </div>
-        </div>
-
-        <div class="portrait player-portrait">
-          🛡️
-        </div>
-
       </div>
 
     </section>
