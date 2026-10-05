@@ -19,9 +19,9 @@
       --accent-2: #34d7b7;
       --danger: #ff5f7e;
       --warning: #ffbf69;
-      --text: #edf1ff;
-      --muted: #a5b3d8;
-      --border: rgba(255, 255, 255, 0.09);
+      --text: #ffffff;
+      --muted: #d0d8f2;
+      --border: rgba(255, 255, 255, 0.18);
     }
 
     body {
@@ -38,6 +38,8 @@
         linear-gradient(180deg, #090d18, var(--bg));
       color: var(--text);
       font-family: Arial, Helvetica, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
     }
 
     button {
@@ -46,7 +48,7 @@
 
     .game-shell {
       width: min(1000px, 92vw);
-      background: rgba(23, 29, 45, 0.92);
+      background: rgba(23, 29, 45, 0.96);
       border: 1px solid var(--border);
       border-radius: 22px;
       box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
@@ -57,15 +59,15 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 16px;
       margin-bottom: 18px;
     }
 
     .eyebrow {
-      margin: 0;
+      margin: 0 0 4px;
       text-transform: uppercase;
       letter-spacing: 0.14em;
-      font-size: 0.72rem;
+      font-size: 0.8rem;
       color: var(--muted);
     }
 
@@ -79,6 +81,18 @@
     h1 {
       margin-bottom: 0;
       font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.15;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      line-height: 1.25;
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      line-height: 1.3;
+      margin-bottom: 12px;
     }
 
     .secondary,
@@ -98,12 +112,15 @@
     .action-button:hover:not(:disabled),
     .blade-button:hover:not(:disabled) {
       transform: translateY(-1px);
-      filter: brightness(1.05);
+      filter: brightness(1.08);
     }
 
     .secondary {
-      background: rgba(255, 255, 255, 0.08);
-      padding: 10px 16px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border);
+      padding: 11px 17px;
+      min-height: 46px;
+      font-weight: 700;
     }
 
     .battle-area {
@@ -118,11 +135,12 @@
       border: 1px solid var(--border);
       border-radius: 18px;
       padding: 18px;
+      min-width: 0;
     }
 
     .fighter-header {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
     }
@@ -136,8 +154,13 @@
       border: 1px solid rgba(124, 140, 255, 0.4);
       border-radius: 999px;
       padding: 7px 10px;
-      font-size: 0.76rem;
-      white-space: nowrap;
+      font-size: 0.82rem;
+      line-height: 1.3;
+      text-align: center;
+
+      /* Allow the badge to wrap instead of overflowing. */
+      white-space: normal;
+      overflow-wrap: anywhere;
     }
 
     .stats {
@@ -148,17 +171,26 @@
     }
 
     .stats > div {
-      background: rgba(255, 255, 255, 0.03);
+      background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 10px;
+      padding: 11px;
+      min-width: 0;
     }
 
     .stats span {
       display: block;
       color: var(--muted);
-      font-size: 0.72rem;
-      margin-bottom: 6px;
+      font-size: 0.82rem;
+      margin-bottom: 4px;
+    }
+
+    .stats strong {
+      display: block;
+      color: #ffffff;
+      font-size: 1.15rem;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
     }
 
     .portrait {
@@ -167,7 +199,7 @@
       min-height: 140px;
       border-radius: 16px;
       font-size: 4rem;
-      background: rgba(255, 255, 255, 0.03);
+      background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--border);
     }
 
@@ -184,9 +216,15 @@
       border-radius: 12px;
       padding: 14px 16px;
       min-height: 80px;
-      color: var(--text);
+      color: #ffffff;
       font-weight: 700;
-      overflow: hidden;
+      font-size: 1rem;
+      line-height: 1.5;
+
+      /* Complete text can wrap. */
+      white-space: normal;
+      overflow-wrap: anywhere;
+      overflow: visible;
     }
 
     .turn-log-wrap {
@@ -194,38 +232,60 @@
       min-width: 0;
     }
 
+    /*
+     * BATTLE LOG
+     *
+     * Only the two newest messages are rendered by JavaScript.
+     * Messages are allowed to wrap onto multiple lines.
+     * Nothing is replaced with "..." and nothing is cut off.
+     */
     .battle-log {
       margin: 0;
-      padding-left: 18px;
-      height: 112px;
-      overflow: hidden;
-      color: var(--muted);
+      padding: 0;
+      list-style: none;
 
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
+      gap: 8px;
+
+      min-height: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.45;
     }
 
     .battle-log li {
-      height: 24px;
-      min-height: 24px;
-      line-height: 24px;
+      padding: 9px 11px;
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 9px;
 
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      /*
+       * Important:
+       * Allow complete messages to wrap.
+       */
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: normal;
 
-      animation: logRollUp 0.35s ease-out;
-    }
+      /*
+       * Never use ellipses.
+       */
+      text-overflow: clip;
 
-    .battle-log li + li {
-      margin-top: 4px;
+      /*
+       * Do not clip the contents of a message.
+       */
+      overflow: visible;
+
+      animation: logRollUp 0.25s ease-out;
     }
 
     @keyframes logRollUp {
       from {
         opacity: 0;
-        transform: translateY(24px);
+        transform: translateY(8px);
       }
 
       to {
@@ -236,7 +296,7 @@
 
     .control-panel {
       margin-top: 24px;
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border);
       border-radius: 18px;
       padding: 18px;
@@ -252,9 +312,18 @@
 
     .blade-button,
     .action-button {
-      padding: 12px 14px;
-      background: rgba(255, 255, 255, 0.05);
+      padding: 13px 14px;
+      min-height: 50px;
+      background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--border);
+
+      /*
+       * Button text may wrap if necessary.
+       */
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.35;
+      font-weight: 700;
     }
 
     .blade-button.active {
@@ -276,18 +345,30 @@
 
     button:disabled {
       cursor: not-allowed;
-      opacity: 0.4;
+      opacity: 0.42;
       filter: grayscale(0.35);
+    }
+
+    button:focus-visible {
+      outline: 3px solid rgba(124, 140, 255, 0.75);
+      outline-offset: 2px;
     }
 
     .status-line {
       margin: 0 0 16px;
       color: var(--muted);
-      font-size: 0.82rem;
+      font-size: 0.92rem;
+      line-height: 1.45;
       text-align: center;
+      overflow-wrap: anywhere;
     }
 
     @media (max-width: 760px) {
+      .game-shell {
+        width: 94vw;
+        padding: 20px;
+      }
+
       .battle-area {
         grid-template-columns: 1fr;
       }
@@ -299,19 +380,56 @@
 
       .title-bar {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+      }
+
+      .secondary {
+        width: 100%;
       }
     }
 
     @media (max-width: 420px) {
+      body {
+        font-size: 15px;
+      }
+
       .game-shell {
         width: 96vw;
-        padding: 16px;
+        padding: 15px;
+        border-radius: 16px;
+      }
+
+      .fighter-panel,
+      .center-panel,
+      .control-panel {
+        padding: 15px;
+        border-radius: 15px;
+      }
+
+      .fighter-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .blade-badge {
+        align-self: flex-start;
       }
 
       .blade-grid,
       .action-grid {
         grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .blade-button,
+      .action-button {
+        min-height: 52px;
+        padding: 11px 9px;
+        font-size: 0.92rem;
+      }
+
+      .battle-log {
+        font-size: 0.9rem;
       }
     }
   </style>
@@ -512,10 +630,8 @@
         attackDamage: 80,
         critDamage: 160,
 
-        // Normal attacks have a 25% crit chance.
         critChance: 0.25,
 
-        // Defend guarantees the next 2 attacks are critical.
         critBoostAttacks: 2,
 
         ultimateDamage: 300,
@@ -544,10 +660,8 @@
         actionsThisTurn: 1,
         extraTurnCharges: 0,
 
-        // Electricity only.
         guaranteedCrits: 0,
 
-        // Time only.
         timeDefendLocked: false
       };
     }
@@ -616,10 +730,15 @@
      */
 
     function addLog(message) {
+      /*
+       * Keep only the newest two messages.
+       *
+       * The messages themselves are never shortened.
+       */
       state.log.unshift(message);
 
-      if (state.log.length > 5) {
-        state.log.pop();
+      if (state.log.length > 2) {
+        state.log.length = 2;
       }
 
       renderLog();
@@ -634,7 +753,13 @@
         .reverse()
         .forEach(message => {
           const li = document.createElement('li');
+
+          /*
+           * textContent guarantees the complete message is
+           * inserted without HTML interpretation.
+           */
           li.textContent = message;
+
           battleLogEl.appendChild(li);
         });
     }
@@ -706,10 +831,6 @@
         damage - defender.def
       );
 
-      /*
-       * Actual Defend effect:
-       * defending fighters take 50% less damage.
-       */
       if (defender.isDefending) {
         finalDamage = Math.max(
           1,
@@ -769,10 +890,6 @@
 
       gainFocus(attacker);
 
-      /*
-       * Once someone attacks, their own defensive stance
-       * has served its purpose for that turn.
-       */
       defender.isDefending = false;
 
       return damage;
@@ -804,11 +921,8 @@
 
       /*
        * TIME ULTIMATE
-       *
-       * Ten separate hits. Defense is applied to the
-       * total once, preventing defense from making
-       * every 50-damage hit become almost useless.
        */
+
       if (attacker.blade === 'Time') {
 
         let rawTotal = 0;
@@ -864,6 +978,7 @@
       /*
        * ELECTRICITY ULTIMATE
        */
+
       if (
         attacker.blade === 'Electricity'
       ) {
@@ -902,10 +1017,6 @@
       const stats = getBladeStats(fighter);
       const name = getFighterName(fighter);
 
-      /*
-       * Time cannot repeatedly activate its extra-turn
-       * mechanic while the previous effect is active.
-       */
       if (
         fighter.blade === 'Time' &&
         fighter.timeDefendLocked
@@ -917,10 +1028,6 @@
         return false;
       }
 
-      /*
-       * Electricity cannot refresh its guaranteed crits
-       * while they are already active.
-       */
       if (
         fighter.blade === 'Electricity' &&
         fighter.guaranteedCrits > 0
@@ -1030,10 +1137,6 @@
       else {
         fighter.actionsThisTurn = 1;
 
-        /*
-         * Time's lock lasts through the extra turn,
-         * then expires when the next normal turn starts.
-         */
         if (fighter.timeDefendLocked) {
           fighter.timeDefendLocked = false;
         }
@@ -1112,29 +1215,18 @@
       const enemy = state.enemy;
       const stats = getBladeStats(enemy);
 
-      /*
-       * Use Ultimate whenever available.
-       */
       if (
         enemy.focus >= stats.focusCap
       ) {
         return 'special';
       }
 
-      /*
-       * If Time already prepared an extra action,
-       * use that extra action aggressively.
-       */
       if (
         enemy.actionsThisTurn > 1
       ) {
         return 'attack';
       }
 
-      /*
-       * Time:
-       * Defend first, then use the extra turn.
-       */
       if (
         enemy.blade === 'Time'
       ) {
@@ -1147,10 +1239,6 @@
         return 'defend';
       }
 
-      /*
-       * Electricity:
-       * Defend when no guaranteed crits are active.
-       */
       if (
         enemy.blade === 'Electricity'
       ) {
@@ -1197,10 +1285,6 @@
             action
           );
 
-        /*
-         * Every valid enemy action costs one action.
-         * Invalid actions are replaced with an attack.
-         */
         if (!success) {
           performAction(
             state.enemy,
@@ -1232,10 +1316,6 @@
         }
       }
 
-      /*
-       * Enemy turn finished.
-       * Start a completely new player turn.
-       */
       state.turn += 1;
       state.phase = 'player';
 
@@ -1266,10 +1346,6 @@
       const player = state.player;
       const enemy = state.enemy;
 
-      /*
-       * Do not allow an Ultimate without enough Focus.
-       * This check happens BEFORE consuming an action.
-       */
       if (
         action === 'special' &&
         player.focus <
@@ -1282,9 +1358,6 @@
         return;
       }
 
-      /*
-       * Check invalid Defend states.
-       */
       if (
         action === 'defend' &&
         player.blade === 'Time' &&
@@ -1329,9 +1402,6 @@
         return;
       }
 
-      /*
-       * Time extra action.
-       */
       if (
         player.actionsThisTurn > 0
       ) {
@@ -1346,9 +1416,6 @@
         return;
       }
 
-      /*
-       * Player turn finished.
-       */
       await handleEnemyTurn();
     }
 
@@ -1377,11 +1444,6 @@
       const oldBlade =
         state.player.blade;
 
-      /*
-       * Clear effects belonging to the old blade.
-       * This prevents Time and Electricity buffs from
-       * being carried across blades.
-       */
       state.player.guaranteedCrits = 0;
       state.player.timeDefendLocked = false;
       state.player.isDefending = false;
@@ -1644,3 +1706,5 @@
 </body>
 </html>
 ```
+
+The important change is that the **log itself no longer has a fixed one-line height**. A long message can take two or three lines if necessary, and JavaScript now keeps exactly **two complete messages** rather than five.
