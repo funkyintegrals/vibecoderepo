@@ -70,7 +70,7 @@ h1 {
 
 .secondary,
 .action-button,
-.element-button {
+.blade-button {
   border: none;
   border-radius: 12px;
   color: var(--text);
@@ -80,7 +80,7 @@ h1 {
 
 .secondary:hover,
 .action-button:hover,
-.element-button:hover {
+.blade-button:hover {
   transform: translateY(-1px);
   filter: brightness(1.05);
 }
@@ -111,7 +111,7 @@ h1 {
   gap: 12px;
 }
 
-.element-badge {
+.blade-badge {
   background: rgba(124, 140, 255, 0.15);
   border: 1px solid rgba(124, 140, 255, 0.4);
   border-radius: 999px;
@@ -190,7 +190,7 @@ h1 {
   padding: 18px;
 }
 
-.element-grid,
+.blade-grid,
 .action-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(100px, 1fr));
@@ -198,14 +198,14 @@ h1 {
   margin-bottom: 18px;
 }
 
-.element-button,
+.blade-button,
 .action-button {
   padding: 12px 14px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border);
 }
 
-.element-button.active {
+.blade-button.active {
   background: rgba(124, 140, 255, 0.2);
   border-color: rgba(124, 140, 255, 0.6);
 }
@@ -231,7 +231,7 @@ h1 {
     grid-template-columns: 1fr;
   }
 
-  .element-grid,
+  .blade-grid,
   .action-grid {
     grid-template-columns: repeat(2, minmax(120px, 1fr));
   }

@@ -1,22 +1,40 @@
-const ELEMENTS = {
-  Fire: { strongAgainst: ['Earth'], weakAgainst: ['Water'] },
-  Water: { strongAgainst: ['Fire'], weakAgainst: ['Air'] },
-  Earth: { strongAgainst: ['Air'], weakAgainst: ['Fire'] },
-  Air: { strongAgainst: ['Water'], weakAgainst: ['Earth'] },
+const BLADES = {
+  Time: {
+    attackName: 'Chrono Slash',
+    defendName: 'Temporal Guard',
+    specialName: 'Age of Stillness',
+    attackPower: 45,
+    specialPower: 120,
+    defenseBoost: 10,
+    focusCost: 3,
+  },
+  Electricity: {
+    attackName: 'Volt Arc',
+    defendName: 'Static Impulse',
+    specialName: 'Thunderstorm',
+    attackPower: 50,
+    specialPower: 130,
+    defenseBoost: 8,
+    focusCost: 3,
+  },
 };
 
 const state = {
   player: {
-    hp: 100,
-    mana: 10,
-    element: 'Fire',
+    hp: 1000,
+    defense: 40,
+    focus: 10,
+    blade: 'Time',
     isDefending: false,
+    defendBuffExpires: 0,
   },
   enemy: {
-    hp: 100,
-    mana: 10,
-    element: 'Water',
+    hp: 1000,
+    defense: 40,
+    focus: 10,
+    blade: 'Electricity',
     isDefending: false,
+    defendBuffExpires: 0,
   },
   log: [],
   turn: 1,
@@ -24,22 +42,22 @@ const state = {
 };
 
 const playerHpEl = document.getElementById('playerHp');
-const playerManaEl = document.getElementById('playerMana');
+const playerFocusEl = document.getElementById('playerFocus');
 const enemyHpEl = document.getElementById('enemyHp');
-const enemyManaEl = document.getElementById('enemyMana');
-const playerElementEl = document.getElementById('playerElement');
-const enemyElementEl = document.getElementById('enemyElement');
+const enemyFocusEl = document.getElementById('enemyFocus');
+const playerBladeEl = document.getElementById('playerBlade');
+const enemyBladeEl = document.getElementById('enemyBlade');
 const battleStatusEl = document.getElementById('battleStatus');
 const battleLogEl = document.getElementById('battleLog');
 const restartBtn = document.getElementById('restartBtn');
 
-function randomElement() {
-  const keys = Object.keys(ELEMENTS);
-  return keys[Math.floor(Math.random() * keys.length)];
-}
-
 function clampValue(value, min, max) {
   return Math.min(Math.max(value, min), max);
+}
+
+function randomBlade() {
+  const blades = Object.keys(BLADES);
+  return blades[Math.floor(Math.random() * blades.length)];
 }
 
 function addLog(message) {
@@ -55,164 +73,117 @@ function addLog(message) {
 
 function updateUi() {
   playerHpEl.textContent = state.player.hp;
-  playerManaEl.textContent = state.player.mana;
+  playerFocusEl.textContent = state.player.focus;
   enemyHpEl.textContent = state.enemy.hp;
-  enemyManaEl.textContent = state.enemy.mana;
-  playerElementEl.textContent = `Element: ${state.player.element}`;
-  enemyElementEl.textContent = `Element: ${state.enemy.element}`;
+  enemyFocusEl.textContent = state.enemy.focus;
+  playerBladeEl.textContent = `Blade: ${state.player.blade}`;
+  enemyBladeEl.textContent = `Blade: ${state.enemy.blade}`;
 }
 
 function setStatus(message) {
   battleStatusEl.textContent = message;
 }
 
-function getDamageMultiplier(attackerElement, defenderElement) {
-  const attacker = ELEMENTS[attackerElement];
-  const defender = ELEMENTS[defenderElement];
-
-  if (attacker.strongAgainst.includes(defenderElement)) {
-    return 1.4;
+function chooseEnemyAction() {
+  // If defend buff is expired, choose attack or special
+  if (state.enemy.defendBuffExpires <= state.turn) {
+    const actions = ['attack', 'special', 'heal'];
+    return actions[Math.floor(Math.random() * actions.length)];
   }
+  
+  // If defend buff is still active, choose defend or attack
+  const actions = ['defend', 'attack'];
+  return actions[Math.floor(Math.random() * actions.length)];
+}
 
-  if (attacker.weakAgainst.includes(defenderElement)) {
+function considerDefensiveReduction(unit) {
+  if (unit.isDefending) {
     return 0.7;
   }
-
-  if (attackerElement === defenderElement) {
-    return 1;
-  }
-
   return 1;
 }
 
-function applyDamage(target, source, baseDamage) {
-  const multiplier = getDamageMultiplier(source.element, target.element);
-  const damage = Math.round(baseDamage * multiplier);
-  target.hp = clampValue(target.hp - damage, 0, 100);
-
-  addLog(`${source.element} strike deals ${damage} damage to ${target.element}.`);
-  return damage;
-}
-
-function canUseSpecial(unit) {
-  return unit.mana >= 3;
-}
-
-function chooseEnemyAction() {
-  const options = ['attack', 'defend', 'heal', 'special'];
-  const choice = options[Math.floor(Math.random() * options.length)];
-
-  if (choice === 'special' && state.enemy.mana < 3) {
-    return 'attack';
-  }
-
-  return choice;
-}
-
-function resolveAction(actor, target, action) {
-  if (state.isBattleOver) {
-    return;
-  }
-
-  actor.isDefending = false;
+function applyBladeAction(actor, target, action) {
+  const bladeStats = BLADES[actor.blade];
 
   if (action === 'attack') {
-    const damage = 12 + Math.floor(Math.random() * 8);
-    target.hp = clampValue(target.hp - damage, 0, 100);
-    addLog(`${actor.element} attacker hits for ${damage}.`);
+    const base = bladeStats.attackPower + Math.floor(Math.random() * 20);
+    const reduced = Math.round(base * considerDefensiveReduction(target));
+    const finalDamage = Math.max(1, reduced - target.defense);
+    target.hp = clampValue(target.hp - finalDamage, 0, 1000);
+    addLog(`${actor.blade} uses ${bladeStats.attackName} for ${finalDamage} damage.`);
     return;
   }
 
   if (action === 'defend') {
     actor.isDefending = true;
-    addLog(`${actor.element} user braces for impact.`);
+    actor.defendBuffExpires = state.turn + 2;
+    addLog(`${actor.blade} uses ${bladeStats.defendName}. Buff expires in 2 turns.`);
     return;
   }
 
   if (action === 'heal') {
-    const heal = 14 + Math.floor(Math.random() * 8);
-    actor.hp = clampValue(actor.hp + heal, 0, 100);
-    addLog(`${actor.element} user restores ${heal} HP.`);
+    const heal = 80;
+    actor.hp = clampValue(actor.hp + heal, 0, 1000);
+    addLog(`${actor.blade} recovers ${heal} HP.`);
     return;
   }
 
   if (action === 'special') {
-    if (actor.mana < 3) {
-      addLog(`${actor.element} user lacks enough mana for a special move.`);
+    if (actor.focus < bladeStats.focusCost) {
+      addLog(`${actor.blade} does not have enough focus.`);
       return;
     }
 
-    actor.mana -= 3;
-    const damage = 22 + Math.floor(Math.random() * 10);
-    target.hp = clampValue(target.hp - damage, 0, 100);
-    addLog(`${actor.element} special attack deals ${damage}!`);
+    actor.focus -= bladeStats.focusCost;
+    const base = bladeStats.specialPower + Math.floor(Math.random() * 40);
+    const reduced = Math.round(base * considerDefensiveReduction(target));
+    const finalDamage = Math.max(1, reduced - target.defense);
+    target.hp = clampValue(target.hp - finalDamage, 0, 1000);
+    addLog(`${actor.blade} unleashes ${bladeStats.specialName} for ${finalDamage} damage.`);
   }
 }
 
 function finishTurnIfNeeded() {
   if (state.player.hp <= 0) {
     state.isBattleOver = true;
-    setStatus('You were defeated. Press New Battle to try again.');
-    addLog('Battle lost.');
+    setStatus('Defeat. Press New Battle to start again.');
+    addLog('You lost the battle.');
     return true;
   }
 
   if (state.enemy.hp <= 0) {
     state.isBattleOver = true;
-    setStatus('Victory! The enemy falls.');
-    addLog('Battle won.');
+    setStatus('Victory! The enemy blade is broken.');
+    addLog('You won the battle.');
     return true;
   }
 
   return false;
 }
 
-function enemyTurn() {
+function handleEnemyTurn() {
   if (state.isBattleOver) {
     return;
   }
 
-  const action = chooseEnemyAction();
-  const enemyActor = { ...state.enemy, element: state.enemy.element };
-  const playerActor = { ...state.player, element: state.player.element };
+  const enemyAction = chooseEnemyAction();
 
-  if (action === 'defend') {
-    state.enemy.isDefending = true;
-    addLog('Enemy raises a barrier.');
-  } else if (action === 'heal') {
-    state.enemy.hp = clampValue(state.enemy.hp + 12, 0, 100);
-    addLog('Enemy restores 12 HP.');
-  } else if (action === 'special') {
-    if (state.enemy.mana >= 3) {
-      state.enemy.mana -= 3;
-      const damage = 20 + Math.floor(Math.random() * 10);
-      state.player.hp = clampValue(state.player.hp - damage, 0, 100);
-      addLog(`Enemy unleashes a special blast for ${damage}!`);
-    } else {
-      const damage = 12 + Math.floor(Math.random() * 8);
-      state.player.hp = clampValue(state.player.hp - damage, 0, 100);
-      addLog(`Enemy strikes for ${damage}.`);
-    }
+  if (enemyAction === 'attack') {
+    applyBladeAction(state.enemy, state.player, 'attack');
+  } else if (enemyAction === 'defend') {
+    applyBladeAction(state.enemy, state.player, 'defend');
+  } else if (enemyAction === 'heal') {
+    applyBladeAction(state.enemy, state.player, 'heal');
   } else {
-    const damage = 12 + Math.floor(Math.random() * 10);
-    state.player.hp = clampValue(state.player.hp - damage, 0, 100);
-    addLog(`Enemy attacks for ${damage}.`);
+    applyBladeAction(state.enemy, state.player, 'special');
   }
 
-  if (state.player.isDefending) {
-    state.player.hp = clampValue(state.player.hp + 8, 0, 100);
-    state.player.isDefending = false;
-    addLog('Your guard absorbs some damage.');
-  }
+  state.player.focus = clampValue(state.player.focus + 1, 0, 10);
+  state.enemy.focus = clampValue(state.enemy.focus + 1, 0, 10);
 
-  if (state.enemy.isDefending) {
-    state.enemy.hp = clampValue(state.enemy.hp + 6, 0, 100);
-    state.enemy.isDefending = false;
-    addLog('Enemy guard stabilizes them.');
-  }
-
-  state.player.mana = clampValue(state.player.mana + 1, 0, 10);
-  state.enemy.mana = clampValue(state.enemy.mana + 1, 0, 10);
+  state.player.isDefending = false;
+  state.enemy.isDefending = false;
 
   updateUi();
   finishTurnIfNeeded();
@@ -223,110 +194,67 @@ function handlePlayerAction(action) {
     return;
   }
 
-  const playerAction = action;
-  const enemyAction = chooseEnemyAction();
-
-  state.player.isDefending = false;
-  state.enemy.isDefending = false;
-
-  if (playerAction === 'attack') {
-    const damage = 12 + Math.floor(Math.random() * 10);
-    const multiplier = getDamageMultiplier(state.player.element, state.enemy.element);
-    const total = Math.round(damage * multiplier);
-    state.enemy.hp = clampValue(state.enemy.hp - total, 0, 100);
-    addLog(`You attack with ${state.player.element} for ${total} damage.`);
-  } else if (playerAction === 'defend') {
-    state.player.isDefending = true;
-    addLog('You raise your guard.');
-  } else if (playerAction === 'heal') {
-    const heal = 15;
-    state.player.hp = clampValue(state.player.hp + heal, 0, 100);
-    addLog(`You restore ${heal} HP.`);
-  } else if (playerAction === 'special') {
-    if (state.player.mana < 3) {
-      addLog('Not enough mana for a special move.');
-      return;
-    }
-
-    state.player.mana -= 3;
-    const damage = 22 + Math.floor(Math.random() * 12);
-    const total = Math.round(damage * getDamageMultiplier(state.player.element, state.enemy.element));
-    state.enemy.hp = clampValue(state.enemy.hp - total, 0, 100);
-    addLog(`You unleash a special ${state.player.element} move for ${total} damage.`);
+  if (action === 'attack') {
+    applyBladeAction(state.player, state.enemy, 'attack');
+  } else if (action === 'defend') {
+    applyBladeAction(state.player, state.enemy, 'defend');
+  } else if (action === 'heal') {
+    applyBladeAction(state.player, state.enemy, 'heal');
+  } else if (action === 'special') {
+    applyBladeAction(state.player, state.enemy, 'special');
   }
-
-  if (state.player.isDefending) {
-    state.player.hp = clampValue(state.player.hp + 5, 0, 100);
-  }
-
-  if (enemyAction === 'defend') {
-    state.enemy.isDefending = true;
-    addLog('Enemy prepares a defense.');
-  } else if (enemyAction === 'heal') {
-    state.enemy.hp = clampValue(state.enemy.hp + 12, 0, 100);
-    addLog('Enemy heals 12 HP.');
-  } else if (enemyAction === 'special') {
-    if (state.enemy.mana >= 3) {
-      state.enemy.mana -= 3;
-      const enemyDamage = 20 + Math.floor(Math.random() * 8);
-      state.player.hp = clampValue(state.player.hp - enemyDamage, 0, 100);
-      addLog(`Enemy special attack hits for ${enemyDamage}.`);
-    } else {
-      const enemyDamage = 10 + Math.floor(Math.random() * 7);
-      state.player.hp = clampValue(state.player.hp - enemyDamage, 0, 100);
-      addLog(`Enemy attacks for ${enemyDamage}.`);
-    }
-  } else {
-    const enemyDamage = 10 + Math.floor(Math.random() * 10);
-    state.player.hp = clampValue(state.player.hp - enemyDamage, 0, 100);
-    addLog(`Enemy attacks for ${enemyDamage}.`);
-  }
-
-  state.player.mana = clampValue(state.player.mana + 1, 0, 10);
-  state.enemy.mana = clampValue(state.enemy.mana + 1, 0, 10);
-
-  updateUi();
 
   if (finishTurnIfNeeded()) {
+    updateUi();
     return;
   }
 
-  const nextTurn = `Turn ${state.turn + 1} begins.`;
-  state.turn += 1;
-  setStatus(nextTurn);
+  handleEnemyTurn();
+
+  if (!state.isBattleOver) {
+    state.turn += 1;
+    setStatus(`Turn ${state.turn} begins. Choose your next move.`);
+  }
+
+  updateUi();
 }
 
 function resetBattle() {
-  state.player.hp = 100;
-  state.player.mana = 10;
-  state.player.element = 'Fire';
+  state.player.hp = 1000;
+  state.player.defense = 40;
+  state.player.focus = 10;
+  state.player.blade = 'Time';
   state.player.isDefending = false;
+  state.player.defendBuffExpires = 0;
 
-  state.enemy.hp = 100;
-  state.enemy.mana = 10;
-  state.enemy.element = randomElement();
+  state.enemy.hp = 1000;
+  state.enemy.defense = 40;
+  state.enemy.focus = 10;
+  state.enemy.blade = randomBlade();
   state.enemy.isDefending = false;
+  state.enemy.defendBuffExpires = 0;
 
   state.log = [];
   state.turn = 1;
   state.isBattleOver = false;
 
-  addLog('A new battle begins.');
-  setStatus('Choose your move.');
+  addLog(`Enemy chose ${state.enemy.blade}!`);
+  addLog('A new blade duel begins.');
+  setStatus('Choose your blade and move.');
   updateUi();
 }
 
-document.querySelectorAll('.element-button').forEach((button) => {
+document.querySelectorAll('.blade-button').forEach((button) => {
   button.addEventListener('click', () => {
     if (state.isBattleOver) {
       return;
     }
 
-    const selected = button.dataset.element;
-    state.player.element = selected;
+    const selected = button.dataset.blade;
+    state.player.blade = selected;
 
-    document.querySelectorAll('.element-button').forEach((btn) => {
-      btn.classList.toggle('active', btn.dataset.element === selected);
+    document.querySelectorAll('.blade-button').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.blade === selected);
     });
 
     updateUi();
@@ -343,4 +271,3 @@ document.querySelectorAll('.action-button').forEach((button) => {
 restartBtn.addEventListener('click', resetBattle);
 
 resetBattle();
-updateUi();

@@ -20,11 +20,11 @@
         <div class="fighter-panel enemy-panel">
           <div class="fighter-header">
             <h2>Enemy</h2>
-            <span id="enemyElement" class="element-badge">Element: ???</span>
+            <span id="enemyBlade" class="blade-badge">Blade: ???</span>
           </div>
           <div class="stats">
             <div><span>HP</span><strong id="enemyHp">100</strong></div>
-            <div><span>Mana</span><strong id="enemyMana">10</strong></div>
+            <div><span>Focus</span><strong id="enemyFocus">10</strong></div>
           </div>
           <div class="portrait enemy-portrait">⚔️</div>
         </div>
@@ -40,35 +40,33 @@
         <div class="fighter-panel player-panel">
           <div class="fighter-header">
             <h2>Player</h2>
-            <span id="playerElement" class="element-badge">Element: Fire</span>
+            <span id="playerBlade" class="blade-badge">Blade: Time</span>
           </div>
           <div class="stats">
             <div><span>HP</span><strong id="playerHp">100</strong></div>
-            <div><span>Mana</span><strong id="playerMana">10</strong></div>
+            <div><span>Focus</span><strong id="playerFocus">10</strong></div>
           </div>
           <div class="portrait player-portrait">🛡️</div>
         </div>
       </section>
 
       <section class="control-panel">
-        <h3>Choose an element</h3>
-        <div class="element-grid" id="elementGrid">
-          <button class="element-button active" data-element="Fire">Fire</button>
-          <button class="element-button" data-element="Water">Water</button>
-          <button class="element-button" data-element="Earth">Earth</button>
-          <button class="element-button" data-element="Air">Air</button>
+        <h3>Choose a blade</h3>
+        <div class="blade-grid" id="bladeGrid">
+          <button class="blade-button active" data-blade="Time">Time</button>
+          <button class="blade-button" data-blade="Electricity">Electricity</button>
         </div>
 
         <h3>Actions</h3>
         <div class="action-grid">
-          <button class="action-button" data-action="attack">Attack</button>
-          <button class="action-button" data-action="defend">Defend</button>
-          <button class="action-button" data-action="special">Special</button>
-          <button class="action-button" data-action="heal">Heal</button>
+          <button class="action-button" data-action="attack">Attack Skill</button>
+          <button class="action-button" data-action="defend">Defend Skill</button>
+          <button class="action-button" data-action="special">Ultimate</button>
+          <button class="action-button" data-action="heal">Recover</button>
         </div>
       </section>
     </main>
 
-    <script src="script.js"></script>
+    <script src="elementfight/script.js"></script>
   </body>
 </html>
