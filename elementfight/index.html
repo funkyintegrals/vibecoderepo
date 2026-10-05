@@ -949,6 +949,52 @@
 
     }
 
+    function healEveryThreeTurns() {
+    
+      /*
+       * Every third completed turn, both fighters
+       * recover 300 HP, capped at MAX_HP.
+       */
+      if (state.turn % 3 !== 0) {
+        return;
+      }
+    
+      const healAmount = 300;
+    
+      const playerOldHp = state.player.hp;
+      const enemyOldHp = state.enemy.hp;
+    
+      state.player.hp = clamp(
+        state.player.hp + healAmount,
+        0,
+        MAX_HP
+      );
+    
+      state.enemy.hp = clamp(
+        state.enemy.hp + healAmount,
+        0,
+        MAX_HP
+      );
+    
+      const playerHealed =
+        state.player.hp - playerOldHp;
+    
+      const enemyHealed =
+        state.enemy.hp - enemyOldHp;
+    
+      if (playerHealed > 0) {
+        addLog(
+          `Player — healed ${playerHealed} HP.`
+        );
+      }
+    
+      if (enemyHealed > 0) {
+        addLog(
+          `Enemy — healed ${enemyHealed} HP.`
+        );
+      }
+    }
+
 
     /*
      * ============================================================
