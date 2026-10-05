@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,7 +30,11 @@
       display: grid;
       place-items: center;
       background:
-        radial-gradient(circle at top, rgba(124, 140, 255, 0.24), transparent 30%),
+        radial-gradient(
+          circle at top,
+          rgba(124, 140, 255, 0.24),
+          transparent 30%
+        ),
         linear-gradient(180deg, #090d18, var(--bg));
       color: var(--text);
       font-family: Arial, Helvetica, sans-serif;
@@ -83,12 +88,15 @@
       border-radius: 12px;
       color: var(--text);
       cursor: pointer;
-      transition: transform 0.15s ease, filter 0.15s ease;
+      transition:
+        transform 0.15s ease,
+        filter 0.15s ease,
+        opacity 0.15s ease;
     }
 
-    .secondary:hover,
-    .action-button:hover,
-    .blade-button:hover {
+    .secondary:hover:not(:disabled),
+    .action-button:hover:not(:disabled),
+    .blade-button:hover:not(:disabled) {
       transform: translateY(-1px);
       filter: brightness(1.05);
     }
@@ -119,12 +127,17 @@
       gap: 12px;
     }
 
+    .fighter-header h2 {
+      margin-bottom: 0;
+    }
+
     .blade-badge {
       background: rgba(124, 140, 255, 0.15);
       border: 1px solid rgba(124, 140, 255, 0.4);
       border-radius: 999px;
       padding: 7px 10px;
       font-size: 0.76rem;
+      white-space: nowrap;
     }
 
     .stats {
@@ -162,6 +175,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      min-width: 0;
     }
 
     .battle-status {
@@ -172,28 +186,52 @@
       min-height: 80px;
       color: var(--text);
       font-weight: 700;
+      overflow: hidden;
     }
 
     .turn-log-wrap {
       margin-top: 18px;
+      min-width: 0;
     }
 
     .battle-log {
       margin: 0;
       padding-left: 18px;
-      max-height: 220px;
-      overflow: auto;
+      height: 112px;
+      overflow: hidden;
       color: var(--muted);
+
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
     }
 
     .battle-log li {
+      height: 24px;
+      min-height: 24px;
+      line-height: 24px;
+
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+
+      animation: logRollUp 0.35s ease-out;
     }
 
     .battle-log li + li {
-      margin-top: 8px;
+      margin-top: 4px;
+    }
+
+    @keyframes logRollUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .control-panel {
@@ -236,12 +274,17 @@
       background: rgba(255, 191, 105, 0.14);
     }
 
-    .action-button[data-action="heal"] {
-      background: rgba(124, 140, 255, 0.14);
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.4;
+      filter: grayscale(0.35);
     }
 
-    .action-button:disabled {
-      cursor: not-allowed;
+    .status-line {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-align: center;
     }
 
     @media (max-width: 760px) {
@@ -257,6 +300,18 @@
       .title-bar {
         flex-direction: column;
         align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .game-shell {
+        width: 96vw;
+        padding: 16px;
+      }
+
+      .blade-grid,
+      .action-grid {
+        grid-template-columns: 1fr 1fr;
       }
     }
   </style>
@@ -279,7 +334,7 @@
 
     <section class="battle-area">
 
-      <!-- Player - LEFT -->
+      <!-- PLAYER -->
       <div class="fighter-panel player-panel">
 
         <div class="fighter-header">
@@ -291,7 +346,6 @@
         </div>
 
         <div class="stats">
-
           <div>
             <span>HP</span>
             <strong id="playerHp">1000</strong>
@@ -299,9 +353,8 @@
 
           <div>
             <span>Focus</span>
-            <strong id="playerFocus">0</strong>
+            <strong id="playerFocus">0 / 10</strong>
           </div>
-
         </div>
 
         <div class="portrait player-portrait">
@@ -309,7 +362,6 @@
         </div>
 
       </div>
-
 
       <!-- CENTER -->
       <div class="center-panel">
@@ -328,22 +380,18 @@
 
       </div>
 
-
-      <!-- Enemy - RIGHT -->
+      <!-- ENEMY -->
       <div class="fighter-panel enemy-panel">
 
         <div class="fighter-header">
-
           <h2>Enemy</h2>
 
           <span id="enemyBlade" class="blade-badge">
             Blade: ???
           </span>
-
         </div>
 
         <div class="stats">
-
           <div>
             <span>HP</span>
             <strong id="enemyHp">1000</strong>
@@ -351,9 +399,8 @@
 
           <div>
             <span>Focus</span>
-            <strong id="enemyFocus">0</strong>
+            <strong id="enemyFocus">0 / 10</strong>
           </div>
-
         </div>
 
         <div class="portrait enemy-portrait">
@@ -364,8 +411,7 @@
 
     </section>
 
-
-    <!-- Controls -->
+    <!-- CONTROLS -->
     <section class="control-panel">
 
       <h3>Choose a blade</h3>
@@ -374,18 +420,25 @@
 
         <button
           class="blade-button active"
-          data-blade="Time">
+          data-blade="Time"
+          type="button"
+        >
           Time
         </button>
 
         <button
           class="blade-button"
-          data-blade="Electricity">
+          data-blade="Electricity"
+          type="button"
+        >
           Electricity
         </button>
 
       </div>
 
+      <p id="turnInfo" class="status-line">
+        Your turn
+      </p>
 
       <h3>Actions</h3>
 
@@ -393,19 +446,25 @@
 
         <button
           class="action-button"
-          data-action="attack">
+          data-action="attack"
+          type="button"
+        >
           Attack Skill
         </button>
 
         <button
           class="action-button"
-          data-action="defend">
+          data-action="defend"
+          type="button"
+        >
           Defend Skill
         </button>
 
         <button
           class="action-button"
-          data-action="special">
+          data-action="special"
+          type="button"
+        >
           Ultimate
         </button>
 
@@ -415,68 +474,103 @@
 
   </main>
 
-
   <script>
+    'use strict';
+
+    /*
+     * ============================================================
+     * GAME DATA
+     * ============================================================
+     */
+
+    const MAX_HP = 1000;
+    const BASE_DEFENSE = 40;
+    const MAX_FOCUS = 10;
 
     const BLADES = {
-
       Time: {
         attackName: 'Chrono Slash',
         defendName: 'Temporal Guard',
         specialName: 'Age of Stillness',
+
         attackDamage: 100,
+
         ultimateHitCount: 10,
         ultimateDamagePerHit: 50,
         ultimateCritDamagePerHit: 100,
-        focusCap: 10,
+
+        ultimateCritChance: 0.5,
+
+        focusCap: MAX_FOCUS
       },
 
       Electricity: {
         attackName: 'Volt Arc',
         defendName: 'Static Impulse',
         specialName: 'Thunderstorm',
+
         attackDamage: 80,
         critDamage: 160,
-        critChance: 0.5,
-        ultimateDamage: 300,
-        focusCap: 10,
-      },
 
+        // Normal attacks have a 25% crit chance.
+        critChance: 0.25,
+
+        // Defend guarantees the next 2 attacks are critical.
+        critBoostAttacks: 2,
+
+        ultimateDamage: 300,
+
+        focusCap: MAX_FOCUS
+      }
     };
 
+
+    /*
+     * ============================================================
+     * GAME STATE
+     * ============================================================
+     */
+
+    function createFighter(blade) {
+      return {
+        hp: MAX_HP,
+        def: BASE_DEFENSE,
+        focus: 0,
+
+        blade,
+
+        isDefending: false,
+
+        actionsThisTurn: 1,
+        extraTurnCharges: 0,
+
+        // Electricity only.
+        guaranteedCrits: 0,
+
+        // Time only.
+        timeDefendLocked: false
+      };
+    }
 
     const state = {
+      player: createFighter('Time'),
+      enemy: createFighter('Electricity'),
 
-      player: {
-        hp: 1000,
-        def: 40,
-        focus: 0,
-        blade: 'Time',
-        isDefending: false,
-        actionsThisTurn: 1,
-        extraTurnCharges: 0,
-        critBoostTurns: 0,
-        timeDefendLocked: false,
-      },
-
-      enemy: {
-        hp: 1000,
-        def: 40,
-        focus: 0,
-        blade: 'Electricity',
-        isDefending: false,
-        actionsThisTurn: 1,
-        extraTurnCharges: 0,
-        critBoostTurns: 0,
-        timeDefendLocked: false,
-      },
-
-      log: [],
       turn: 1,
+
+      phase: 'player',
+
       isBattleOver: false,
 
+      log: []
     };
 
+
+    /*
+     * ============================================================
+     * DOM
+     * ============================================================
+     */
 
     const playerHpEl =
       document.getElementById('playerHp');
@@ -505,20 +599,63 @@
     const restartBtn =
       document.getElementById('restartBtn');
 
+    const turnInfoEl =
+      document.getElementById('turnInfo');
 
-    let logQueue = [];
-    let isShowingLog = false;
+    const bladeButtons =
+      [...document.querySelectorAll('.blade-button')];
+
+    const actionButtons =
+      [...document.querySelectorAll('.action-button')];
 
 
-    function clampValue(value, min, max) {
-      return Math.min(Math.max(value, min), max);
+    /*
+     * ============================================================
+     * LOGGING
+     * ============================================================
+     */
+
+    function addLog(message) {
+      state.log.unshift(message);
+
+      if (state.log.length > 5) {
+        state.log.pop();
+      }
+
+      renderLog();
+    }
+
+
+    function renderLog() {
+      battleLogEl.replaceChildren();
+
+      state.log
+        .slice()
+        .reverse()
+        .forEach(message => {
+          const li = document.createElement('li');
+          li.textContent = message;
+          battleLogEl.appendChild(li);
+        });
+    }
+
+
+    /*
+     * ============================================================
+     * UTILITIES
+     * ============================================================
+     */
+
+    function clamp(value, min, max) {
+      return Math.min(
+        Math.max(value, min),
+        max
+      );
     }
 
 
     function randomBlade() {
-
-      const blades =
-        Object.keys(BLADES);
+      const blades = Object.keys(BLADES);
 
       return blades[
         Math.floor(
@@ -528,50 +665,753 @@
     }
 
 
-    function addLog(message) {
-
-      logQueue.push(message);
-
-      processLogQueue();
+    function getFighterName(fighter) {
+      return fighter === state.player
+        ? 'Player'
+        : 'Enemy';
     }
 
 
-    function processLogQueue() {
+    function getBladeStats(fighter) {
+      return BLADES[fighter.blade];
+    }
+
+
+    /*
+     * ============================================================
+     * FOCUS
+     * ============================================================
+     */
+
+    function gainFocus(fighter, amount = 1) {
+      const stats = getBladeStats(fighter);
+
+      fighter.focus = clamp(
+        fighter.focus + amount,
+        0,
+        stats.focusCap
+      );
+    }
+
+
+    /*
+     * ============================================================
+     * DAMAGE
+     * ============================================================
+     */
+
+    function applyDefense(damage, defender) {
+      let finalDamage = Math.max(
+        1,
+        damage - defender.def
+      );
+
+      /*
+       * Actual Defend effect:
+       * defending fighters take 50% less damage.
+       */
+      if (defender.isDefending) {
+        finalDamage = Math.max(
+          1,
+          Math.floor(finalDamage * 0.5)
+        );
+      }
+
+      return finalDamage;
+    }
+
+
+    function normalAttack(attacker, defender) {
+      const stats = getBladeStats(attacker);
+
+      let rawDamage = stats.attackDamage;
+      let critical = false;
+
+      if (attacker.blade === 'Electricity') {
+
+        if (attacker.guaranteedCrits > 0) {
+          critical = true;
+
+          attacker.guaranteedCrits -= 1;
+        }
+        else if (
+          Math.random() < stats.critChance
+        ) {
+          critical = true;
+        }
+
+        if (critical) {
+          rawDamage = stats.critDamage;
+        }
+      }
+
+      const damage =
+        applyDefense(
+          rawDamage,
+          defender
+        );
+
+      defender.hp = clamp(
+        defender.hp - damage,
+        0,
+        MAX_HP
+      );
+
+      const name =
+        getFighterName(attacker);
+
+      const criticalText =
+        critical ? ' CRITICAL!' : '';
+
+      addLog(
+        `${name} — ${stats.attackName} deals ${damage} damage.${criticalText}`
+      );
+
+      gainFocus(attacker);
+
+      /*
+       * Once someone attacks, their own defensive stance
+       * has served its purpose for that turn.
+       */
+      defender.isDefending = false;
+
+      return damage;
+    }
+
+
+    /*
+     * ============================================================
+     * SPECIALS
+     * ============================================================
+     */
+
+    function useUltimate(attacker, defender) {
+      const stats = getBladeStats(attacker);
+      const name = getFighterName(attacker);
 
       if (
-        isShowingLog ||
-        logQueue.length === 0
+        attacker.focus <
+        stats.focusCap
+      ) {
+        addLog(
+          `${name} — not enough Focus for the Ultimate.`
+        );
+
+        return false;
+      }
+
+      attacker.focus = 0;
+
+      /*
+       * TIME ULTIMATE
+       *
+       * Ten separate hits. Defense is applied to the
+       * total once, preventing defense from making
+       * every 50-damage hit become almost useless.
+       */
+      if (attacker.blade === 'Time') {
+
+        let rawTotal = 0;
+        let criticalHits = 0;
+
+        for (
+          let i = 0;
+          i < stats.ultimateHitCount;
+          i += 1
+        ) {
+          const critical =
+            Math.random() <
+            stats.ultimateCritChance;
+
+          rawTotal += critical
+            ? stats.ultimateCritDamagePerHit
+            : stats.ultimateDamagePerHit;
+
+          if (critical) {
+            criticalHits += 1;
+          }
+        }
+
+        let damage =
+          Math.max(
+            1,
+            rawTotal - defender.def
+          );
+
+        if (defender.isDefending) {
+          damage = Math.max(
+            1,
+            Math.floor(damage * 0.5)
+          );
+        }
+
+        defender.hp = clamp(
+          defender.hp - damage,
+          0,
+          MAX_HP
+        );
+
+        addLog(
+          `${name} — ${stats.specialName} deals ${damage} damage (${criticalHits} critical hits).`
+        );
+
+        defender.isDefending = false;
+
+        return true;
+      }
+
+
+      /*
+       * ELECTRICITY ULTIMATE
+       */
+      if (
+        attacker.blade === 'Electricity'
+      ) {
+        const damage =
+          applyDefense(
+            stats.ultimateDamage,
+            defender
+          );
+
+        defender.hp = clamp(
+          defender.hp - damage,
+          0,
+          MAX_HP
+        );
+
+        addLog(
+          `${name} — ${stats.specialName} deals ${damage} damage.`
+        );
+
+        defender.isDefending = false;
+
+        return true;
+      }
+
+      return false;
+    }
+
+
+    /*
+     * ============================================================
+     * DEFEND
+     * ============================================================
+     */
+
+    function useDefend(fighter) {
+      const stats = getBladeStats(fighter);
+      const name = getFighterName(fighter);
+
+      /*
+       * Time cannot repeatedly activate its extra-turn
+       * mechanic while the previous effect is active.
+       */
+      if (
+        fighter.blade === 'Time' &&
+        fighter.timeDefendLocked
+      ) {
+        addLog(
+          `${name} — Time Defend is unavailable right now.`
+        );
+
+        return false;
+      }
+
+      /*
+       * Electricity cannot refresh its guaranteed crits
+       * while they are already active.
+       */
+      if (
+        fighter.blade === 'Electricity' &&
+        fighter.guaranteedCrits > 0
+      ) {
+        addLog(
+          `${name} — Electricity Defend is unavailable while the critical boost is active.`
+        );
+
+        return false;
+      }
+
+      fighter.isDefending = true;
+
+      if (fighter.blade === 'Time') {
+
+        fighter.extraTurnCharges = 1;
+        fighter.timeDefendLocked = true;
+
+        addLog(
+          `${name} — ${stats.defendName}. Damage reduced by 50%; next turn has 2 actions.`
+        );
+      }
+
+      else if (
+        fighter.blade === 'Electricity'
+      ) {
+
+        fighter.guaranteedCrits =
+          stats.critBoostAttacks;
+
+        addLog(
+          `${name} — ${stats.defendName}. Damage reduced by 50%; next 2 attacks are critical.`
+        );
+      }
+
+      gainFocus(fighter);
+
+      return true;
+    }
+
+
+    /*
+     * ============================================================
+     * ACTION SYSTEM
+     * ============================================================
+     */
+
+    function performAction(
+      actor,
+      target,
+      action
+    ) {
+      if (
+        actor.hp <= 0 ||
+        target.hp <= 0
+      ) {
+        return false;
+      }
+
+      switch (action) {
+
+        case 'attack':
+          normalAttack(
+            actor,
+            target
+          );
+          return true;
+
+        case 'defend':
+          return useDefend(actor);
+
+        case 'special':
+          return useUltimate(
+            actor,
+            target
+          );
+
+        default:
+          return false;
+      }
+    }
+
+
+    /*
+     * ============================================================
+     * TURN MANAGEMENT
+     * ============================================================
+     */
+
+    function beginTurn(fighter) {
+      fighter.isDefending = false;
+
+      if (
+        fighter.extraTurnCharges > 0
+      ) {
+        fighter.actionsThisTurn = 2;
+        fighter.extraTurnCharges = 0;
+
+        if (
+          fighter.blade === 'Time'
+        ) {
+          addLog(
+            `${getFighterName(fighter)} — Time extra turn activated.`
+          );
+        }
+      }
+      else {
+        fighter.actionsThisTurn = 1;
+
+        /*
+         * Time's lock lasts through the extra turn,
+         * then expires when the next normal turn starts.
+         */
+        if (fighter.timeDefendLocked) {
+          fighter.timeDefendLocked = false;
+        }
+      }
+    }
+
+
+    function endAction(actor) {
+      actor.actionsThisTurn =
+        Math.max(
+          0,
+          actor.actionsThisTurn - 1
+        );
+    }
+
+
+    /*
+     * ============================================================
+     * BATTLE END
+     * ============================================================
+     */
+
+    function checkBattleOver() {
+
+      if (
+        state.enemy.hp <= 0
+      ) {
+        state.enemy.hp = 0;
+        state.isBattleOver = true;
+        state.phase = 'over';
+
+        setStatus(
+          'Victory! The enemy blade is broken.'
+        );
+
+        addLog(
+          'Battle — You won the battle.'
+        );
+
+        updateUi();
+
+        return true;
+      }
+
+      if (
+        state.player.hp <= 0
+      ) {
+        state.player.hp = 0;
+        state.isBattleOver = true;
+        state.phase = 'over';
+
+        setStatus(
+          'Defeat. Press New Battle to try again.'
+        );
+
+        addLog(
+          'Battle — You lost the battle.'
+        );
+
+        updateUi();
+
+        return true;
+      }
+
+      return false;
+    }
+
+
+    /*
+     * ============================================================
+     * ENEMY AI
+     * ============================================================
+     */
+
+    function chooseEnemyAction() {
+      const enemy = state.enemy;
+      const stats = getBladeStats(enemy);
+
+      /*
+       * Use Ultimate whenever available.
+       */
+      if (
+        enemy.focus >= stats.focusCap
+      ) {
+        return 'special';
+      }
+
+      /*
+       * If Time already prepared an extra action,
+       * use that extra action aggressively.
+       */
+      if (
+        enemy.actionsThisTurn > 1
+      ) {
+        return 'attack';
+      }
+
+      /*
+       * Time:
+       * Defend first, then use the extra turn.
+       */
+      if (
+        enemy.blade === 'Time'
+      ) {
+        if (
+          enemy.timeDefendLocked
+        ) {
+          return 'attack';
+        }
+
+        return 'defend';
+      }
+
+      /*
+       * Electricity:
+       * Defend when no guaranteed crits are active.
+       */
+      if (
+        enemy.blade === 'Electricity'
+      ) {
+        if (
+          enemy.guaranteedCrits > 0
+        ) {
+          return 'attack';
+        }
+
+        return 'defend';
+      }
+
+      return 'attack';
+    }
+
+
+    async function handleEnemyTurn() {
+      if (
+        state.isBattleOver
       ) {
         return;
       }
 
-      isShowingLog = true;
+      state.phase = 'enemy';
 
-      const message =
-        logQueue.shift();
+      beginTurn(state.enemy);
 
-      state.log.unshift(message);
+      updateUi();
 
-      if (state.log.length > 2) {
-        state.log.pop();
+      await delay(500);
+
+      while (
+        state.enemy.actionsThisTurn > 0 &&
+        !state.isBattleOver
+      ) {
+
+        const action =
+          chooseEnemyAction();
+
+        const success =
+          performAction(
+            state.enemy,
+            state.player,
+            action
+          );
+
+        /*
+         * Every valid enemy action costs one action.
+         * Invalid actions are replaced with an attack.
+         */
+        if (!success) {
+          performAction(
+            state.enemy,
+            state.player,
+            'attack'
+          );
+        }
+
+        endAction(state.enemy);
+
+        updateUi();
+
+        if (
+          checkBattleOver()
+        ) {
+          return;
+        }
+
+        if (
+          state.enemy.actionsThisTurn > 0
+        ) {
+          setStatus(
+            'Enemy has an extra action.'
+          );
+
+          updateUi();
+
+          await delay(500);
+        }
       }
 
-      battleLogEl.innerHTML =
-        state.log
-          .map(
-            entry => `<li>${entry}</li>`
-          )
-          .join('');
+      /*
+       * Enemy turn finished.
+       * Start a completely new player turn.
+       */
+      state.turn += 1;
+      state.phase = 'player';
 
-      setTimeout(() => {
+      beginTurn(state.player);
 
-        isShowingLog = false;
+      setStatus(
+        `Turn ${state.turn} begins. Choose your move.`
+      );
 
-        processLogQueue();
-
-      }, 1000);
+      updateUi();
     }
 
+
+    /*
+     * ============================================================
+     * PLAYER ACTION
+     * ============================================================
+     */
+
+    async function handlePlayerAction(action) {
+      if (
+        state.isBattleOver ||
+        state.phase !== 'player'
+      ) {
+        return;
+      }
+
+      const player = state.player;
+      const enemy = state.enemy;
+
+      /*
+       * Do not allow an Ultimate without enough Focus.
+       * This check happens BEFORE consuming an action.
+       */
+      if (
+        action === 'special' &&
+        player.focus <
+          getBladeStats(player).focusCap
+      ) {
+        setStatus(
+          `You need ${getBladeStats(player).focusCap} Focus to use your Ultimate.`
+        );
+
+        return;
+      }
+
+      /*
+       * Check invalid Defend states.
+       */
+      if (
+        action === 'defend' &&
+        player.blade === 'Time' &&
+        player.timeDefendLocked
+      ) {
+        setStatus(
+          'Time Defend is unavailable during the current effect.'
+        );
+
+        return;
+      }
+
+      if (
+        action === 'defend' &&
+        player.blade === 'Electricity' &&
+        player.guaranteedCrits > 0
+      ) {
+        setStatus(
+          'Electricity Defend is unavailable while critical attacks are active.'
+        );
+
+        return;
+      }
+
+      const success =
+        performAction(
+          player,
+          enemy,
+          action
+        );
+
+      if (!success) {
+        updateUi();
+        return;
+      }
+
+      endAction(player);
+
+      if (
+        checkBattleOver()
+      ) {
+        return;
+      }
+
+      /*
+       * Time extra action.
+       */
+      if (
+        player.actionsThisTurn > 0
+      ) {
+        state.phase = 'player';
+
+        setStatus(
+          'Extra action available. Choose your next move.'
+        );
+
+        updateUi();
+
+        return;
+      }
+
+      /*
+       * Player turn finished.
+       */
+      await handleEnemyTurn();
+    }
+
+
+    /*
+     * ============================================================
+     * BLADE SWITCHING
+     * ============================================================
+     */
+
+    function switchPlayerBlade(newBlade) {
+      if (
+        state.isBattleOver ||
+        state.phase !== 'player'
+      ) {
+        return;
+      }
+
+      if (
+        !BLADES[newBlade] ||
+        newBlade === state.player.blade
+      ) {
+        return;
+      }
+
+      const oldBlade =
+        state.player.blade;
+
+      /*
+       * Clear effects belonging to the old blade.
+       * This prevents Time and Electricity buffs from
+       * being carried across blades.
+       */
+      state.player.guaranteedCrits = 0;
+      state.player.timeDefendLocked = false;
+      state.player.isDefending = false;
+
+      state.player.blade = newBlade;
+
+      bladeButtons.forEach(button => {
+        button.classList.toggle(
+          'active',
+          button.dataset.blade === newBlade
+        );
+      });
+
+      addLog(
+        `Player — switched from ${oldBlade} to ${newBlade}.`
+      );
+
+      setStatus(
+        `${newBlade} selected. Choose your action.`
+      );
+
+      updateUi();
+    }
+
+
+    /*
+     * ============================================================
+     * UI
+     * ============================================================
+     */
 
     function setStatus(message) {
       battleStatusEl.textContent = message;
@@ -579,966 +1419,211 @@
 
 
     function updateActionButtons() {
+      const player =
+        state.player;
 
-      const defendButton =
-        document.querySelector(
-          '.action-button[data-action="defend"]'
+      const disabled =
+        state.isBattleOver ||
+        state.phase !== 'player';
+
+      actionButtons.forEach(button => {
+        const action =
+          button.dataset.action;
+
+        let isDisabled = disabled;
+
+        if (
+          action === 'defend' &&
+          player.blade === 'Time' &&
+          player.timeDefendLocked
+        ) {
+          isDisabled = true;
+        }
+
+        if (
+          action === 'defend' &&
+          player.blade === 'Electricity' &&
+          player.guaranteedCrits > 0
+        ) {
+          isDisabled = true;
+        }
+
+        if (
+          action === 'special' &&
+          player.focus <
+            getBladeStats(player).focusCap
+        ) {
+          isDisabled = true;
+        }
+
+        button.disabled = isDisabled;
+
+        if (
+          action === 'special'
+        ) {
+          button.title =
+            player.focus >=
+            getBladeStats(player).focusCap
+              ? 'Ultimate ready'
+              : `Requires ${getBladeStats(player).focusCap} Focus`;
+        }
+      });
+    }
+
+
+    function updateBladeButtons() {
+      bladeButtons.forEach(button => {
+        button.classList.toggle(
+          'active',
+          button.dataset.blade ===
+            state.player.blade
         );
 
-      if (!defendButton) {
+        button.disabled =
+          state.isBattleOver ||
+          state.phase !== 'player';
+      });
+    }
+
+
+    function updateTurnInfo() {
+      if (
+        state.isBattleOver
+      ) {
+        turnInfoEl.textContent =
+          'Battle finished';
         return;
       }
 
-
-      const playerDefendDisabled =
-        (
-          state.player.blade === 'Time' &&
-          state.player.timeDefendLocked
-        ) ||
-        (
-          state.player.blade === 'Electricity' &&
-          state.player.critBoostTurns > 0
-        );
-
-
-      defendButton.disabled =
-        playerDefendDisabled;
-
-      defendButton.style.opacity =
-        playerDefendDisabled
-          ? '0.45'
-          : '1';
-
-
-      if (playerDefendDisabled) {
-
-        if (
-          state.player.blade === 'Time'
-        ) {
-
-          defendButton.title =
-            'Time Defend is unavailable while its extra-turn effect is active.';
-
-        } else {
-
-          defendButton.title =
-            'Electricity Defend is unavailable while its critical boost is active.';
-
-        }
-
-      } else {
-
-        defendButton.title =
-          'Defend';
+      if (
+        state.phase === 'enemy'
+      ) {
+        turnInfoEl.textContent =
+          'Enemy turn...';
+        return;
       }
+
+      const actions =
+        state.player.actionsThisTurn;
+
+      turnInfoEl.textContent =
+        `Turn ${state.turn} • ${actions} action${actions === 1 ? '' : 's'} remaining`;
     }
 
 
     function updateUi() {
+      const player =
+        state.player;
+
+      const enemy =
+        state.enemy;
 
       playerHpEl.textContent =
-        state.player.hp;
+        player.hp;
 
       playerFocusEl.textContent =
-        state.player.focus;
+        `${player.focus} / ${getBladeStats(player).focusCap}`;
 
       enemyHpEl.textContent =
-        state.enemy.hp;
+        enemy.hp;
 
       enemyFocusEl.textContent =
-        state.enemy.focus;
+        `${enemy.focus} / ${getBladeStats(enemy).focusCap}`;
 
       playerBladeEl.textContent =
-        `Blade: ${state.player.blade}`;
+        `Blade: ${player.blade}`;
 
       enemyBladeEl.textContent =
-        `Blade: ${state.enemy.blade}`;
+        `Blade: ${enemy.blade}`;
 
       updateActionButtons();
+      updateBladeButtons();
+      updateTurnInfo();
     }
 
 
-    function beginTurn(actor) {
-
-      actor.isDefending = false;
-
-      /*
-       * A Time Defend lock lasts through the entire
-       * extra-action turn. It is cleared only when
-       * that extra turn is finished and a new normal
-       * turn begins.
-       */
-
-      if (actor.extraTurnCharges > 0) {
-
-        actor.actionsThisTurn = 2;
-
-        actor.extraTurnCharges = 0;
-
-        setStatus(
-          'Time extra turn activated. Defend is disabled.'
-        );
-
-      } else {
-
-        actor.actionsThisTurn = 1;
-
-        if (actor.timeDefendLocked) {
-          actor.timeDefendLocked = false;
-        }
-      }
-    }
-
-
-    function getAttackDamage(
-      attacker,
-      defender
-    ) {
-
-      const blade =
-        BLADES[attacker.blade];
-
-
-      if (
-        attacker.blade === 'Time'
-      ) {
-
-        const reduced =
-          blade.attackDamage -
-          defender.def;
-
-        return Math.max(
-          1,
-          reduced
-        );
-      }
-
-
-      if (
-        attacker.blade === 'Electricity'
-      ) {
-
-        if (
-          attacker.critBoostTurns > 0 ||
-          Math.random() < blade.critChance
-        ) {
-
-          const reduced =
-            blade.critDamage -
-            defender.def;
-
-          return Math.max(
-            1,
-            reduced
-          );
-        }
-
-
-        const reduced =
-          blade.attackDamage -
-          defender.def;
-
-        return Math.max(
-          1,
-          reduced
-        );
-      }
-
-
-      return 1;
-    }
-
-
-    function chooseEnemyAction() {
-
-      const bladeStats =
-        BLADES[state.enemy.blade];
-
-
-      /*
-       * Ultimate always has priority
-       * when focus is full.
-       */
-
-      if (
-        state.enemy.focus >=
-        bladeStats.focusCap
-      ) {
-
-        return 'special';
-      }
-
-
-      /*
-       * During a Time extra turn,
-       * the enemy always attacks.
-       */
-
-      if (
-        state.enemy.actionsThisTurn > 1
-      ) {
-
-        return 'attack';
-      }
-
-
-      /*
-       * Time:
-       * Defend if the Time defense effect
-       * is not currently active.
-       */
-
-      if (
-        state.enemy.blade === 'Time'
-      ) {
-
-        if (
-          state.enemy.timeDefendLocked
-        ) {
-
-          return 'attack';
-        }
-
-        return 'defend';
-      }
-
-
-      /*
-       * Electricity:
-       * Defend if its critical boost
-       * is not currently active.
-       */
-
-      if (
-        state.enemy.blade === 'Electricity'
-      ) {
-
-        if (
-          state.enemy.critBoostTurns > 0
-        ) {
-
-          return 'attack';
-        }
-
-        return 'defend';
-      }
-
-
-      return 'attack';
-    }
-
-
-    function applyBladeAction(
-      actor,
-      target,
-      action
-    ) {
-
-      const bladeStats =
-        BLADES[actor.blade];
-
-
-      /* ATTACK */
-
-      if (
-        action === 'attack'
-      ) {
-
-        const damage =
-          getAttackDamage(
-            actor,
-            target
-          );
-
-
-        target.hp =
-          clampValue(
-            target.hp - damage,
-            0,
-            1000
-          );
-
-
-        const actorName =
-          actor === state.player
-            ? 'Player'
-            : 'Enemy';
-
-
-        addLog(
-          `${actorName} — ${actor.blade} uses ${bladeStats.attackName} for ${damage} damage.`
-        );
-
-
-        actor.focus =
-          clampValue(
-            actor.focus + 1,
-            0,
-            bladeStats.focusCap
-          );
-
-
-        if (
-          actor.blade === 'Electricity' &&
-          actor.critBoostTurns > 0
-        ) {
-
-          actor.critBoostTurns =
-            Math.max(
-              0,
-              actor.critBoostTurns - 1
-            );
-        }
-
-
-        return;
-      }
-
-
-      /* DEFEND */
-
-      if (
-        action === 'defend'
-      ) {
-
-
-        /*
-         * Time cannot defend while
-         * its previous defense effect
-         * is still active.
-         */
-
-        if (
-          actor.blade === 'Time' &&
-          actor.timeDefendLocked
-        ) {
-
-          return;
-        }
-
-
-        /*
-         * Electricity cannot defend while
-         * its critical boost is active.
-         */
-
-        if (
-          actor.blade === 'Electricity' &&
-          actor.critBoostTurns > 0
-        ) {
-
-          return;
-        }
-
-
-        actor.isDefending = true;
-
-
-        if (
-          actor.blade === 'Time'
-        ) {
-
-          actor.extraTurnCharges = 1;
-
-          actor.timeDefendLocked = true;
-
-
-          const actorName =
-            actor === state.player
-              ? 'Player'
-              : 'Enemy';
-
-
-          addLog(
-            `${actorName} — ${actor.blade} uses ${bladeStats.defendName}. Next turn has 2 actions, and Defend is disabled.`
-          );
-        }
-
-
-        else if (
-          actor.blade === 'Electricity'
-        ) {
-
-          actor.critBoostTurns = 2;
-
-
-          const actorName =
-            actor === state.player
-              ? 'Player'
-              : 'Enemy';
-
-
-          addLog(
-            `${actorName} — ${actor.blade} uses ${bladeStats.defendName}. Critical damage boost lasts for 2 turns.`
-          );
-        }
-
-
-        actor.focus =
-          clampValue(
-            actor.focus + 1,
-            0,
-            bladeStats.focusCap
-          );
-
-
-        return;
-      }
-
-
-      /* SPECIAL */
-
-      if (
-        action === 'special'
-      ) {
-
-        if (
-          actor.focus <
-          bladeStats.focusCap
-        ) {
-
-          const actorName =
-            actor === state.player
-              ? 'Player'
-              : 'Enemy';
-
-
-          addLog(
-            `${actorName} — ${actor.blade} does not have enough focus.`
-          );
-
-          return;
-        }
-
-
-        actor.focus = 0;
-
-
-        /* TIME ULTIMATE */
-
-        if (
-          actor.blade === 'Time'
-        ) {
-
-          let totalDamage = 0;
-
-
-          for (
-            let i = 0;
-            i < bladeStats.ultimateHitCount;
-            i += 1
-          ) {
-
-            const hitDamage =
-              Math.random() < 0.5
-                ? bladeStats.ultimateCritDamagePerHit
-                : bladeStats.ultimateDamagePerHit;
-
-
-            totalDamage +=
-              hitDamage;
-          }
-
-
-          target.hp =
-            clampValue(
-              target.hp - totalDamage,
-              0,
-              1000
-            );
-
-
-          const actorName =
-            actor === state.player
-              ? 'Player'
-              : 'Enemy';
-
-
-          addLog(
-            `${actorName} — ${actor.blade} unleashes ${bladeStats.specialName} for ${totalDamage} damage.`
-          );
-
-
-          return;
-        }
-
-
-        /* ELECTRICITY ULTIMATE */
-
-        if (
-          actor.blade === 'Electricity'
-        ) {
-
-          const damage =
-            bladeStats.ultimateDamage -
-            target.def;
-
-
-          const finalDamage =
-            Math.max(
-              1,
-              damage
-            );
-
-
-          target.hp =
-            clampValue(
-              target.hp - finalDamage,
-              0,
-              1000
-            );
-
-
-          const actorName =
-            actor === state.player
-              ? 'Player'
-              : 'Enemy';
-
-
-          addLog(
-            `${actorName} — ${actor.blade} unleashes ${bladeStats.specialName} for ${finalDamage} damage.`
-          );
-
-
-          return;
-        }
-      }
-    }
-
-
-    function finishTurnIfNeeded() {
-
-      if (
-        state.player.hp <= 0
-      ) {
-
-        state.isBattleOver = true;
-
-
-        setStatus(
-          'Defeat. Press New Battle to start again.'
-        );
-
-
-        addLog(
-          'You lost the battle.'
-        );
-
-
-        return true;
-      }
-
-
-      if (
-        state.enemy.hp <= 0
-      ) {
-
-        state.isBattleOver = true;
-
-
-        setStatus(
-          'Victory! The enemy blade is broken.'
-        );
-
-
-        addLog(
-          'You won the battle.'
-        );
-
-
-        return true;
-      }
-
-
-      return false;
-    }
-
-
-    function handleEnemyTurn() {
-
-      if (
-        state.isBattleOver
-      ) {
-
-        return;
-      }
-
-
-      beginTurn(
-        state.enemy
-      );
-
-
-      while (
-        state.enemy.actionsThisTurn > 0
-      ) {
-
-        const enemyAction =
-          chooseEnemyAction();
-
-
-        state.enemy.isDefending =
-          false;
-
-
-        if (
-          enemyAction === 'attack'
-        ) {
-
-          applyBladeAction(
-            state.enemy,
-            state.player,
-            'attack'
-          );
-
-        }
-
-        else if (
-          enemyAction === 'defend'
-        ) {
-
-          applyBladeAction(
-            state.enemy,
-            state.player,
-            'defend'
-          );
-
-        }
-
-        else if (
-          enemyAction === 'special'
-        ) {
-
-          applyBladeAction(
-            state.enemy,
-            state.player,
-            'special'
-          );
-        }
-
-
-        state.enemy.actionsThisTurn -= 1;
-
-
-        state.player.isDefending =
-          false;
-
-
-        updateUi();
-
-
-        if (
-          finishTurnIfNeeded()
-        ) {
-
-          return;
-        }
-
-
-        if (
-          state.enemy.actionsThisTurn > 0
-        ) {
-
-          setStatus(
-            'Enemy extra turn active. The enemy attacks again.'
-          );
-        }
-      }
-    }
-
-
-    function handlePlayerAction(action) {
-
-      if (
-        state.isBattleOver
-      ) {
-
-        return;
-      }
-
-
-      /*
-       * Prevent Time Defend from being
-       * used while its effect is active.
-       */
-
-      if (
-        action === 'defend' &&
-        state.player.blade === 'Time' &&
-        state.player.timeDefendLocked
-      ) {
-
-        return;
-      }
-
-
-      /*
-       * Prevent Electricity Defend while
-       * its critical boost is active.
-       */
-
-      if (
-        action === 'defend' &&
-        state.player.blade === 'Electricity' &&
-        state.player.critBoostTurns > 0
-      ) {
-
-        return;
-      }
-
-
-      if (
-        action === 'attack'
-      ) {
-
-        applyBladeAction(
-          state.player,
-          state.enemy,
-          'attack'
-        );
-
-      }
-
-      else if (
-        action === 'defend'
-      ) {
-
-        applyBladeAction(
-          state.player,
-          state.enemy,
-          'defend'
-        );
-
-      }
-
-      else if (
-        action === 'special'
-      ) {
-
-        applyBladeAction(
-          state.player,
-          state.enemy,
-          'special'
-        );
-      }
-
-
-      state.player.isDefending =
-        false;
-
-
-      state.player.actionsThisTurn -= 1;
-
-
-      if (
-        finishTurnIfNeeded()
-      ) {
-
-        updateUi();
-
-        return;
-      }
-
-
-      if (
-        state.player.actionsThisTurn > 0
-      ) {
-
-        setStatus(
-          'Extra turn active. Choose your next action.'
-        );
-
-
-        updateUi();
-
-        return;
-      }
-
-
-      handleEnemyTurn();
-
-
-      if (
-        !state.isBattleOver
-      ) {
-
-        state.turn += 1;
-
-
-        beginTurn(
-          state.player
-        );
-
-
-        beginTurn(
-          state.enemy
-        );
-
-
-        setStatus(
-          `Turn ${state.turn} begins. Choose your next move.`
-        );
-      }
-
-
-      updateUi();
-    }
-
+    /*
+     * ============================================================
+     * RESET
+     * ============================================================
+     */
 
     function resetBattle() {
+      state.player =
+        createFighter('Time');
 
-      /* PLAYER */
-
-      state.player.hp = 1000;
-      state.player.def = 40;
-      state.player.focus = 0;
-      state.player.blade = 'Time';
-      state.player.isDefending = false;
-      state.player.actionsThisTurn = 1;
-      state.player.extraTurnCharges = 0;
-      state.player.critBoostTurns = 0;
-      state.player.timeDefendLocked = false;
-
-
-      /* ENEMY */
-
-      state.enemy.hp = 1000;
-      state.enemy.def = 40;
-      state.enemy.focus = 0;
-      state.enemy.blade = randomBlade();
-      state.enemy.isDefending = false;
-      state.enemy.actionsThisTurn = 1;
-      state.enemy.extraTurnCharges = 0;
-      state.enemy.critBoostTurns = 0;
-      state.enemy.timeDefendLocked = false;
-
-
-      state.log = [];
-
-      logQueue = [];
-
-      isShowingLog = false;
-
+      state.enemy =
+        createFighter(randomBlade());
 
       state.turn = 1;
-
+      state.phase = 'player';
       state.isBattleOver = false;
+      state.log = [];
 
-
-      beginTurn(
-        state.player
-      );
-
-
-      beginTurn(
-        state.enemy
-      );
-
+      beginTurn(state.player);
+      beginTurn(state.enemy);
 
       addLog(
         `Enemy — chose ${state.enemy.blade} blade.`
       );
 
-
       addLog(
         'Battle — A new blade duel begins.'
       );
-
 
       setStatus(
         'Choose your blade and move.'
       );
 
-
       updateUi();
-
-
-      /* Reset blade button visual state */
-
-      document
-        .querySelectorAll('.blade-button')
-        .forEach(button => {
-
-          button.classList.toggle(
-            'active',
-            button.dataset.blade ===
-              state.player.blade
-          );
-
-        });
     }
 
 
-    /* Blade selection */
+    /*
+     * ============================================================
+     * HELPERS
+     * ============================================================
+     */
 
-    document
-      .querySelectorAll('.blade-button')
-      .forEach(button => {
-
-        button.addEventListener(
-          'click',
-          () => {
-
-            if (
-              state.isBattleOver
-            ) {
-
-              return;
-            }
-
-
-            const selected =
-              button.dataset.blade;
-
-
-            state.player.blade =
-              selected;
-
-
-            document
-              .querySelectorAll('.blade-button')
-              .forEach(btn => {
-
-                btn.classList.toggle(
-                  'active',
-                  btn.dataset.blade ===
-                    selected
-                );
-
-              });
-
-
-            updateUi();
-
-
-            setStatus(
-              `${selected} selected. Choose your next action.`
-            );
-          }
+    function delay(milliseconds) {
+      return new Promise(resolve => {
+        setTimeout(
+          resolve,
+          milliseconds
         );
       });
+    }
 
 
-    /* Action buttons */
+    /*
+     * ============================================================
+     * EVENT LISTENERS
+     * ============================================================
+     */
 
-    document
-      .querySelectorAll('.action-button')
-      .forEach(button => {
-
-        button.addEventListener(
-          'click',
-          () => {
-
-            handlePlayerAction(
-              button.dataset.action
-            );
-
-          }
-        );
-      });
+    bladeButtons.forEach(button => {
+      button.addEventListener(
+        'click',
+        () => {
+          switchPlayerBlade(
+            button.dataset.blade
+          );
+        }
+      );
+    });
 
 
-    /* Restart */
+    actionButtons.forEach(button => {
+      button.addEventListener(
+        'click',
+        () => {
+          handlePlayerAction(
+            button.dataset.action
+          );
+        }
+      );
+    });
+
 
     restartBtn.addEventListener(
       'click',
@@ -1546,7 +1631,11 @@
     );
 
 
-    /* Start game */
+    /*
+     * ============================================================
+     * START
+     * ============================================================
+     */
 
     resetBattle();
 
@@ -1554,3 +1643,4 @@
 
 </body>
 </html>
+```
