@@ -274,7 +274,7 @@ export class Game {
         clamp(
           fighter.hp + healAmount,
           0,
-          1000
+          5000
         );
 
 
