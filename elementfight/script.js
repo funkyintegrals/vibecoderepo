@@ -3,38 +3,32 @@ const BLADES = {
     attackName: 'Chrono Slash',
     defendName: 'Temporal Guard',
     specialName: 'Age of Stillness',
-    attackPower: 45,
-    specialPower: 120,
-    defenseBoost: 10,
-    focusCost: 3,
+    baseDef: 40,
+    baseDmg: 60,
+    focusCap: 10,
   },
   Electricity: {
     attackName: 'Volt Arc',
     defendName: 'Static Impulse',
     specialName: 'Thunderstorm',
-    attackPower: 50,
-    specialPower: 130,
-    defenseBoost: 8,
-    focusCost: 3,
+    baseDef: 40,
+    baseDmg: 60,
+    focusCap: 10,
   },
 };
 
 const state = {
   player: {
     hp: 1000,
-    defense: 40,
-    focus: 10,
+    focus: 0,
     blade: 'Time',
     isDefending: false,
-    defendBuffExpires: 0,
   },
   enemy: {
     hp: 1000,
-    defense: 40,
-    focus: 10,
+    focus: 0,
     blade: 'Electricity',
     isDefending: false,
-    defendBuffExpires: 0,
   },
   log: [],
   turn: 1,
@@ -84,41 +78,48 @@ function setStatus(message) {
   battleStatusEl.textContent = message;
 }
 
-function chooseEnemyAction() {
-  // If defend buff is expired, choose attack or special
-  if (state.enemy.defendBuffExpires <= state.turn) {
-    const actions = ['attack', 'special', 'heal'];
-    return actions[Math.floor(Math.random() * actions.length)];
-  }
-  
-  // If defend buff is still active, choose defend or attack
-  const actions = ['defend', 'attack'];
-  return actions[Math.floor(Math.random() * actions.length)];
+function getDef(unit) {
+  return BLADES[unit.blade].baseDef;
 }
 
-function considerDefensiveReduction(unit) {
-  if (unit.isDefending) {
-    return 0.7;
+function calculateDamage(attacker, defender) {
+  const attackPower = BLADES[attacker.blade].baseDmg;
+  const defenderDef = getDef(defender);
+  const baseDamage = attackPower - defenderDef;
+
+  if (defender.isDefending) {
+    return Math.max(1, Math.floor(baseDamage * 0.7));
   }
-  return 1;
+
+  return Math.max(1, baseDamage);
+}
+
+function chooseEnemyAction() {
+  const bladeStats = BLADES[state.enemy.blade];
+
+  if (state.enemy.focus >= bladeStats.focusCap) {
+    return 'special';
+  }
+
+  const actions = ['attack', 'defend', 'heal'];
+  return actions[Math.floor(Math.random() * actions.length)];
 }
 
 function applyBladeAction(actor, target, action) {
   const bladeStats = BLADES[actor.blade];
 
   if (action === 'attack') {
-    const base = bladeStats.attackPower + Math.floor(Math.random() * 20);
-    const reduced = Math.round(base * considerDefensiveReduction(target));
-    const finalDamage = Math.max(1, reduced - target.defense);
-    target.hp = clampValue(target.hp - finalDamage, 0, 1000);
-    addLog(`${actor.blade} uses ${bladeStats.attackName} for ${finalDamage} damage.`);
+    const damage = calculateDamage(actor, target);
+    target.hp = clampValue(target.hp - damage, 0, 1000);
+    addLog(`${actor.blade} uses ${bladeStats.attackName} for ${damage} damage.`);
+    actor.focus = clampValue(actor.focus + 1, 0, bladeStats.focusCap);
     return;
   }
 
   if (action === 'defend') {
     actor.isDefending = true;
-    actor.defendBuffExpires = state.turn + 2;
-    addLog(`${actor.blade} uses ${bladeStats.defendName}. Buff expires in 2 turns.`);
+    addLog(`${actor.blade} uses ${bladeStats.defendName}.`);
+    actor.focus = clampValue(actor.focus + 1, 0, bladeStats.focusCap);
     return;
   }
 
@@ -126,21 +127,20 @@ function applyBladeAction(actor, target, action) {
     const heal = 80;
     actor.hp = clampValue(actor.hp + heal, 0, 1000);
     addLog(`${actor.blade} recovers ${heal} HP.`);
+    actor.focus = clampValue(actor.focus + 1, 0, bladeStats.focusCap);
     return;
   }
 
   if (action === 'special') {
-    if (actor.focus < bladeStats.focusCost) {
+    if (actor.focus < bladeStats.focusCap) {
       addLog(`${actor.blade} does not have enough focus.`);
       return;
     }
 
-    actor.focus -= bladeStats.focusCost;
-    const base = bladeStats.specialPower + Math.floor(Math.random() * 40);
-    const reduced = Math.round(base * considerDefensiveReduction(target));
-    const finalDamage = Math.max(1, reduced - target.defense);
-    target.hp = clampValue(target.hp - finalDamage, 0, 1000);
-    addLog(`${actor.blade} unleashes ${bladeStats.specialName} for ${finalDamage} damage.`);
+    actor.focus = 0;
+    const damage = calculateDamage(actor, target) * 2;
+    target.hp = clampValue(target.hp - damage, 0, 1000);
+    addLog(`${actor.blade} unleashes ${bladeStats.specialName} for ${damage} damage.`);
   }
 }
 
@@ -168,6 +168,7 @@ function handleEnemyTurn() {
   }
 
   const enemyAction = chooseEnemyAction();
+  state.enemy.isDefending = false;
 
   if (enemyAction === 'attack') {
     applyBladeAction(state.enemy, state.player, 'attack');
@@ -175,15 +176,11 @@ function handleEnemyTurn() {
     applyBladeAction(state.enemy, state.player, 'defend');
   } else if (enemyAction === 'heal') {
     applyBladeAction(state.enemy, state.player, 'heal');
-  } else {
+  } else if (enemyAction === 'special') {
     applyBladeAction(state.enemy, state.player, 'special');
   }
 
-  state.player.focus = clampValue(state.player.focus + 1, 0, 10);
-  state.enemy.focus = clampValue(state.enemy.focus + 1, 0, 10);
-
   state.player.isDefending = false;
-  state.enemy.isDefending = false;
 
   updateUi();
   finishTurnIfNeeded();
@@ -193,6 +190,8 @@ function handlePlayerAction(action) {
   if (state.isBattleOver) {
     return;
   }
+
+  state.player.isDefending = false;
 
   if (action === 'attack') {
     applyBladeAction(state.player, state.enemy, 'attack');
@@ -221,18 +220,14 @@ function handlePlayerAction(action) {
 
 function resetBattle() {
   state.player.hp = 1000;
-  state.player.defense = 40;
-  state.player.focus = 10;
+  state.player.focus = 0;
   state.player.blade = 'Time';
   state.player.isDefending = false;
-  state.player.defendBuffExpires = 0;
 
   state.enemy.hp = 1000;
-  state.enemy.defense = 40;
-  state.enemy.focus = 10;
+  state.enemy.focus = 0;
   state.enemy.blade = randomBlade();
   state.enemy.isDefending = false;
-  state.enemy.defendBuffExpires = 0;
 
   state.log = [];
   state.turn = 1;
