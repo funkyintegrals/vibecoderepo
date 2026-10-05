@@ -2,7 +2,7 @@ export const LightKit = {
   name: 'Light',
   attackName: 'Radiant Strike',
   utilityName: 'Enlighten',
-  specialName: 'Enlighten',
+  specialName: 'Shimmer',
   attackDamage: 250,
   attackHeal: 150,
   utilityCost: 400,
