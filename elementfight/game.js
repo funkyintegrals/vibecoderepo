@@ -83,10 +83,10 @@ export class Game {
 
 
     if (
-      this.state.log.length > 2
+      this.state.log.length > 3
     ) {
 
-      this.state.log.length = 2;
+      this.state.log.length = 3;
 
     }
 
