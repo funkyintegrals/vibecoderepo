@@ -1,74 +1,30 @@
 export const LightKit = {
-
   name: 'Light',
-
   attackName: 'Radiant Strike',
-  utilityName: 'Halo Guard',
-  specialName: 'Solar Judgment',
-
-  attackDamage: 175,
-
-  ultimateDamage: 1100,
-
+  utilityName: 'Enlighten',
+  specialName: 'Enlighten',
+  attackDamage: 250,
+  attackHeal: 150,
+  utilityCost: 400,
+  utilityDamage: 700,
+  ultimateTurns: 3,
   focusCap: 10,
 
-
-  /*
-   * Light's normal attack.
-   */
-
   attack() {
-
-    return {
-      rawDamage: this.attackDamage,
-      critical: false
-    };
-
+    return { rawDamage: this.attackDamage, critical: false };
   },
-
-
-  /*
-   * Halo Guard.
-   *
-   * The fighter takes half damage from the next
-   * incoming hit, using the shared combat defense
-   * mechanic.
-   */
 
   utility(fighter) {
-
-    if (fighter.isDefending) {
-
-      return {
-        success: false,
-        message:
-          'Halo Guard is already active.'
-      };
-
-    }
-
-    fighter.isDefending = true;
-
+    fighter.hp = Math.max(1, fighter.hp - this.utilityCost);
     return {
       success: true,
-      message:
-        'Halo Guard — incoming damage is reduced by 50% until hit.'
+      rawDamage: this.utilityDamage,
+      critical: false,
+      message: 'Enlighten — uses 400 HP to deal 700 damage.'
     };
-
   },
 
-
-  /*
-   * Solar Judgment.
-   */
-
   ultimate() {
-
-    return {
-      rawDamage: this.ultimateDamage,
-      critical: false
-    };
-
+    return { turns: this.ultimateTurns };
   }
-
 };
