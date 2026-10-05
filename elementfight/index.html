@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ElementFight</title>
-
   <style>
     * {
       box-sizing: border-box;
@@ -675,9 +674,8 @@
             1000
           );
 
-        addLog(
-          `${actor.blade} uses ${bladeStats.attackName} for ${damage} damage.`
-        );
+        const actorName = actor === state.player ? 'Player' : 'Enemy';
+        addLog(`${actorName} — ${actor.blade} uses ${bladeStats.attackName} for ${damage} damage.`);
 
         actor.focus =
           clampValue(
@@ -714,10 +712,8 @@
 
           actor.extraTurnCharges = 1;
 
-          addLog(
-            `${actor.blade} uses ${bladeStats.defendName}. Next turn has 2 actions, and Defend is disabled.`
-          );
-
+          const actorName = actor === state.player ? 'Player' : 'Enemy';
+          addLog(`${actorName} — ${actor.blade} uses ${bladeStats.defendName}. Next turn has 2 actions, and Defend is disabled.`);
         }
 
         else if (
@@ -726,9 +722,8 @@
 
           actor.critBoostTurns = 2;
 
-          addLog(
-            `${actor.blade} uses ${bladeStats.defendName}. Critical damage boost lasts for 2 turns.`
-          );
+          const actorName = actor === state.player ? 'Player' : 'Enemy';
+          addLog(`${actorName} — ${actor.blade} uses ${bladeStats.defendName}. Critical damage boost lasts for 2 turns.`);
         }
 
 
@@ -752,9 +747,8 @@
           bladeStats.focusCap
         ) {
 
-          addLog(
-            `${actor.blade} does not have enough focus.`
-          );
+          const actorName = actor === state.player ? 'Player' : 'Enemy'; 
+          addLog(`${actorName} — ${actor.blade} does not have enough focus.`);
 
           return;
         }
@@ -792,9 +786,8 @@
             );
 
 
-          addLog(
-            `${actor.blade} unleashes ${bladeStats.specialName} for ${totalDamage} damage.`
-          );
+          const actorName = actor === state.player ? 'Player' : 'Enemy';
+          addLog(`${actorName} — ${actor.blade} unleashes ${bladeStats.specialName} for ${finalDamage} damage.`);
 
           return;
         }
@@ -821,9 +814,8 @@
             );
 
 
-          addLog(
-            `${actor.blade} unleashes ${bladeStats.specialName} for ${finalDamage} damage.`
-          );
+          const actorName = actor === state.player ? 'Player' : 'Enemy';
+          addLog(`${actorName} — ${actor.blade} unleashes ${bladeStats.specialName} for ${totalDamage} damage.`);
 
           return;
         }
@@ -1089,9 +1081,7 @@
       beginTurn(state.enemy);
 
 
-      addLog(
-        `Enemy chose ${state.enemy.blade}!`
-      );
+      addLog(`Enemy — chose ${state.enemy.blade} blade.`);
 
       addLog(
         'A new blade duel begins.'
