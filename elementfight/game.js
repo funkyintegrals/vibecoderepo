@@ -634,16 +634,52 @@ export class Game {
 
 
     /*
-     * Light AI.
+     * Light AI — play as a glass cannon.
+     *
+     * Shimmer is strongest when Light can immediately
+     * capitalize on the damage boost, but the +50% damage
+     * taken makes it dangerous at low HP.
      */
 
     if (enemy.blade === 'Light') {
 
-      if (enemy.hp <= 400) {
+      const shimmerActive =
+        enemy.lightUltimateTurnsRemaining > 0;
+
+      const hpAfterEnlighten =
+        Math.max(
+          1,
+          enemy.hp - kit.utilityCost
+        );
+
+      const canSurviveEnlighten =
+        hpAfterEnlighten >
+        0 &&
+        hpAfterEnlighten >= 600;
+
+      const canKillWithEnlighten =
+        player.hp <=
+        Math.max(
+          1,
+          kit.utilityDamage - player.def
+        );
+
+      if (shimmerActive) {
         return 'attack';
       }
 
-      return 'utility';
+      /*
+       * Only sacrifice HP for Enlighten when the AI
+       * can stay reasonably healthy or finish the player.
+       */
+      if (
+        canSurviveEnlighten ||
+        canKillWithEnlighten
+      ) {
+        return 'utility';
+      }
+
+      return 'attack';
 
     }
 
