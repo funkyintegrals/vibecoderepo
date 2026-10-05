@@ -541,7 +541,7 @@ export class Game {
 
 
     this.addLog(
-      `Player — Dilate ${hitNumber}/10 deals ${result.damage} damage.${critText}`
+      `Player — Dilate ${hitNumber}/20 deals ${result.damage} damage.${critText}`
     );
 
 
