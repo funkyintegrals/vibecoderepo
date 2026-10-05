@@ -1542,101 +1542,74 @@
 
     function useUtility(fighter) {
 
-      const stats =
-        getBladeStats(fighter);
-
-      const name =
-        getFighterName(fighter);
-
-
+      const stats = getBladeStats(fighter);
+      const name = getFighterName(fighter);
+    
       /*
        * TIME UTILITY
        *
-       * Next turn:
-       *   - 2 actions
-       *   - Attack can therefore be used twice
-       *   - Utility is disabled
+       * Defends this turn and gives the fighter
+       * a double turn on their next turn.
        */
-      if (
-        fighter.blade === 'Time'
-      ) {
-
+      if (fighter.blade === 'Time') {
+    
         if (
           fighter.timeDoubleTurnPending ||
           fighter.timeDoubleTurnActive
         ) {
-
+    
           addLog(
             `${name} — Temporal Guard is already active.`
           );
-
+    
           return false;
-
         }
-
-
+    
         fighter.isDefending = true;
-
         fighter.timeDoubleTurnPending = true;
-
+    
         addLog(
           `${name} — ${stats.utilityName}. Next turn is a double turn: Attack can be used twice.`
         );
-
-
+    
         gainFocus(fighter);
-
+    
         return true;
       }
-
-
-      if (
-        fighter.blade === 'Electricity'
-      ) {
-      
-        if (
-          fighter.guaranteedCrits > 0
-        ) {
-      
+    
+    
+      /*
+       * ELECTRICITY UTILITY
+       *
+       * The next two attacks have 100% critical chance.
+       *
+       * IMPORTANT:
+       * Electricity does NOT activate defense.
+       */
+      if (fighter.blade === 'Electricity') {
+    
+        if (fighter.guaranteedCrits > 0) {
+    
           addLog(
             `${name} — Static Impulse is already active.`
           );
-      
+    
           return false;
-      
         }
-      
+    
         fighter.guaranteedCrits =
           stats.guaranteedCritAttacks;
-      
+    
         addLog(
           `${name} — ${stats.utilityName}. The next ${stats.guaranteedCritAttacks} attacks have 100% critical chance.`
         );
-      
+    
         gainFocus(fighter);
-      
+    
         return true;
       }
-
-
-        fighter.isDefending = true;
-
-        fighter.guaranteedCrits =
-          stats.guaranteedCritAttacks;
-
-
-        addLog(
-          `${name} — ${stats.utilityName}. The next ${stats.guaranteedCritAttacks} attacks have 100% critical chance.`
-        );
-
-
-        gainFocus(fighter);
-
-        return true;
-
-      }
-
-
+    
+    
       return false;
     }
 
