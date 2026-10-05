@@ -903,7 +903,7 @@ export class Game {
 
     if (fighter.lightUltimateTurnsRemaining === 0) {
       this.addLog(
-        `${this.combat.getName(fighter)} — Enlighten effect ends.`
+        `${this.combat.getName(fighter)} — Shimmer effect ends.`
       );
     }
 
