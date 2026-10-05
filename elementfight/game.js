@@ -255,7 +255,7 @@ export class Game {
     }
 
 
-    const healAmount = 300;
+    const healAmount = 100;
 
 
     for (
