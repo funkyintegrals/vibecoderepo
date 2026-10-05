@@ -1,9 +1,11 @@
 import { TimeKit } from './time.js';
 import { ElectricityKit } from './electricity.js';
+import { LightKit } from './light.js';
 
 export const KITS = {
   Time: TimeKit,
-  Electricity: ElectricityKit
+  Electricity: ElectricityKit,
+  Light: LightKit
 };
 
 
