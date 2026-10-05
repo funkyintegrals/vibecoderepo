@@ -29,7 +29,7 @@ export const ElectricityKit = {
 
     if (fighter.guaranteedCrits > 0) {
 
-      critical = true;
+      critical = math.Random() < 0.75;
 
       fighter.guaranteedCrits -= 1;
 
@@ -74,7 +74,7 @@ export const ElectricityKit = {
       success: true,
 
       message:
-        `Static Impulse — next ${this.guaranteedCritAttacks} attacks are guaranteed critical hits.`
+        `Static Impulse — next ${this.guaranteedCritAttacks} attacks have 50% increased chance of critical hits.`
     };
   },
 
