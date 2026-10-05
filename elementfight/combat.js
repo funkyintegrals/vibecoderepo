@@ -1,3 +1,11 @@
+function attackerHasLightBuff(fighter) {
+  return fighter?.blade === 'Light' && fighter.lightUltimateTurnsRemaining > 0;
+}
+
+function defenderHasLightBuff(fighter) {
+  return fighter?.blade === 'Light' && fighter.lightUltimateTurnsRemaining > 0;
+}
+
 import {
   MAX_HP,
   MAX_FOCUS
@@ -142,6 +150,11 @@ export class Combat {
       );
 
 
+    if (attacker.blade === 'Light') {
+      attacker.hp = clamp(attacker.hp + this.getKit('Light').attackHeal, 0, MAX_HP);
+    }
+
+
     const name =
       this.getName(attacker);
 
@@ -167,14 +180,14 @@ export class Combat {
   }
 
 
-  utility(fighter) {
+  utility(fighter, defender) {
 
     const kit =
       this.getKit(fighter.blade);
 
 
     const result =
-      kit.utility(fighter);
+      kit.utility(fighter, defender, this);
 
 
     if (!result.success) {
@@ -188,9 +201,22 @@ export class Combat {
     }
 
 
-    this.addLog(
-      `${this.getName(fighter)} — ${result.message}`
-    );
+    if (result.rawDamage !== undefined && defender) {
+      const damage = this.dealDamage(
+        fighter,
+        defender,
+        result.rawDamage,
+        result.critical
+      );
+
+      this.addLog(
+        `${this.getName(fighter)} — ${result.message} ${damage} damage dealt.`
+      );
+    } else {
+      this.addLog(
+        `${this.getName(fighter)} — ${result.message}`
+      );
+    }
 
 
     this.gainFocus(
@@ -237,6 +263,16 @@ export class Combat {
 
       return 'time-dilation';
 
+    }
+
+
+    if (attacker.blade === 'Light') {
+      attacker.focus = 0;
+      attacker.lightUltimateTurnsRemaining = kit.ultimate().turns;
+      this.addLog(
+        `${this.getName(attacker)} — Enlighten activated for ${attacker.lightUltimateTurnsRemaining} turns.`
+      );
+      return true;
     }
 
 
