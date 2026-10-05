@@ -530,7 +530,7 @@ export class Game {
 
 
     const hitNumber =
-      10 -
+      20 -
       player.timeUltimateHitsRemaining;
 
 
