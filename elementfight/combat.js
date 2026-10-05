@@ -106,7 +106,7 @@ export class Combat {
 
 
     if (defenderHasLightBuff(defender)) {
-      damage = Math.max(1, Math.floor(damage * 1.5));
+      damage = Math.max(1, Math.floor(damage * 0.7));
     }
 
 
