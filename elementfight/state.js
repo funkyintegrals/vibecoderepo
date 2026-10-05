@@ -1,6 +1,6 @@
-export const MAX_HP = 1000;
-export const BASE_DEFENSE = 40;
-export const MAX_FOCUS = 10;
+export const MAX_HP = 5000;
+export const BASE_DEFENSE = 50;
+export const MAX_FOCUS = 20;
 
 
 export function createFighter(blade) {
