@@ -53,8 +53,6 @@ export const TimeKit = {
       };
     }
 
-    fighter.isDefending = true;
-
     fighter.timeDoubleTurnPending = true;
 
     return {
