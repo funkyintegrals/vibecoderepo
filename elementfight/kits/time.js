@@ -9,9 +9,9 @@ export const TimeKit = {
   attackDamage: 100,
 
   ultimate: {
-    hits: 10,
+    hits: 20,
 
-    normalDamage: 50,
+    normalDamage: 100,
 
     criticalDamage: 180,
 
