@@ -602,12 +602,15 @@ export class Game {
     const enemy =
       this.state.enemy;
 
+    const player =
+      this.state.player;
+
     const kit =
       getKit(enemy.blade);
 
 
     /*
-     * Ultimate has priority.
+     * Always use a ready Ultimate first.
      */
 
     if (
@@ -621,7 +624,7 @@ export class Game {
 
 
     /*
-     * Double turn attacks twice.
+     * Extra actions should be spent attacking.
      */
 
     if (
@@ -634,49 +637,51 @@ export class Game {
 
 
     /*
-     * Light AI — play as a glass cannon.
+     * Light AI.
      *
-     * Shimmer is strongest when Light can immediately
-     * capitalize on the damage boost, but the +50% damage
-     * taken makes it dangerous at low HP.
+     * Enlighten costs 500 HP, so only use it when
+     * Light can remain at 600+ HP afterwards, or
+     * when it can finish the player.
      */
 
-    if (enemy.blade === 'Light') {
+    if (
+      enemy.blade === 'Light'
+    ) {
 
-      const shimmerActive =
-        enemy.lightUltimateTurnsRemaining > 0;
+      if (
+        enemy.lightUltimateTurnsRemaining > 0
+      ) {
 
-      const hpAfterEnlighten =
-        Math.max(
-          1,
-          enemy.hp - kit.utilityCost
-        );
-
-      const canSurviveEnlighten =
-        hpAfterEnlighten >
-        0 &&
-        hpAfterEnlighten >= 600;
-
-      const canKillWithEnlighten =
-        player.hp <=
-        Math.max(
-          1,
-          kit.utilityDamage - player.def
-        );
-
-      if (shimmerActive) {
         return 'attack';
+
       }
 
-      /*
-       * Only sacrifice HP for Enlighten when the AI
-       * can stay reasonably healthy or finish the player.
-       */
+
+      const hpAfterEnlighten =
+        enemy.hp -
+        kit.utilityCost;
+
+      const damageAfterDefense =
+        Math.max(
+          1,
+          kit.utilityDamage -
+          player.def
+        );
+
+      const canFinish =
+        player.hp <=
+        damageAfterDefense;
+
+      const safeToUse =
+        hpAfterEnlighten >= 600;
+
       if (
-        canSurviveEnlighten ||
-        canKillWithEnlighten
+        safeToUse ||
+        canFinish
       ) {
+
         return 'utility';
+
       }
 
       return 'attack';
@@ -701,7 +706,6 @@ export class Game {
 
       }
 
-
       return 'utility';
 
     }
@@ -722,7 +726,6 @@ export class Game {
         return 'attack';
 
       }
-
 
       return 'utility';
 
