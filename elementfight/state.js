@@ -27,7 +27,9 @@ export function createFighter(blade) {
 
     timeUltimateActive: false,
 
-    timeUltimateHitsRemaining: 0
+    timeUltimateHitsRemaining: 0,
+
+    lightUltimateTurnsRemaining: 0
 
   };
 }
