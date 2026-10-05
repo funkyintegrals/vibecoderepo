@@ -3,10 +3,10 @@ export const LightKit = {
   attackName: 'Radiant Strike',
   utilityName: 'Enlighten',
   specialName: 'Shimmer',
-  attackDamage: 250,
-  attackHeal: 150,
-  utilityCost: 400,
-  utilityDamage: 700,
+  attackDamage: 200,
+  attackHeal: 100,
+  utilityCost: 500,
+  utilityDamage: 550,
   ultimateTurns: 3,
   focusCap: 10,
 
@@ -20,7 +20,7 @@ export const LightKit = {
       success: true,
       rawDamage: this.utilityDamage,
       critical: false,
-      message: 'Enlighten — uses 400 HP to deal 700 damage.'
+      message: 'Enlighten — uses 500 HP to deal 550 damage.'
     };
   },
 
