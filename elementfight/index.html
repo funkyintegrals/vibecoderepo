@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"> 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -1544,27 +1544,33 @@
       }
 
 
-      /*
-       * ELECTRICITY UTILITY
-       *
-       * The next two attacks have exactly
-       * 100% critical chance.
-       */
       if (
         fighter.blade === 'Electricity'
       ) {
-
+      
         if (
           fighter.guaranteedCrits > 0
         ) {
-
+      
           addLog(
             `${name} — Static Impulse is already active.`
           );
-
+      
           return false;
-
+      
         }
+      
+        fighter.guaranteedCrits =
+          stats.guaranteedCritAttacks;
+      
+        addLog(
+          `${name} — ${stats.utilityName}. The next ${stats.guaranteedCritAttacks} attacks have 100% critical chance.`
+        );
+      
+        gainFocus(fighter);
+      
+        return true;
+      }
 
 
         fighter.isDefending = true;
