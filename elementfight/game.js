@@ -1,5 +1,6 @@
 import {
-  createFighter
+  createFighter,
+  MAX_HP
 } from './state.js';
 
 import {
@@ -274,7 +275,7 @@ export class Game {
         clamp(
           fighter.hp + healAmount,
           0,
-          5000
+          MAX_HP
         );
 
 
@@ -529,8 +530,11 @@ export class Game {
     player.timeUltimateHitsRemaining--;
 
 
+    const totalHits =
+      getKit('Time').ultimate.hits;
+
     const hitNumber =
-      20 -
+      totalHits -
       player.timeUltimateHitsRemaining;
 
 
@@ -541,7 +545,7 @@ export class Game {
 
 
     this.addLog(
-      `Player — Dilate ${hitNumber}/20 deals ${result.damage} damage.${critText}`
+      `Player — Dilate ${hitNumber}/${totalHits} deals ${result.damage} damage.${critText}`
     );
 
 
