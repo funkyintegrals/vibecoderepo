@@ -67,8 +67,6 @@ export const ElectricityKit = {
       };
     }
 
-    fighter.isDefending = true;
-
     fighter.guaranteedCrits =
       this.guaranteedCritAttacks;
 
