@@ -256,10 +256,13 @@ export class UI {
     );
 
 
+    const player = state.player;
+    const kit = getKit(player.blade);
+
     const actions = [
-      ['attack', 'Attack Skill'],
-      ['utility', 'Utility'],
-      ['special', 'Ultimate']
+      ['attack', kit.attackName],
+      ['utility', kit.utilityName],
+      ['special', kit.specialName]
     ];
 
 
@@ -280,9 +283,6 @@ export class UI {
         button.textContent =
           label;
 
-
-        const player =
-          state.player;
 
         let disabled =
           state.isBattleOver ||
