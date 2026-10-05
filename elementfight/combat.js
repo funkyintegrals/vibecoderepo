@@ -93,11 +93,21 @@ export class Combat {
     critical = false
   ) {
 
-    const damage =
+    let damage =
       this.applyDefense(
         rawDamage,
         defender
       );
+
+
+    if (attackerHasLightBuff(attacker)) {
+      damage = Math.max(1, Math.floor(damage * 1.5));
+    }
+
+
+    if (defenderHasLightBuff(defender)) {
+      damage = Math.max(1, Math.floor(damage * 1.5));
+    }
 
 
     defender.hp =
