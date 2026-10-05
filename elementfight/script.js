@@ -29,7 +29,7 @@ const state = {
     blade: 'Time',
     isDefending: false,
     actionsThisTurn: 1,
-    pendingExtraTurn: 0,
+    extraTurnCharges: 0,
     critBoostTurns: 0,
   },
   enemy: {
@@ -39,7 +39,7 @@ const state = {
     blade: 'Electricity',
     isDefending: false,
     actionsThisTurn: 1,
-    pendingExtraTurn: 0,
+    extraTurnCharges: 0,
     critBoostTurns: 0,
   },
   log: [],
@@ -81,10 +81,12 @@ function updateActionButtons() {
   const defendButton = document.querySelector('.action-button[data-action="defend"]');
   if (!defendButton) return;
 
-  const defendDisabled = state.player.actionsThisTurn > 1;
+  const playerExtraTurn = state.player.extraTurnCharges > 0;
+  const defendDisabled = playerExtraTurn;
+
   defendButton.disabled = defendDisabled;
   defendButton.style.opacity = defendDisabled ? '0.45' : '1';
-  defendButton.title = defendDisabled ? 'Defend is disabled while your double-turn is active.' : 'Defend';
+  defendButton.title = defendDisabled ? 'Defend is disabled while Time has an extra turn active.' : 'Defend';
 }
 
 function updateUi() {
@@ -97,35 +99,28 @@ function updateUi() {
   updateActionButtons();
 }
 
-function setStatus(message) {
-  battleStatusEl.textContent = message;
-}
-
-function prepareActorTurn(actor) {
-  if (actor.pendingExtraTurn > 0) {
-    actor.actionsThisTurn = 2;
-    actor.pendingExtraTurn = 0;
-    actor.isDefending = false;
-    return;
-  }
-
-  actor.actionsThisTurn = 1;
+function beginTurn(actor) {
   actor.isDefending = false;
+  actor.actionsThisTurn = 1;
+
+  if (actor.extraTurnCharges > 0) {
+    actor.actionsThisTurn = 2;
+    actor.extraTurnCharges = 0;
+    setStatus('Time extra turn activated. Defend is disabled.');
+  }
 }
 
 function getAttackDamage(attacker, defender) {
   const blade = BLADES[attacker.blade];
 
   if (attacker.blade === 'Time') {
-    const base = blade.attackDamage;
-    const reduced = base - defender.def;
+    const reduced = blade.attackDamage - defender.def;
     return Math.max(1, reduced);
   }
 
   if (attacker.blade === 'Electricity') {
     if (attacker.critBoostTurns > 0 || Math.random() < blade.critChance) {
-      const critDamage = blade.critDamage;
-      const reduced = critDamage - defender.def;
+      const reduced = blade.critDamage - defender.def;
       return Math.max(1, reduced);
     }
 
@@ -171,8 +166,8 @@ function applyBladeAction(actor, target, action) {
     actor.isDefending = true;
 
     if (actor.blade === 'Time') {
-      actor.pendingExtraTurn = 1;
-      addLog(`${actor.blade} uses ${bladeStats.defendName}. Next turn grants two actions.`);
+      actor.extraTurnCharges = 1;
+      addLog(`${actor.blade} uses ${bladeStats.defendName}. Next turn has 2 actions, and Defend is disabled.`);
     } else if (actor.blade === 'Electricity') {
       actor.critBoostTurns = 2;
       addLog(`${actor.blade} uses ${bladeStats.defendName}. Critical damage boost lasts for 2 turns.`);
@@ -233,7 +228,7 @@ function handleEnemyTurn() {
     return;
   }
 
-  prepareActorTurn(state.enemy);
+  beginTurn(state.enemy);
 
   while (state.enemy.actionsThisTurn > 0) {
     const enemyAction = chooseEnemyAction();
@@ -256,7 +251,7 @@ function handleEnemyTurn() {
     }
 
     if (state.enemy.actionsThisTurn > 0) {
-      setStatus('Enemy double-turn active. The enemy chooses another action.');
+      setStatus('Enemy extra turn active. The enemy chooses another action.');
     }
   }
 }
@@ -266,7 +261,7 @@ function handlePlayerAction(action) {
     return;
   }
 
-  if (action === 'defend' && state.player.actionsThisTurn > 1) {
+  if (state.player.extraTurnCharges > 0 && action === 'defend') {
     return;
   }
 
@@ -287,7 +282,7 @@ function handlePlayerAction(action) {
   }
 
   if (state.player.actionsThisTurn > 0) {
-    setStatus('Double turn active. Choose your next move.');
+    setStatus('Extra turn active. Choose your next action.');
     updateUi();
     return;
   }
@@ -296,8 +291,8 @@ function handlePlayerAction(action) {
 
   if (!state.isBattleOver) {
     state.turn += 1;
-    prepareActorTurn(state.player);
-    prepareActorTurn(state.enemy);
+    beginTurn(state.player);
+    beginTurn(state.enemy);
     setStatus(`Turn ${state.turn} begins. Choose your next move.`);
   }
 
@@ -311,7 +306,7 @@ function resetBattle() {
   state.player.blade = 'Time';
   state.player.isDefending = false;
   state.player.actionsThisTurn = 1;
-  state.player.pendingExtraTurn = 0;
+  state.player.extraTurnCharges = 0;
   state.player.critBoostTurns = 0;
 
   state.enemy.hp = 1000;
@@ -320,15 +315,15 @@ function resetBattle() {
   state.enemy.blade = randomBlade();
   state.enemy.isDefending = false;
   state.enemy.actionsThisTurn = 1;
-  state.enemy.pendingExtraTurn = 0;
+  state.enemy.extraTurnCharges = 0;
   state.enemy.critBoostTurns = 0;
 
   state.log = [];
   state.turn = 1;
   state.isBattleOver = false;
 
-  prepareActorTurn(state.player);
-  prepareActorTurn(state.enemy);
+  beginTurn(state.player);
+  beginTurn(state.enemy);
 
   addLog(`Enemy chose ${state.enemy.blade}!`);
   addLog('A new blade duel begins.');
