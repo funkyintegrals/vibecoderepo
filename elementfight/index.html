@@ -474,6 +474,9 @@
     const restartBtn =
       document.getElementById('restartBtn');
 
+    let logQueue = [];
+    let isShowingLog = false;
+
 
     function clampValue(value, min, max) {
       return Math.min(Math.max(value, min), max);
@@ -490,17 +493,33 @@
 
 
     function addLog(message) {
+      logQueue.push(message);
+      processLogQueue();
+    }
 
+    function processLogQueue() {
+      if (isShowingLog || logQueue.length === 0) {
+        return;
+      }
+    
+      isShowingLog = true;
+    
+      const message = logQueue.shift();
+    
       state.log.unshift(message);
-
-      if (state.log.length > 8) {
+    
+      if (state.log.length > 2) {
         state.log.pop();
       }
-
-      battleLogEl.innerHTML =
-        state.log
-          .map(entry => `<li>${entry}</li>`)
-          .join('');
+    
+      battleLogEl.innerHTML = state.log
+        .map((entry) => `<li>${entry}</li>`)
+        .join('');
+    
+      setTimeout(() => {
+        isShowingLog = false;
+        processLogQueue();
+      }, 1000);
     }
 
 
@@ -1073,6 +1092,9 @@
 
 
       state.log = [];
+      logQueue = [];
+      isShowingLog = false;
+      
       state.turn = 1;
       state.isBattleOver = false;
 
