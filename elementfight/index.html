@@ -1,71 +1,1208 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ElementFight</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <main class="game-shell">
-      <header class="title-bar">
-        <div>
-          <p class="eyebrow">Turn-based battle</p>
-          <h1>ElementFight</h1>
-        </div>
-        <button id="restartBtn" class="secondary">New Battle</button>
-      </header>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ElementFight</title>
 
-      <section class="battle-area">
-        <div class="fighter-panel enemy-panel">
-          <div class="fighter-header">
-            <h2>Enemy</h2>
-            <span id="enemyBlade" class="blade-badge">Blade: ???</span>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #0e1220;
+      --panel: #171d2d;
+      --panel-2: #1d2538;
+      --accent: #7c8cff;
+      --accent-2: #34d7b7;
+      --danger: #ff5f7e;
+      --warning: #ffbf69;
+      --text: #edf1ff;
+      --muted: #a5b3d8;
+      --border: rgba(255, 255, 255, 0.09);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at top, rgba(124, 140, 255, 0.24), transparent 30%),
+        linear-gradient(180deg, #090d18, var(--bg));
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .game-shell {
+      width: min(1000px, 92vw);
+      background: rgba(23, 29, 45, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      padding: 24px;
+    }
+
+    .title-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .eyebrow {
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 0;
+      font-size: clamp(2rem, 4vw, 3rem);
+    }
+
+    .secondary,
+    .action-button,
+    .blade-button {
+      border: none;
+      border-radius: 12px;
+      color: var(--text);
+      cursor: pointer;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .secondary:hover,
+    .action-button:hover,
+    .blade-button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .secondary {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 10px 16px;
+    }
+
+    .battle-area {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 1fr;
+      gap: 18px;
+    }
+
+    .fighter-panel,
+    .center-panel {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .fighter-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .blade-badge {
+      background: rgba(124, 140, 255, 0.15);
+      border: 1px solid rgba(124, 140, 255, 0.4);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 0.76rem;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(80px, 1fr));
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .stats > div {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .stats span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.72rem;
+      margin-bottom: 6px;
+    }
+
+    .portrait {
+      display: grid;
+      place-items: center;
+      min-height: 140px;
+      border-radius: 16px;
+      font-size: 4rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+    }
+
+    .center-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .battle-status {
+      background: rgba(52, 215, 183, 0.12);
+      border: 1px solid rgba(52, 215, 183, 0.5);
+      border-radius: 12px;
+      padding: 14px 16px;
+      min-height: 80px;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .turn-log-wrap {
+      margin-top: 18px;
+    }
+
+    .battle-log {
+      margin: 0;
+      padding-left: 18px;
+      max-height: 220px;
+      overflow: auto;
+      color: var(--muted);
+    }
+
+    .battle-log li + li {
+      margin-top: 8px;
+    }
+
+    .control-panel {
+      margin-top: 24px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .blade-grid,
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(100px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .blade-button,
+    .action-button {
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+    }
+
+    .blade-button.active {
+      background: rgba(124, 140, 255, 0.2);
+      border-color: rgba(124, 140, 255, 0.6);
+    }
+
+    .action-button[data-action="attack"] {
+      background: rgba(255, 95, 126, 0.12);
+    }
+
+    .action-button[data-action="defend"] {
+      background: rgba(52, 215, 183, 0.12);
+    }
+
+    .action-button[data-action="special"] {
+      background: rgba(255, 191, 105, 0.14);
+    }
+
+    .action-button[data-action="heal"] {
+      background: rgba(124, 140, 255, 0.14);
+    }
+
+    .action-button:disabled {
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 760px) {
+      .battle-area {
+        grid-template-columns: 1fr;
+      }
+
+      .blade-grid,
+      .action-grid {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+      }
+
+      .title-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="game-shell">
+
+    <header class="title-bar">
+      <div>
+        <p class="eyebrow">Turn-based battle</p>
+        <h1>ElementFight</h1>
+      </div>
+
+      <button id="restartBtn" class="secondary">
+        New Battle
+      </button>
+    </header>
+
+    <section class="battle-area">
+
+      <!-- Enemy -->
+      <div class="fighter-panel enemy-panel">
+        <div class="fighter-header">
+          <h2>Enemy</h2>
+          <span id="enemyBlade" class="blade-badge">
+            Blade: ???
+          </span>
+        </div>
+
+        <div class="stats">
+          <div>
+            <span>HP</span>
+            <strong id="enemyHp">1000</strong>
           </div>
-          <div class="stats">
-            <div><span>HP</span><strong id="enemyHp">100</strong></div>
-            <div><span>Focus</span><strong id="enemyFocus">10</strong></div>
-          </div>
-          <div class="portrait enemy-portrait">⚔️</div>
-        </div>
 
-        <div class="center-panel">
-          <div id="battleStatus" class="battle-status">Choose your move.</div>
-          <div class="turn-log-wrap">
-            <h3>Battle Log</h3>
-            <ul id="battleLog" class="battle-log"></ul>
+          <div>
+            <span>Focus</span>
+            <strong id="enemyFocus">0</strong>
           </div>
         </div>
 
-        <div class="fighter-panel player-panel">
-          <div class="fighter-header">
-            <h2>Player</h2>
-            <span id="playerBlade" class="blade-badge">Blade: Time</span>
+        <div class="portrait enemy-portrait">
+          ⚔️
+        </div>
+      </div>
+
+      <!-- Center -->
+      <div class="center-panel">
+
+        <div id="battleStatus" class="battle-status">
+          Choose your move.
+        </div>
+
+        <div class="turn-log-wrap">
+          <h3>Battle Log</h3>
+          <ul id="battleLog" class="battle-log"></ul>
+        </div>
+
+      </div>
+
+      <!-- Player -->
+      <div class="fighter-panel player-panel">
+
+        <div class="fighter-header">
+          <h2>Player</h2>
+
+          <span id="playerBlade" class="blade-badge">
+            Blade: Time
+          </span>
+        </div>
+
+        <div class="stats">
+          <div>
+            <span>HP</span>
+            <strong id="playerHp">1000</strong>
           </div>
-          <div class="stats">
-            <div><span>HP</span><strong id="playerHp">100</strong></div>
-            <div><span>Focus</span><strong id="playerFocus">10</strong></div>
+
+          <div>
+            <span>Focus</span>
+            <strong id="playerFocus">0</strong>
           </div>
-          <div class="portrait player-portrait">🛡️</div>
-        </div>
-      </section>
-
-      <section class="control-panel">
-        <h3>Choose a blade</h3>
-        <div class="blade-grid" id="bladeGrid">
-          <button class="blade-button active" data-blade="Time">Time</button>
-          <button class="blade-button" data-blade="Electricity">Electricity</button>
         </div>
 
-        <h3>Actions</h3>
-        <div class="action-grid">
-          <button class="action-button" data-action="attack">Attack Skill</button>
-          <button class="action-button" data-action="defend">Defend Skill</button>
-          <button class="action-button" data-action="special">Ultimate</button>
+        <div class="portrait player-portrait">
+          🛡️
         </div>
-      </section>
-    </main>
 
-    <script src="elementfight/script.js"></script>
-  </body>
+      </div>
+
+    </section>
+
+    <!-- Controls -->
+    <section class="control-panel">
+
+      <h3>Choose a blade</h3>
+
+      <div class="blade-grid" id="bladeGrid">
+
+        <button
+          class="blade-button active"
+          data-blade="Time">
+          Time
+        </button>
+
+        <button
+          class="blade-button"
+          data-blade="Electricity">
+          Electricity
+        </button>
+
+      </div>
+
+      <h3>Actions</h3>
+
+      <div class="action-grid">
+
+        <button
+          class="action-button"
+          data-action="attack">
+          Attack Skill
+        </button>
+
+        <button
+          class="action-button"
+          data-action="defend">
+          Defend Skill
+        </button>
+
+        <button
+          class="action-button"
+          data-action="special">
+          Ultimate
+        </button>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <script>
+
+    const BLADES = {
+      Time: {
+        attackName: 'Chrono Slash',
+        defendName: 'Temporal Guard',
+        specialName: 'Age of Stillness',
+        attackDamage: 100,
+        ultimateHitCount: 10,
+        ultimateDamagePerHit: 50,
+        ultimateCritDamagePerHit: 100,
+        focusCap: 10,
+      },
+
+      Electricity: {
+        attackName: 'Volt Arc',
+        defendName: 'Static Impulse',
+        specialName: 'Thunderstorm',
+        attackDamage: 80,
+        critDamage: 160,
+        critChance: 0.5,
+        ultimateDamage: 300,
+        focusCap: 10,
+      },
+    };
+
+
+    const state = {
+
+      player: {
+        hp: 1000,
+        def: 40,
+        focus: 0,
+        blade: 'Time',
+        isDefending: false,
+        actionsThisTurn: 1,
+        extraTurnCharges: 0,
+        critBoostTurns: 0,
+      },
+
+      enemy: {
+        hp: 1000,
+        def: 40,
+        focus: 0,
+        blade: 'Electricity',
+        isDefending: false,
+        actionsThisTurn: 1,
+        extraTurnCharges: 0,
+        critBoostTurns: 0,
+      },
+
+      log: [],
+      turn: 1,
+      isBattleOver: false,
+    };
+
+
+    const playerHpEl =
+      document.getElementById('playerHp');
+
+    const playerFocusEl =
+      document.getElementById('playerFocus');
+
+    const enemyHpEl =
+      document.getElementById('enemyHp');
+
+    const enemyFocusEl =
+      document.getElementById('enemyFocus');
+
+    const playerBladeEl =
+      document.getElementById('playerBlade');
+
+    const enemyBladeEl =
+      document.getElementById('enemyBlade');
+
+    const battleStatusEl =
+      document.getElementById('battleStatus');
+
+    const battleLogEl =
+      document.getElementById('battleLog');
+
+    const restartBtn =
+      document.getElementById('restartBtn');
+
+
+    function clampValue(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+
+    function randomBlade() {
+      const blades = Object.keys(BLADES);
+
+      return blades[
+        Math.floor(Math.random() * blades.length)
+      ];
+    }
+
+
+    function addLog(message) {
+
+      state.log.unshift(message);
+
+      if (state.log.length > 8) {
+        state.log.pop();
+      }
+
+      battleLogEl.innerHTML =
+        state.log
+          .map(entry => `<li>${entry}</li>`)
+          .join('');
+    }
+
+
+    function setStatus(message) {
+      battleStatusEl.textContent = message;
+    }
+
+
+    function updateActionButtons() {
+
+      const defendButton =
+        document.querySelector(
+          '.action-button[data-action="defend"]'
+        );
+
+      if (!defendButton) return;
+
+      const playerExtraTurn =
+        state.player.extraTurnCharges > 0;
+
+      const defendDisabled =
+        playerExtraTurn;
+
+      defendButton.disabled =
+        defendDisabled;
+
+      defendButton.style.opacity =
+        defendDisabled ? '0.45' : '1';
+
+      defendButton.title =
+        defendDisabled
+          ? 'Defend is disabled while Time has an extra turn active.'
+          : 'Defend';
+    }
+
+
+    function updateUi() {
+
+      playerHpEl.textContent =
+        state.player.hp;
+
+      playerFocusEl.textContent =
+        state.player.focus;
+
+      enemyHpEl.textContent =
+        state.enemy.hp;
+
+      enemyFocusEl.textContent =
+        state.enemy.focus;
+
+      playerBladeEl.textContent =
+        `Blade: ${state.player.blade}`;
+
+      enemyBladeEl.textContent =
+        `Blade: ${state.enemy.blade}`;
+
+      updateActionButtons();
+    }
+
+
+    function beginTurn(actor) {
+
+      actor.isDefending = false;
+      actor.actionsThisTurn = 1;
+
+      if (actor.extraTurnCharges > 0) {
+
+        actor.actionsThisTurn = 2;
+        actor.extraTurnCharges = 0;
+
+        setStatus(
+          'Time extra turn activated. Defend is disabled.'
+        );
+      }
+    }
+
+
+    function getAttackDamage(attacker, defender) {
+
+      const blade =
+        BLADES[attacker.blade];
+
+      if (attacker.blade === 'Time') {
+
+        const reduced =
+          blade.attackDamage - defender.def;
+
+        return Math.max(1, reduced);
+      }
+
+
+      if (attacker.blade === 'Electricity') {
+
+        if (
+          attacker.critBoostTurns > 0 ||
+          Math.random() < blade.critChance
+        ) {
+
+          const reduced =
+            blade.critDamage - defender.def;
+
+          return Math.max(1, reduced);
+        }
+
+        const reduced =
+          blade.attackDamage - defender.def;
+
+        return Math.max(1, reduced);
+      }
+
+
+      return 1;
+    }
+
+
+    function chooseEnemyAction() {
+
+      const bladeStats =
+        BLADES[state.enemy.blade];
+
+      if (
+        state.enemy.focus >=
+        bladeStats.focusCap
+      ) {
+        return 'special';
+      }
+
+      if (
+        state.enemy.actionsThisTurn > 1
+      ) {
+        return 'attack';
+      }
+
+      const actions = [
+        'attack',
+        'defend'
+      ];
+
+      return actions[
+        Math.floor(
+          Math.random() * actions.length
+        )
+      ];
+    }
+
+
+    function applyBladeAction(
+      actor,
+      target,
+      action
+    ) {
+
+      const bladeStats =
+        BLADES[actor.blade];
+
+
+      /* ATTACK */
+
+      if (action === 'attack') {
+
+        const damage =
+          getAttackDamage(
+            actor,
+            target
+          );
+
+        target.hp =
+          clampValue(
+            target.hp - damage,
+            0,
+            1000
+          );
+
+        addLog(
+          `${actor.blade} uses ${bladeStats.attackName} for ${damage} damage.`
+        );
+
+        actor.focus =
+          clampValue(
+            actor.focus + 1,
+            0,
+            bladeStats.focusCap
+          );
+
+
+        if (
+          actor.blade === 'Electricity' &&
+          actor.critBoostTurns > 0
+        ) {
+
+          actor.critBoostTurns =
+            Math.max(
+              0,
+              actor.critBoostTurns - 1
+            );
+        }
+
+        return;
+      }
+
+
+      /* DEFEND */
+
+      if (action === 'defend') {
+
+        actor.isDefending = true;
+
+
+        if (actor.blade === 'Time') {
+
+          actor.extraTurnCharges = 1;
+
+          addLog(
+            `${actor.blade} uses ${bladeStats.defendName}. Next turn has 2 actions, and Defend is disabled.`
+          );
+
+        }
+
+        else if (
+          actor.blade === 'Electricity'
+        ) {
+
+          actor.critBoostTurns = 2;
+
+          addLog(
+            `${actor.blade} uses ${bladeStats.defendName}. Critical damage boost lasts for 2 turns.`
+          );
+        }
+
+
+        actor.focus =
+          clampValue(
+            actor.focus + 1,
+            0,
+            bladeStats.focusCap
+          );
+
+        return;
+      }
+
+
+      /* SPECIAL */
+
+      if (action === 'special') {
+
+        if (
+          actor.focus <
+          bladeStats.focusCap
+        ) {
+
+          addLog(
+            `${actor.blade} does not have enough focus.`
+          );
+
+          return;
+        }
+
+
+        actor.focus = 0;
+
+
+        /* TIME ULTIMATE */
+
+        if (actor.blade === 'Time') {
+
+          let totalDamage = 0;
+
+          for (
+            let i = 0;
+            i < bladeStats.ultimateHitCount;
+            i += 1
+          ) {
+
+            const hitDamage =
+              Math.random() < 0.5
+                ? bladeStats.ultimateCritDamagePerHit
+                : bladeStats.ultimateDamagePerHit;
+
+            totalDamage += hitDamage;
+          }
+
+
+          target.hp =
+            clampValue(
+              target.hp - totalDamage,
+              0,
+              1000
+            );
+
+
+          addLog(
+            `${actor.blade} unleashes ${bladeStats.specialName} for ${totalDamage} damage.`
+          );
+
+          return;
+        }
+
+
+        /* ELECTRICITY ULTIMATE */
+
+        if (
+          actor.blade === 'Electricity'
+        ) {
+
+          const damage =
+            bladeStats.ultimateDamage -
+            target.def;
+
+          const finalDamage =
+            Math.max(1, damage);
+
+          target.hp =
+            clampValue(
+              target.hp - finalDamage,
+              0,
+              1000
+            );
+
+
+          addLog(
+            `${actor.blade} unleashes ${bladeStats.specialName} for ${finalDamage} damage.`
+          );
+
+          return;
+        }
+      }
+    }
+
+
+    function finishTurnIfNeeded() {
+
+      if (state.player.hp <= 0) {
+
+        state.isBattleOver = true;
+
+        setStatus(
+          'Defeat. Press New Battle to start again.'
+        );
+
+        addLog(
+          'You lost the battle.'
+        );
+
+        return true;
+      }
+
+
+      if (state.enemy.hp <= 0) {
+
+        state.isBattleOver = true;
+
+        setStatus(
+          'Victory! The enemy blade is broken.'
+        );
+
+        addLog(
+          'You won the battle.'
+        );
+
+        return true;
+      }
+
+
+      return false;
+    }
+
+
+    function handleEnemyTurn() {
+
+      if (state.isBattleOver) {
+        return;
+      }
+
+
+      beginTurn(state.enemy);
+
+
+      while (
+        state.enemy.actionsThisTurn > 0
+      ) {
+
+        const enemyAction =
+          chooseEnemyAction();
+
+
+        state.enemy.isDefending =
+          false;
+
+
+        if (
+          enemyAction === 'attack'
+        ) {
+
+          applyBladeAction(
+            state.enemy,
+            state.player,
+            'attack'
+          );
+
+        }
+
+        else if (
+          enemyAction === 'defend'
+        ) {
+
+          applyBladeAction(
+            state.enemy,
+            state.player,
+            'defend'
+          );
+
+        }
+
+        else if (
+          enemyAction === 'special'
+        ) {
+
+          applyBladeAction(
+            state.enemy,
+            state.player,
+            'special'
+          );
+        }
+
+
+        state.enemy.actionsThisTurn -= 1;
+
+        state.player.isDefending =
+          false;
+
+
+        updateUi();
+
+
+        if (
+          finishTurnIfNeeded()
+        ) {
+          return;
+        }
+
+
+        if (
+          state.enemy.actionsThisTurn > 0
+        ) {
+
+          setStatus(
+            'Enemy extra turn active. The enemy chooses another action.'
+          );
+        }
+      }
+    }
+
+
+    function handlePlayerAction(action) {
+
+      if (state.isBattleOver) {
+        return;
+      }
+
+
+      if (
+        state.player.extraTurnCharges > 0 &&
+        action === 'defend'
+      ) {
+        return;
+      }
+
+
+      if (action === 'attack') {
+
+        applyBladeAction(
+          state.player,
+          state.enemy,
+          'attack'
+        );
+
+      }
+
+      else if (action === 'defend') {
+
+        applyBladeAction(
+          state.player,
+          state.enemy,
+          'defend'
+        );
+
+      }
+
+      else if (action === 'special') {
+
+        applyBladeAction(
+          state.player,
+          state.enemy,
+          'special'
+        );
+      }
+
+
+      state.player.isDefending =
+        false;
+
+      state.player.actionsThisTurn -= 1;
+
+
+      if (
+        finishTurnIfNeeded()
+      ) {
+
+        updateUi();
+        return;
+      }
+
+
+      if (
+        state.player.actionsThisTurn > 0
+      ) {
+
+        setStatus(
+          'Extra turn active. Choose your next action.'
+        );
+
+        updateUi();
+
+        return;
+      }
+
+
+      handleEnemyTurn();
+
+
+      if (!state.isBattleOver) {
+
+        state.turn += 1;
+
+        beginTurn(
+          state.player
+        );
+
+        beginTurn(
+          state.enemy
+        );
+
+        setStatus(
+          `Turn ${state.turn} begins. Choose your next move.`
+        );
+      }
+
+
+      updateUi();
+    }
+
+
+    function resetBattle() {
+
+      /* PLAYER */
+
+      state.player.hp = 1000;
+      state.player.def = 40;
+      state.player.focus = 0;
+      state.player.blade = 'Time';
+      state.player.isDefending = false;
+      state.player.actionsThisTurn = 1;
+      state.player.extraTurnCharges = 0;
+      state.player.critBoostTurns = 0;
+
+
+      /* ENEMY */
+
+      state.enemy.hp = 1000;
+      state.enemy.def = 40;
+      state.enemy.focus = 0;
+      state.enemy.blade = randomBlade();
+      state.enemy.isDefending = false;
+      state.enemy.actionsThisTurn = 1;
+      state.enemy.extraTurnCharges = 0;
+      state.enemy.critBoostTurns = 0;
+
+
+      state.log = [];
+      state.turn = 1;
+      state.isBattleOver = false;
+
+
+      beginTurn(state.player);
+      beginTurn(state.enemy);
+
+
+      addLog(
+        `Enemy chose ${state.enemy.blade}!`
+      );
+
+      addLog(
+        'A new blade duel begins.'
+      );
+
+
+      setStatus(
+        'Choose your blade and move.'
+      );
+
+
+      updateUi();
+
+
+      /* Reset blade button visual state */
+
+      document
+        .querySelectorAll('.blade-button')
+        .forEach(button => {
+
+          button.classList.toggle(
+            'active',
+            button.dataset.blade ===
+              state.player.blade
+          );
+
+        });
+    }
+
+
+    /* Blade selection */
+
+    document
+      .querySelectorAll('.blade-button')
+      .forEach(button => {
+
+        button.addEventListener(
+          'click',
+          () => {
+
+            if (state.isBattleOver) {
+              return;
+            }
+
+
+            const selected =
+              button.dataset.blade;
+
+            state.player.blade =
+              selected;
+
+
+            document
+              .querySelectorAll('.blade-button')
+              .forEach(btn => {
+
+                btn.classList.toggle(
+                  'active',
+                  btn.dataset.blade ===
+                    selected
+                );
+
+              });
+
+
+            updateUi();
+
+
+            setStatus(
+              `${selected} selected. Choose your next action.`
+            );
+          }
+        );
+      });
+
+
+    /* Action buttons */
+
+    document
+      .querySelectorAll('.action-button')
+      .forEach(button => {
+
+        button.addEventListener(
+          'click',
+          () => {
+
+            handlePlayerAction(
+              button.dataset.action
+            );
+
+          }
+        );
+      });
+
+
+    /* Restart */
+
+    restartBtn.addEventListener(
+      'click',
+      resetBattle
+    );
+
+
+    /* Start game */
+
+    resetBattle();
+
+  </script>
+
+</body>
 </html>
