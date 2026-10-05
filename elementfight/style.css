@@ -1,0 +1,243 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0e1220;
+  --panel: #171d2d;
+  --panel-2: #1d2538;
+  --accent: #7c8cff;
+  --accent-2: #34d7b7;
+  --danger: #ff5f7e;
+  --warning: #ffbf69;
+  --text: #edf1ff;
+  --muted: #a5b3d8;
+  --border: rgba(255, 255, 255, 0.09);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at top, rgba(124, 140, 255, 0.24), transparent 30%),
+    linear-gradient(180deg, #090d18, var(--bg));
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+button {
+  font: inherit;
+}
+
+.game-shell {
+  width: min(1000px, 92vw);
+  background: rgba(23, 29, 45, 0.92);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  padding: 24px;
+}
+
+.title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.secondary,
+.action-button,
+.element-button {
+  border: none;
+  border-radius: 12px;
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.secondary:hover,
+.action-button:hover,
+.element-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 10px 16px;
+}
+
+.battle-area {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  gap: 18px;
+}
+
+.fighter-panel,
+.center-panel {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.fighter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.element-badge {
+  background: rgba(124, 140, 255, 0.15);
+  border: 1px solid rgba(124, 140, 255, 0.4);
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 0.76rem;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(80px, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.stats > div {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.stats span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+  margin-bottom: 6px;
+}
+
+.portrait {
+  display: grid;
+  place-items: center;
+  min-height: 140px;
+  border-radius: 16px;
+  font-size: 4rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+}
+
+.center-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.battle-status {
+  background: rgba(52, 215, 183, 0.12);
+  border: 1px solid rgba(52, 215, 183, 0.5);
+  border-radius: 12px;
+  padding: 14px 16px;
+  min-height: 80px;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.turn-log-wrap {
+  margin-top: 18px;
+}
+
+.battle-log {
+  margin: 0;
+  padding-left: 18px;
+  max-height: 220px;
+  overflow: auto;
+  color: var(--muted);
+}
+
+.battle-log li + li {
+  margin-top: 8px;
+}
+
+.control-panel {
+  margin-top: 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.element-grid,
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(100px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.element-button,
+.action-button {
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+}
+
+.element-button.active {
+  background: rgba(124, 140, 255, 0.2);
+  border-color: rgba(124, 140, 255, 0.6);
+}
+
+.action-button[data-action="attack"] {
+  background: rgba(255, 95, 126, 0.12);
+}
+
+.action-button[data-action="defend"] {
+  background: rgba(52, 215, 183, 0.12);
+}
+
+.action-button[data-action="special"] {
+  background: rgba(255, 191, 105, 0.14);
+}
+
+.action-button[data-action="heal"] {
+  background: rgba(124, 140, 255, 0.14);
+}
+
+@media (max-width: 760px) {
+  .battle-area {
+    grid-template-columns: 1fr;
+  }
+
+  .element-grid,
+  .action-grid {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
+
+  .title-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
