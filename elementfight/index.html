@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -157,8 +156,6 @@
       font-size: 0.82rem;
       line-height: 1.3;
       text-align: center;
-
-      /* Allow the badge to wrap instead of overflowing. */
       white-space: normal;
       overflow-wrap: anywhere;
     }
@@ -193,7 +190,12 @@
       overflow-wrap: anywhere;
     }
 
+    /*
+     * PORTRAIT
+     */
+
     .portrait {
+      position: relative;
       display: grid;
       place-items: center;
       min-height: 140px;
@@ -201,6 +203,71 @@
       font-size: 4rem;
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--border);
+      overflow: visible;
+    }
+
+    /*
+     * DAMAGE NUMBERS
+     *
+     * The animation uses an ease-in curve so the number starts
+     * slowly and accelerates as it rises.
+     */
+
+    .damage-number {
+      position: absolute;
+      left: 50%;
+      bottom: 25px;
+
+      transform: translateX(-50%);
+
+      color: #ffffff;
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1;
+
+      pointer-events: none;
+      z-index: 20;
+
+      text-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.8),
+        0 0 10px rgba(255, 95, 126, 0.75);
+
+      animation:
+        damageFloat 0.9s
+        cubic-bezier(0.65, 0, 1, 0.35)
+        forwards;
+    }
+
+    .damage-number.critical {
+      color: #ffbf69;
+      font-size: 2.35rem;
+
+      text-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.9),
+        0 0 14px rgba(255, 191, 105, 0.95);
+    }
+
+    @keyframes damageFloat {
+      0% {
+        opacity: 0;
+        transform:
+          translate(-50%, 20px)
+          scale(0.75);
+      }
+
+      15% {
+        opacity: 1;
+        transform:
+          translate(-50%, 10px)
+          scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform:
+          translate(-50%, -115px)
+          scale(1.08);
+      }
     }
 
     .center-panel {
@@ -220,8 +287,6 @@
       font-weight: 700;
       font-size: 1rem;
       line-height: 1.5;
-
-      /* Complete text can wrap. */
       white-space: normal;
       overflow-wrap: anywhere;
       overflow: visible;
@@ -232,13 +297,6 @@
       min-width: 0;
     }
 
-    /*
-     * BATTLE LOG
-     *
-     * Only the two newest messages are rendered by JavaScript.
-     * Messages are allowed to wrap onto multiple lines.
-     * Nothing is replaced with "..." and nothing is cut off.
-     */
     .battle-log {
       margin: 0;
       padding: 0;
@@ -261,22 +319,10 @@
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 9px;
 
-      /*
-       * Important:
-       * Allow complete messages to wrap.
-       */
       white-space: normal;
       overflow-wrap: anywhere;
       word-break: normal;
-
-      /*
-       * Never use ellipses.
-       */
       text-overflow: clip;
-
-      /*
-       * Do not clip the contents of a message.
-       */
       overflow: visible;
 
       animation: logRollUp 0.25s ease-out;
@@ -316,10 +362,6 @@
       min-height: 50px;
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--border);
-
-      /*
-       * Button text may wrap if necessary.
-       */
       white-space: normal;
       overflow-wrap: anywhere;
       line-height: 1.35;
@@ -335,12 +377,34 @@
       background: rgba(255, 95, 126, 0.12);
     }
 
-    .action-button[data-action="defend"] {
+    .action-button[data-action="utility"] {
       background: rgba(52, 215, 183, 0.12);
     }
 
     .action-button[data-action="special"] {
       background: rgba(255, 191, 105, 0.14);
+    }
+
+    /*
+     * DILATE MODE
+     */
+
+    .action-grid.dilate-mode {
+      grid-template-columns: 1fr;
+    }
+
+    .action-grid.dilate-mode .dilate-button {
+      min-height: 68px;
+      font-size: 1.15rem;
+      background:
+        linear-gradient(
+          135deg,
+          rgba(124, 140, 255, 0.25),
+          rgba(255, 191, 105, 0.2)
+        );
+      border-color: rgba(255, 191, 105, 0.6);
+      box-shadow:
+        0 0 20px rgba(124, 140, 255, 0.15);
     }
 
     button:disabled {
@@ -453,6 +517,7 @@
     <section class="battle-area">
 
       <!-- PLAYER -->
+
       <div class="fighter-panel player-panel">
 
         <div class="fighter-header">
@@ -464,6 +529,7 @@
         </div>
 
         <div class="stats">
+
           <div>
             <span>HP</span>
             <strong id="playerHp">1000</strong>
@@ -473,15 +539,21 @@
             <span>Focus</span>
             <strong id="playerFocus">0 / 10</strong>
           </div>
+
         </div>
 
-        <div class="portrait player-portrait">
+        <div
+          id="playerPortrait"
+          class="portrait player-portrait"
+        >
           ⚔️
         </div>
 
       </div>
 
+
       <!-- CENTER -->
+
       <div class="center-panel">
 
         <div id="battleStatus" class="battle-status">
@@ -492,13 +564,18 @@
 
           <h3>Battle Log</h3>
 
-          <ul id="battleLog" class="battle-log"></ul>
+          <ul
+            id="battleLog"
+            class="battle-log"
+          ></ul>
 
         </div>
 
       </div>
 
+
       <!-- ENEMY -->
+
       <div class="fighter-panel enemy-panel">
 
         <div class="fighter-header">
@@ -510,6 +587,7 @@
         </div>
 
         <div class="stats">
+
           <div>
             <span>HP</span>
             <strong id="enemyHp">1000</strong>
@@ -519,9 +597,13 @@
             <span>Focus</span>
             <strong id="enemyFocus">0 / 10</strong>
           </div>
+
         </div>
 
-        <div class="portrait enemy-portrait">
+        <div
+          id="enemyPortrait"
+          class="portrait enemy-portrait"
+        >
           ⚔️
         </div>
 
@@ -529,12 +611,17 @@
 
     </section>
 
+
     <!-- CONTROLS -->
+
     <section class="control-panel">
 
       <h3>Choose a blade</h3>
 
-      <div class="blade-grid" id="bladeGrid">
+      <div
+        class="blade-grid"
+        id="bladeGrid"
+      >
 
         <button
           class="blade-button active"
@@ -554,13 +641,21 @@
 
       </div>
 
-      <p id="turnInfo" class="status-line">
+
+      <p
+        id="turnInfo"
+        class="status-line"
+      >
         Your turn
       </p>
 
+
       <h3>Actions</h3>
 
-      <div class="action-grid">
+      <div
+        class="action-grid"
+        id="actionGrid"
+      >
 
         <button
           class="action-button"
@@ -572,10 +667,10 @@
 
         <button
           class="action-button"
-          data-action="defend"
+          data-action="utility"
           type="button"
         >
-          Defend Skill
+          Utility
         </button>
 
         <button
@@ -592,8 +687,10 @@
 
   </main>
 
+
   <script>
     'use strict';
+
 
     /*
      * ============================================================
@@ -605,10 +702,14 @@
     const BASE_DEFENSE = 40;
     const MAX_FOCUS = 10;
 
+    const TIME_ULTIMATE_HITS = 10;
+
     const BLADES = {
+
       Time: {
+
         attackName: 'Chrono Slash',
-        defendName: 'Temporal Guard',
+        utilityName: 'Temporal Guard',
         specialName: 'Age of Stillness',
 
         attackDamage: 100,
@@ -622,9 +723,11 @@
         focusCap: MAX_FOCUS
       },
 
+
       Electricity: {
+
         attackName: 'Volt Arc',
-        defendName: 'Static Impulse',
+        utilityName: 'Static Impulse',
         specialName: 'Thunderstorm',
 
         attackDamage: 80,
@@ -632,12 +735,17 @@
 
         critChance: 0.25,
 
-        critBoostAttacks: 2,
+        /*
+         * Utility changes the next two attacks
+         * to 100% critical chance.
+         */
+        guaranteedCritAttacks: 2,
 
         ultimateDamage: 300,
 
         focusCap: MAX_FOCUS
       }
+
     };
 
 
@@ -648,7 +756,9 @@
      */
 
     function createFighter(blade) {
+
       return {
+
         hp: MAX_HP,
         def: BASE_DEFENSE,
         focus: 0,
@@ -657,17 +767,43 @@
 
         isDefending: false,
 
+        /*
+         * Number of actions available in the current turn.
+         */
         actionsThisTurn: 1,
-        extraTurnCharges: 0,
 
+        /*
+         * Time Utility puts the NEXT turn into
+         * a double-turn state.
+         */
+        timeDoubleTurnPending: false,
+
+        /*
+         * True while the current Time double turn is active.
+         * Utility is disabled during this state.
+         */
+        timeDoubleTurnActive: false,
+
+        /*
+         * Electricity Utility:
+         * number of future attacks guaranteed to crit.
+         */
         guaranteedCrits: 0,
 
-        timeDefendLocked: false
+        /*
+         * Time ultimate state.
+         */
+        timeUltimateActive: false,
+        timeUltimateHitsRemaining: 0
+
       };
     }
 
+
     const state = {
+
       player: createFighter('Time'),
+
       enemy: createFighter('Electricity'),
 
       turn: 1,
@@ -677,6 +813,7 @@
       isBattleOver: false,
 
       log: []
+
     };
 
 
@@ -719,8 +856,14 @@
     const bladeButtons =
       [...document.querySelectorAll('.blade-button')];
 
-    const actionButtons =
-      [...document.querySelectorAll('.action-button')];
+    const actionGrid =
+      document.getElementById('actionGrid');
+
+    const playerPortrait =
+      document.getElementById('playerPortrait');
+
+    const enemyPortrait =
+      document.getElementById('enemyPortrait');
 
 
     /*
@@ -730,11 +873,7 @@
      */
 
     function addLog(message) {
-      /*
-       * Keep only the newest two messages.
-       *
-       * The messages themselves are never shortened.
-       */
+
       state.log.unshift(message);
 
       if (state.log.length > 2) {
@@ -746,21 +885,21 @@
 
 
     function renderLog() {
+
       battleLogEl.replaceChildren();
 
       state.log
         .slice()
         .reverse()
         .forEach(message => {
-          const li = document.createElement('li');
 
-          /*
-           * textContent guarantees the complete message is
-           * inserted without HTML interpretation.
-           */
+          const li =
+            document.createElement('li');
+
           li.textContent = message;
 
           battleLogEl.appendChild(li);
+
         });
     }
 
@@ -772,33 +911,98 @@
      */
 
     function clamp(value, min, max) {
+
       return Math.min(
         Math.max(value, min),
         max
       );
+
     }
 
 
     function randomBlade() {
-      const blades = Object.keys(BLADES);
+
+      const blades =
+        Object.keys(BLADES);
 
       return blades[
         Math.floor(
           Math.random() * blades.length
         )
       ];
+
     }
 
 
     function getFighterName(fighter) {
+
       return fighter === state.player
         ? 'Player'
         : 'Enemy';
+
     }
 
 
     function getBladeStats(fighter) {
+
       return BLADES[fighter.blade];
+
+    }
+
+
+    /*
+     * ============================================================
+     * DAMAGE NUMBERS
+     * ============================================================
+     */
+
+    function showDamageNumber(
+      defender,
+      damage,
+      critical = false
+    ) {
+
+      const portrait =
+        defender === state.player
+          ? playerPortrait
+          : enemyPortrait;
+
+      const number =
+        document.createElement('div');
+
+      number.className =
+        'damage-number';
+
+      if (critical) {
+        number.classList.add('critical');
+      }
+
+      /*
+       * The displayed number is exactly the damage
+       * actually removed from HP.
+       */
+      number.textContent = damage;
+
+      /*
+       * Small horizontal variation prevents every hit
+       * from appearing in exactly the same place.
+       */
+      const horizontalOffset =
+        (Math.random() * 50) - 25;
+
+      number.style.marginLeft =
+        `${horizontalOffset}px`;
+
+      portrait.appendChild(number);
+
+      number.addEventListener(
+        'animationend',
+        () => {
+          number.remove();
+        },
+        { once: true }
+      );
+
     }
 
 
@@ -808,14 +1012,21 @@
      * ============================================================
      */
 
-    function gainFocus(fighter, amount = 1) {
-      const stats = getBladeStats(fighter);
+    function gainFocus(
+      fighter,
+      amount = 1
+    ) {
 
-      fighter.focus = clamp(
-        fighter.focus + amount,
-        0,
-        stats.focusCap
-      );
+      const stats =
+        getBladeStats(fighter);
+
+      fighter.focus =
+        clamp(
+          fighter.focus + amount,
+          0,
+          stats.focusCap
+        );
+
     }
 
 
@@ -825,46 +1036,92 @@
      * ============================================================
      */
 
-    function applyDefense(damage, defender) {
-      let finalDamage = Math.max(
-        1,
-        damage - defender.def
-      );
+    function applyDefense(
+      damage,
+      defender
+    ) {
+
+      let finalDamage =
+        Math.max(
+          1,
+          damage - defender.def
+        );
 
       if (defender.isDefending) {
-        finalDamage = Math.max(
-          1,
-          Math.floor(finalDamage * 0.5)
-        );
+
+        finalDamage =
+          Math.max(
+            1,
+            Math.floor(
+              finalDamage * 0.5
+            )
+          );
+
       }
 
       return finalDamage;
     }
 
 
-    function normalAttack(attacker, defender) {
-      const stats = getBladeStats(attacker);
+    /*
+     * ============================================================
+     * NORMAL ATTACK
+     * ============================================================
+     */
 
-      let rawDamage = stats.attackDamage;
+    function normalAttack(
+      attacker,
+      defender
+    ) {
+
+      const stats =
+        getBladeStats(attacker);
+
+      let rawDamage =
+        stats.attackDamage;
+
       let critical = false;
 
-      if (attacker.blade === 'Electricity') {
 
-        if (attacker.guaranteedCrits > 0) {
+      /*
+       * ELECTRICITY CRITICAL SYSTEM
+       *
+       * Utility gives guaranteedCrits = 2.
+       * Those attacks are always critical.
+       *
+       * Otherwise the normal 25% critical chance applies.
+       */
+
+      if (
+        attacker.blade === 'Electricity'
+      ) {
+
+        if (
+          attacker.guaranteedCrits > 0
+        ) {
+
           critical = true;
 
           attacker.guaranteedCrits -= 1;
+
         }
+
         else if (
-          Math.random() < stats.critChance
+          Math.random() <
+          stats.critChance
         ) {
+
           critical = true;
+
         }
 
         if (critical) {
-          rawDamage = stats.critDamage;
+          rawDamage =
+            stats.critDamage;
         }
+
       }
+
 
       const damage =
         applyDefense(
@@ -872,44 +1129,291 @@
           defender
         );
 
-      defender.hp = clamp(
-        defender.hp - damage,
-        0,
-        MAX_HP
-      );
+
+      defender.hp =
+        clamp(
+          defender.hp - damage,
+          0,
+          MAX_HP
+        );
+
 
       const name =
         getFighterName(attacker);
 
       const criticalText =
-        critical ? ' CRITICAL!' : '';
+        critical
+          ? ' CRITICAL!'
+          : '';
+
 
       addLog(
         `${name} — ${stats.attackName} deals ${damage} damage.${criticalText}`
       );
 
+
+      showDamageNumber(
+        defender,
+        damage,
+        critical
+      );
+
+
       gainFocus(attacker);
 
+      /*
+       * A successful attack ends the defender's current guard.
+       */
       defender.isDefending = false;
 
       return damage;
+
     }
 
 
     /*
      * ============================================================
-     * SPECIALS
+     * TIME ULTIMATE
      * ============================================================
+     *
+     * The Ultimate no longer executes all 10 hits instantly.
+     *
+     * Activating it:
+     *   - consumes 10 Focus
+     *   - enters Dilation mode
+     *   - exposes the Dilate button
+     *
+     * Each Dilate click:
+     *   - performs one hit
+     *   - displays its damage
+     *   - reduces remaining hits
+     *
+     * After hit 10:
+     *   - Dilation ends
+     *   - enemy turn begins
      */
 
-    function useUltimate(attacker, defender) {
-      const stats = getBladeStats(attacker);
-      const name = getFighterName(attacker);
+    function beginTimeUltimate() {
+
+      const attacker =
+        state.player;
+
+      const defender =
+        state.enemy;
+
+      const stats =
+        getBladeStats(attacker);
 
       if (
         attacker.focus <
         stats.focusCap
       ) {
+
+        addLog(
+          'Player — not enough Focus for the Ultimate.'
+        );
+
+        return false;
+
+      }
+
+
+      /*
+       * Consume Focus immediately.
+       */
+      attacker.focus = 0;
+
+
+      attacker.timeUltimateActive = true;
+
+      attacker.timeUltimateHitsRemaining =
+        TIME_ULTIMATE_HITS;
+
+
+      /*
+       * The Time Ultimate owns the entire
+       * remainder of this turn.
+       */
+      state.phase = 'player';
+
+
+      addLog(
+        'Player — Age of Stillness begins. Dilate time 10 times.'
+      );
+
+
+      setStatus(
+        'Dilation active. Press Dilate to strike.'
+      );
+
+
+      updateUi();
+
+      return true;
+    }
+
+
+    function performTimeDilate() {
+
+      const attacker =
+        state.player;
+
+      const defender =
+        state.enemy;
+
+
+      if (
+        !attacker.timeUltimateActive ||
+        state.isBattleOver
+      ) {
+        return;
+      }
+
+
+      const stats =
+        getBladeStats(attacker);
+
+
+      let critical = false;
+
+
+      /*
+       * Each of the ten hits gets its own
+       * independent 50% critical roll.
+       */
+      critical =
+        Math.random() <
+        stats.ultimateCritChance;
+
+
+      const rawDamage =
+        critical
+          ? stats.ultimateCritDamagePerHit
+          : stats.ultimateDamagePerHit;
+
+
+      const damage =
+        applyDefense(
+          rawDamage,
+          defender
+        );
+
+
+      defender.hp =
+        clamp(
+          defender.hp - damage,
+          0,
+          MAX_HP
+        );
+
+
+      attacker.timeUltimateHitsRemaining -= 1;
+
+
+      const hitNumber =
+        TIME_ULTIMATE_HITS -
+        attacker.timeUltimateHitsRemaining;
+
+
+      const criticalText =
+        critical
+          ? ' CRITICAL!'
+          : '';
+
+
+      addLog(
+        `Player — Dilate ${hitNumber}/${TIME_ULTIMATE_HITS} deals ${damage} damage.${criticalText}`
+      );
+
+
+      showDamageNumber(
+        defender,
+        damage,
+        critical
+      );
+
+
+      defender.isDefending = false;
+
+
+      updateUi();
+
+
+      /*
+       * Check for victory before allowing
+       * another Dilate click.
+       */
+      if (
+        checkBattleOver()
+      ) {
+        return;
+      }
+
+
+      /*
+       * All ten hits have now happened.
+       */
+      if (
+        attacker.timeUltimateHitsRemaining <= 0
+      ) {
+
+        attacker.timeUltimateActive = false;
+
+        addLog(
+          'Player — Age of Stillness ends.'
+        );
+
+
+        setStatus(
+          'Dilation complete.'
+        );
+
+
+        updateUi();
+
+
+        /*
+         * The Time Ultimate consumes the player's
+         * turn, so the enemy now acts.
+         */
+        handleEnemyTurn();
+
+        return;
+      }
+
+
+      setStatus(
+        `Dilation active — ${attacker.timeUltimateHitsRemaining} hit${attacker.timeUltimateHitsRemaining === 1 ? '' : 's'} remaining.`
+      );
+
+      updateUi();
+
+    }
+
+
+    /*
+     * ============================================================
+     * ULTIMATE
+     * ============================================================
+     */
+
+    function useUltimate(
+      attacker,
+      defender
+    ) {
+
+      const stats =
+        getBladeStats(attacker);
+
+      const name =
+        getFighterName(attacker);
+
+
+      if (
+        attacker.focus <
+        stats.focusCap
+      ) {
+
         addLog(
           `${name} — not enough Focus for the Ultimate.`
         );
@@ -917,155 +1421,171 @@
         return false;
       }
 
-      attacker.focus = 0;
 
       /*
-       * TIME ULTIMATE
+       * TIME
+       *
+       * Do not resolve the Ultimate here.
+       * Enter the 10-click Dilation sequence instead.
        */
+      if (
+        attacker.blade === 'Time'
+      ) {
 
-      if (attacker.blade === 'Time') {
+        return beginTimeUltimate();
 
-        let rawTotal = 0;
-        let criticalHits = 0;
-
-        for (
-          let i = 0;
-          i < stats.ultimateHitCount;
-          i += 1
-        ) {
-          const critical =
-            Math.random() <
-            stats.ultimateCritChance;
-
-          rawTotal += critical
-            ? stats.ultimateCritDamagePerHit
-            : stats.ultimateDamagePerHit;
-
-          if (critical) {
-            criticalHits += 1;
-          }
-        }
-
-        let damage =
-          Math.max(
-            1,
-            rawTotal - defender.def
-          );
-
-        if (defender.isDefending) {
-          damage = Math.max(
-            1,
-            Math.floor(damage * 0.5)
-          );
-        }
-
-        defender.hp = clamp(
-          defender.hp - damage,
-          0,
-          MAX_HP
-        );
-
-        addLog(
-          `${name} — ${stats.specialName} deals ${damage} damage (${criticalHits} critical hits).`
-        );
-
-        defender.isDefending = false;
-
-        return true;
       }
 
 
       /*
-       * ELECTRICITY ULTIMATE
+       * ELECTRICITY
+       *
+       * Electricity still has its instant Ultimate.
        */
 
       if (
         attacker.blade === 'Electricity'
       ) {
+
+        attacker.focus = 0;
+
+
         const damage =
           applyDefense(
             stats.ultimateDamage,
             defender
           );
 
-        defender.hp = clamp(
-          defender.hp - damage,
-          0,
-          MAX_HP
-        );
+
+        defender.hp =
+          clamp(
+            defender.hp - damage,
+            0,
+            MAX_HP
+          );
+
 
         addLog(
           `${name} — ${stats.specialName} deals ${damage} damage.`
         );
 
+
+        showDamageNumber(
+          defender,
+          damage
+        );
+
+
         defender.isDefending = false;
 
         return true;
+
       }
 
+
       return false;
+
     }
 
 
     /*
      * ============================================================
-     * DEFEND
+     * UTILITY
      * ============================================================
      */
 
-    function useDefend(fighter) {
-      const stats = getBladeStats(fighter);
-      const name = getFighterName(fighter);
+    function useUtility(fighter) {
 
+      const stats =
+        getBladeStats(fighter);
+
+      const name =
+        getFighterName(fighter);
+
+
+      /*
+       * TIME UTILITY
+       *
+       * Next turn:
+       *   - 2 actions
+       *   - Attack can therefore be used twice
+       *   - Utility is disabled
+       */
       if (
-        fighter.blade === 'Time' &&
-        fighter.timeDefendLocked
+        fighter.blade === 'Time'
       ) {
+
+        if (
+          fighter.timeDoubleTurnPending ||
+          fighter.timeDoubleTurnActive
+        ) {
+
+          addLog(
+            `${name} — Temporal Guard is already active.`
+          );
+
+          return false;
+
+        }
+
+
+        fighter.isDefending = true;
+
+        fighter.timeDoubleTurnPending = true;
+
         addLog(
-          `${name} — Time Defend is unavailable right now.`
+          `${name} — ${stats.utilityName}. Next turn is a double turn: Attack can be used twice.`
         );
 
-        return false;
+
+        gainFocus(fighter);
+
+        return true;
       }
 
+
+      /*
+       * ELECTRICITY UTILITY
+       *
+       * The next two attacks have exactly
+       * 100% critical chance.
+       */
       if (
-        fighter.blade === 'Electricity' &&
-        fighter.guaranteedCrits > 0
-      ) {
-        addLog(
-          `${name} — Electricity Defend is unavailable while the critical boost is active.`
-        );
-
-        return false;
-      }
-
-      fighter.isDefending = true;
-
-      if (fighter.blade === 'Time') {
-
-        fighter.extraTurnCharges = 1;
-        fighter.timeDefendLocked = true;
-
-        addLog(
-          `${name} — ${stats.defendName}. Damage reduced by 50%; next turn has 2 actions.`
-        );
-      }
-
-      else if (
         fighter.blade === 'Electricity'
       ) {
 
+        if (
+          fighter.guaranteedCrits > 0
+        ) {
+
+          addLog(
+            `${name} — Static Impulse is already active.`
+          );
+
+          return false;
+
+        }
+
+
+        fighter.isDefending = true;
+
         fighter.guaranteedCrits =
-          stats.critBoostAttacks;
+          stats.guaranteedCritAttacks;
+
 
         addLog(
-          `${name} — ${stats.defendName}. Damage reduced by 50%; next 2 attacks are critical.`
+          `${name} — ${stats.utilityName}. The next ${stats.guaranteedCritAttacks} attacks have 100% critical chance.`
         );
+
+
+        gainFocus(fighter);
+
+        return true;
+
       }
 
-      gainFocus(fighter);
 
-      return true;
+      return false;
     }
 
 
@@ -1080,34 +1600,48 @@
       target,
       action
     ) {
+
       if (
         actor.hp <= 0 ||
         target.hp <= 0
       ) {
+
         return false;
+
       }
+
 
       switch (action) {
 
         case 'attack':
+
           normalAttack(
             actor,
             target
           );
+
           return true;
 
-        case 'defend':
-          return useDefend(actor);
+
+        case 'utility':
+
+          return useUtility(actor);
+
 
         case 'special':
+
           return useUltimate(
             actor,
             target
           );
 
+
         default:
+
           return false;
+
       }
+
     }
 
 
@@ -1118,38 +1652,58 @@
      */
 
     function beginTurn(fighter) {
+
       fighter.isDefending = false;
 
+
+      /*
+       * A Time Utility was activated on the
+       * previous turn.
+       */
       if (
-        fighter.extraTurnCharges > 0
+        fighter.timeDoubleTurnPending
       ) {
+
+        fighter.timeDoubleTurnPending = false;
+
+        fighter.timeDoubleTurnActive = true;
+
         fighter.actionsThisTurn = 2;
-        fighter.extraTurnCharges = 0;
 
-        if (
-          fighter.blade === 'Time'
-        ) {
-          addLog(
-            `${getFighterName(fighter)} — Time extra turn activated.`
-          );
-        }
-      }
-      else {
-        fighter.actionsThisTurn = 1;
 
-        if (fighter.timeDefendLocked) {
-          fighter.timeDefendLocked = false;
-        }
+        addLog(
+          `${getFighterName(fighter)} — Time double turn activated.`
+        );
+
+        return;
       }
+
+
+      /*
+       * The current double turn has ended.
+       */
+      if (
+        fighter.timeDoubleTurnActive
+      ) {
+
+        fighter.timeDoubleTurnActive = false;
+
+      }
+
+
+      fighter.actionsThisTurn = 1;
+
     }
 
 
     function endAction(actor) {
+
       actor.actionsThisTurn =
         Math.max(
           0,
           actor.actionsThisTurn - 1
         );
+
     }
 
 
@@ -1164,44 +1718,67 @@
       if (
         state.enemy.hp <= 0
       ) {
+
         state.enemy.hp = 0;
+
         state.isBattleOver = true;
+
         state.phase = 'over';
+
+
+        state.player.timeUltimateActive = false;
+
 
         setStatus(
           'Victory! The enemy blade is broken.'
         );
 
+
         addLog(
           'Battle — You won the battle.'
         );
 
+
         updateUi();
 
         return true;
+
       }
+
 
       if (
         state.player.hp <= 0
       ) {
+
         state.player.hp = 0;
+
         state.isBattleOver = true;
+
         state.phase = 'over';
+
+
+        state.player.timeUltimateActive = false;
+
 
         setStatus(
           'Defeat. Press New Battle to try again.'
         );
 
+
         addLog(
           'Battle — You lost the battle.'
         );
 
+
         updateUi();
 
         return true;
+
       }
 
+
       return false;
+
     }
 
 
@@ -1212,63 +1789,110 @@
      */
 
     function chooseEnemyAction() {
-      const enemy = state.enemy;
-      const stats = getBladeStats(enemy);
 
+      const enemy =
+        state.enemy;
+
+      const stats =
+        getBladeStats(enemy);
+
+
+      /*
+       * Ultimate always takes priority.
+       */
       if (
-        enemy.focus >= stats.focusCap
+        enemy.focus >=
+        stats.focusCap
       ) {
+
         return 'special';
+
       }
 
+
+      /*
+       * If Time has a double action,
+       * use Attack for both actions.
+       */
       if (
         enemy.actionsThisTurn > 1
       ) {
+
         return 'attack';
+
       }
+
+
+      /*
+       * TIME
+       */
 
       if (
         enemy.blade === 'Time'
       ) {
+
         if (
-          enemy.timeDefendLocked
+          enemy.timeDoubleTurnPending ||
+          enemy.timeDoubleTurnActive
         ) {
+
           return 'attack';
+
         }
 
-        return 'defend';
+        return 'utility';
+
       }
+
+
+      /*
+       * ELECTRICITY
+       */
 
       if (
         enemy.blade === 'Electricity'
       ) {
+
         if (
           enemy.guaranteedCrits > 0
         ) {
+
           return 'attack';
+
         }
 
-        return 'defend';
+        return 'utility';
+
       }
 
+
       return 'attack';
+
     }
 
 
     async function handleEnemyTurn() {
+
       if (
         state.isBattleOver
       ) {
+
         return;
+
       }
+
 
       state.phase = 'enemy';
 
+
       beginTurn(state.enemy);
+
 
       updateUi();
 
+
       await delay(500);
+
 
       while (
         state.enemy.actionsThisTurn > 0 &&
@@ -1278,6 +1902,7 @@
         const action =
           chooseEnemyAction();
 
+
         const success =
           performAction(
             state.enemy,
@@ -1285,47 +1910,71 @@
             action
           );
 
+
         if (!success) {
+
+          /*
+           * If Utility was somehow unavailable,
+           * fall back to an attack.
+           */
           performAction(
             state.enemy,
             state.player,
             'attack'
           );
+
         }
+
 
         endAction(state.enemy);
 
+
         updateUi();
+
 
         if (
           checkBattleOver()
         ) {
+
           return;
+
         }
+
 
         if (
           state.enemy.actionsThisTurn > 0
         ) {
+
           setStatus(
             'Enemy has an extra action.'
           );
 
+
           updateUi();
 
+
           await delay(500);
+
         }
+
       }
 
+
       state.turn += 1;
+
       state.phase = 'player';
 
+
       beginTurn(state.player);
+
 
       setStatus(
         `Turn ${state.turn} begins. Choose your move.`
       );
 
+
       updateUi();
+
     }
 
 
@@ -1336,51 +1985,99 @@
      */
 
     async function handlePlayerAction(action) {
+
       if (
         state.isBattleOver ||
         state.phase !== 'player'
       ) {
+
         return;
+
       }
 
-      const player = state.player;
-      const enemy = state.enemy;
 
+      /*
+       * Time Dilation has its own dedicated handler.
+       */
+      if (
+        state.player.timeUltimateActive
+      ) {
+
+        if (
+          action === 'dilate'
+        ) {
+
+          performTimeDilate();
+
+        }
+
+        return;
+
+      }
+
+
+      const player =
+        state.player;
+
+      const enemy =
+        state.enemy;
+
+
+      /*
+       * Ultimate Focus requirement.
+       */
       if (
         action === 'special' &&
         player.focus <
           getBladeStats(player).focusCap
       ) {
+
         setStatus(
           `You need ${getBladeStats(player).focusCap} Focus to use your Ultimate.`
         );
 
         return;
+
       }
 
+
+      /*
+       * Time Utility is unavailable during
+       * the double turn.
+       */
       if (
-        action === 'defend' &&
+        action === 'utility' &&
         player.blade === 'Time' &&
-        player.timeDefendLocked
+        player.timeDoubleTurnActive
       ) {
+
         setStatus(
-          'Time Defend is unavailable during the current effect.'
+          'Time Utility is disabled during the double turn.'
         );
 
         return;
+
       }
 
+
+      /*
+       * Electricity Utility is unavailable while
+       * its two guaranteed critical attacks remain.
+       */
       if (
-        action === 'defend' &&
+        action === 'utility' &&
         player.blade === 'Electricity' &&
         player.guaranteedCrits > 0
       ) {
+
         setStatus(
-          'Electricity Defend is unavailable while critical attacks are active.'
+          'Electricity Utility is unavailable while the 100% critical boost is active.'
         );
 
         return;
+
       }
+
 
       const success =
         performAction(
@@ -1389,34 +2086,69 @@
           action
         );
 
+
       if (!success) {
+
         updateUi();
+
         return;
+
       }
 
+
+      /*
+       * Starting Time's Ultimate is special:
+       * it doesn't consume a normal action because
+       * Dilation now controls the rest of the turn.
+       */
+      if (
+        action === 'special' &&
+        player.blade === 'Time'
+      ) {
+
+        updateUi();
+
+        return;
+
+      }
+
+
       endAction(player);
+
 
       if (
         checkBattleOver()
       ) {
+
         return;
+
       }
 
+
+      /*
+       * Double turn still has another action.
+       */
       if (
         player.actionsThisTurn > 0
       ) {
+
         state.phase = 'player';
+
 
         setStatus(
           'Extra action available. Choose your next move.'
         );
 
+
         updateUi();
 
         return;
+
       }
 
+
       await handleEnemyTurn();
+
     }
 
 
@@ -1427,45 +2159,71 @@
      */
 
     function switchPlayerBlade(newBlade) {
+
       if (
         state.isBattleOver ||
-        state.phase !== 'player'
+        state.phase !== 'player' ||
+        state.player.timeUltimateActive
       ) {
+
         return;
+
       }
+
 
       if (
         !BLADES[newBlade] ||
         newBlade === state.player.blade
       ) {
+
         return;
+
       }
+
 
       const oldBlade =
         state.player.blade;
 
+
+      /*
+       * Switching blade removes temporary blade-specific
+       * effects from the old blade.
+       */
       state.player.guaranteedCrits = 0;
-      state.player.timeDefendLocked = false;
+
+      state.player.timeDoubleTurnPending = false;
+
+      state.player.timeDoubleTurnActive = false;
+
       state.player.isDefending = false;
 
-      state.player.blade = newBlade;
+
+      state.player.blade =
+        newBlade;
+
 
       bladeButtons.forEach(button => {
+
         button.classList.toggle(
           'active',
           button.dataset.blade === newBlade
         );
+
       });
+
 
       addLog(
         `Player — switched from ${oldBlade} to ${newBlade}.`
       );
 
+
       setStatus(
         `${newBlade} selected. Choose your action.`
       );
 
+
       updateUi();
+
     }
 
 
@@ -1476,131 +2234,396 @@
      */
 
     function setStatus(message) {
-      battleStatusEl.textContent = message;
+
+      battleStatusEl.textContent =
+        message;
+
+    }
+
+
+    /*
+     * Build the action buttons dynamically.
+     *
+     * During Time Ultimate:
+     *
+     *     [ Dilate ]
+     *
+     * replaces:
+     *
+     *     [ Attack ] [ Utility ] [ Ultimate ]
+     */
+
+    function renderActionButtons() {
+
+      actionGrid.replaceChildren();
+
+
+      /*
+       * TIME DILATION MODE
+       */
+
+      if (
+        state.player.timeUltimateActive
+      ) {
+
+        actionGrid.classList.add(
+          'dilate-mode'
+        );
+
+
+        const button =
+          document.createElement('button');
+
+
+        button.type = 'button';
+
+        button.className =
+          'action-button dilate-button';
+
+        button.dataset.action =
+          'dilate';
+
+
+        button.textContent =
+          `Dilate (${state.player.timeUltimateHitsRemaining})`;
+
+
+        button.addEventListener(
+          'click',
+          () => {
+            handlePlayerAction('dilate');
+          }
+        );
+
+
+        actionGrid.appendChild(button);
+
+        return;
+
+      }
+
+
+      actionGrid.classList.remove(
+        'dilate-mode'
+      );
+
+
+      /*
+       * NORMAL ACTION MODE
+       */
+
+      const actions = [
+        {
+          action: 'attack',
+          label: 'Attack Skill'
+        },
+        {
+          action: 'utility',
+          label: 'Utility'
+        },
+        {
+          action: 'special',
+          label: 'Ultimate'
+        }
+      ];
+
+
+      actions.forEach(item => {
+
+        const button =
+          document.createElement('button');
+
+
+        button.type = 'button';
+
+        button.className =
+          'action-button';
+
+        button.dataset.action =
+          item.action;
+
+        button.textContent =
+          item.label;
+
+
+        if (
+          item.action === 'attack'
+        ) {
+
+          button.style.background =
+            'rgba(255, 95, 126, 0.12)';
+
+        }
+
+
+        if (
+          item.action === 'utility'
+        ) {
+
+          button.style.background =
+            'rgba(52, 215, 183, 0.12)';
+
+        }
+
+
+        if (
+          item.action === 'special'
+        ) {
+
+          button.style.background =
+            'rgba(255, 191, 105, 0.14)';
+
+        }
+
+
+        button.addEventListener(
+          'click',
+          () => {
+
+            handlePlayerAction(
+              item.action
+            );
+
+          }
+        );
+
+
+        actionGrid.appendChild(button);
+
+      });
+
     }
 
 
     function updateActionButtons() {
+
+      /*
+       * Dilation owns the controls.
+       */
+      if (
+        state.player.timeUltimateActive
+      ) {
+
+        renderActionButtons();
+
+        return;
+
+      }
+
+
+      renderActionButtons();
+
+
       const player =
         state.player;
+
 
       const disabled =
         state.isBattleOver ||
         state.phase !== 'player';
 
-      actionButtons.forEach(button => {
+
+      const buttons =
+        [...actionGrid.querySelectorAll('.action-button')];
+
+
+      buttons.forEach(button => {
+
         const action =
           button.dataset.action;
 
-        let isDisabled = disabled;
 
+        let isDisabled =
+          disabled;
+
+
+        /*
+         * Time Utility:
+         * unavailable during the double turn.
+         */
         if (
-          action === 'defend' &&
+          action === 'utility' &&
           player.blade === 'Time' &&
-          player.timeDefendLocked
+          player.timeDoubleTurnActive
         ) {
+
           isDisabled = true;
+
+          button.title =
+            'Utility is disabled during the Time double turn.';
+
         }
 
+
+        /*
+         * Electricity Utility:
+         * unavailable while guaranteed crits remain.
+         */
         if (
-          action === 'defend' &&
+          action === 'utility' &&
           player.blade === 'Electricity' &&
           player.guaranteedCrits > 0
         ) {
+
           isDisabled = true;
+
+          button.title =
+            'Utility is unavailable while the 100% critical boost is active.';
+
         }
 
+
+        /*
+         * Ultimate.
+         */
         if (
           action === 'special' &&
           player.focus <
             getBladeStats(player).focusCap
         ) {
+
           isDisabled = true;
-        }
 
-        button.disabled = isDisabled;
-
-        if (
-          action === 'special'
-        ) {
           button.title =
-            player.focus >=
-            getBladeStats(player).focusCap
-              ? 'Ultimate ready'
-              : `Requires ${getBladeStats(player).focusCap} Focus`;
+            `Requires ${getBladeStats(player).focusCap} Focus`;
+
         }
+
+
+        button.disabled =
+          isDisabled;
+
       });
+
     }
 
 
     function updateBladeButtons() {
+
       bladeButtons.forEach(button => {
+
         button.classList.toggle(
           'active',
           button.dataset.blade ===
             state.player.blade
         );
 
+
+        /*
+         * Blade switching is disabled during
+         * Dilation as well as enemy turns.
+         */
         button.disabled =
           state.isBattleOver ||
-          state.phase !== 'player';
+          state.phase !== 'player' ||
+          state.player.timeUltimateActive;
+
       });
+
     }
 
 
     function updateTurnInfo() {
+
       if (
         state.isBattleOver
       ) {
+
         turnInfoEl.textContent =
           'Battle finished';
+
         return;
+
       }
+
+
+      if (
+        state.player.timeUltimateActive
+      ) {
+
+        turnInfoEl.textContent =
+          `Time Dilation • ${state.player.timeUltimateHitsRemaining} hits remaining`;
+
+        return;
+
+      }
+
 
       if (
         state.phase === 'enemy'
       ) {
+
         turnInfoEl.textContent =
           'Enemy turn...';
+
         return;
+
       }
+
 
       const actions =
         state.player.actionsThisTurn;
 
-      turnInfoEl.textContent =
+
+      let text =
         `Turn ${state.turn} • ${actions} action${actions === 1 ? '' : 's'} remaining`;
+
+
+      if (
+        state.player.timeDoubleTurnActive
+      ) {
+
+        text +=
+          ' • Double Turn';
+
+      }
+
+
+      turnInfoEl.textContent =
+        text;
+
     }
 
 
     function updateUi() {
+
       const player =
         state.player;
 
       const enemy =
         state.enemy;
 
+
       playerHpEl.textContent =
         player.hp;
+
 
       playerFocusEl.textContent =
         `${player.focus} / ${getBladeStats(player).focusCap}`;
 
+
       enemyHpEl.textContent =
         enemy.hp;
+
 
       enemyFocusEl.textContent =
         `${enemy.focus} / ${getBladeStats(enemy).focusCap}`;
 
+
       playerBladeEl.textContent =
         `Blade: ${player.blade}`;
+
 
       enemyBladeEl.textContent =
         `Blade: ${enemy.blade}`;
 
+
       updateActionButtons();
+
       updateBladeButtons();
+
       updateTurnInfo();
+
     }
 
 
@@ -1611,33 +2634,51 @@
      */
 
     function resetBattle() {
+
       state.player =
         createFighter('Time');
 
+
       state.enemy =
-        createFighter(randomBlade());
+        createFighter(
+          randomBlade()
+        );
+
 
       state.turn = 1;
+
       state.phase = 'player';
+
       state.isBattleOver = false;
+
       state.log = [];
 
+
+      /*
+       * Both fighters begin their first normal turn.
+       */
       beginTurn(state.player);
+
       beginTurn(state.enemy);
+
 
       addLog(
         `Enemy — chose ${state.enemy.blade} blade.`
       );
 
+
       addLog(
         'Battle — A new blade duel begins.'
       );
+
 
       setStatus(
         'Choose your blade and move.'
       );
 
+
       updateUi();
+
     }
 
 
@@ -1648,12 +2689,16 @@
      */
 
     function delay(milliseconds) {
+
       return new Promise(resolve => {
+
         setTimeout(
           resolve,
           milliseconds
         );
+
       });
+
     }
 
 
@@ -1664,26 +2709,18 @@
      */
 
     bladeButtons.forEach(button => {
+
       button.addEventListener(
         'click',
         () => {
+
           switchPlayerBlade(
             button.dataset.blade
           );
+
         }
       );
-    });
 
-
-    actionButtons.forEach(button => {
-      button.addEventListener(
-        'click',
-        () => {
-          handlePlayerAction(
-            button.dataset.action
-          );
-        }
-      );
     });
 
 
