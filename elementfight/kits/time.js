@@ -6,7 +6,7 @@ export const TimeKit = {
   utilityName: 'Temporal Guard',
   specialName: 'Age of Stillness',
 
-  attackDamage: 100,
+  attackDamage: 125,
 
   ultimate: {
     hits: 20,
