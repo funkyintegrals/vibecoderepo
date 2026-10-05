@@ -101,7 +101,7 @@ export class Combat {
 
 
     if (attackerHasLightBuff(attacker)) {
-      damage = Math.max(1, Math.floor(damage * 1.5));
+      damage = Math.max(1, Math.floor(damage * 1.3));
     }
 
 
@@ -280,7 +280,7 @@ export class Combat {
       attacker.focus = 0;
       attacker.lightUltimateTurnsRemaining = kit.ultimate().turns;
       this.addLog(
-        `${this.getName(attacker)} — Enlighten activated for ${attacker.lightUltimateTurnsRemaining} turns.`
+        `${this.getName(attacker)} — Shimmer activated for ${attacker.lightUltimateTurnsRemaining} turns.`
       );
       return true;
     }
