@@ -427,7 +427,8 @@ export class Game {
 
       const success =
         this.combat.utility(
-          player
+          player,
+          enemy
         );
 
 
@@ -633,6 +634,21 @@ export class Game {
 
 
     /*
+     * Light AI.
+     */
+
+    if (enemy.blade === 'Light') {
+
+      if (enemy.hp <= 400) {
+        return 'attack';
+      }
+
+      return 'utility';
+
+    }
+
+
+    /*
      * Time AI.
      */
 
@@ -822,7 +838,8 @@ export class Game {
 
         success =
           this.combat.utility(
-            enemy
+            enemy,
+            player
           );
 
       }
@@ -876,11 +893,31 @@ export class Game {
   }
 
 
+  advanceLightUltimate(fighter) {
+
+    if (fighter.lightUltimateTurnsRemaining <= 0) {
+      return;
+    }
+
+    fighter.lightUltimateTurnsRemaining--;
+
+    if (fighter.lightUltimateTurnsRemaining === 0) {
+      this.addLog(
+        `${this.combat.getName(fighter)} — Enlighten effect ends.`
+      );
+    }
+
+  }
+
+
   finishEnemyTurn() {
 
     this.state.turn++;
 
     this.healEveryThreeTurns();
+
+    this.advanceLightUltimate(this.state.player);
+    this.advanceLightUltimate(this.state.enemy);
 
 
     this.state.phase =
@@ -937,6 +974,9 @@ export class Game {
      */
 
     player.guaranteedCrits =
+      0;
+
+    player.lightUltimateTurnsRemaining =
       0;
 
     player.timeDoubleTurnPending =
