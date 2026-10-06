@@ -155,38 +155,103 @@ export class UI {
     const count = options.timeHits || 1;
     const swords = [];
 
+    const target =
+      defender === this.playerPortrait
+        ? this.playerBlade
+        : this.enemyBlade;
+
+    const defenderRect =
+      defender.getBoundingClientRect();
+
+    const targetRect =
+      target.getBoundingClientRect();
+
+    const targetX =
+      targetRect.left +
+      targetRect.width / 2 -
+      (defenderRect.left + defenderRect.width / 2);
+
+    const targetY =
+      targetRect.top +
+      targetRect.height / 2 -
+      (defenderRect.top + defenderRect.height / 2);
+
     for (let i = 0; i < count; i++) {
       const sword = document.createElement('div');
 
       sword.className = 'ultimate-effect time-sword';
       sword.textContent = '🗡️';
 
-      const orbitAngle = Math.random() * Math.PI * 2;
-      const distance = 75 + Math.random() * 55;
-      const startX = Math.cos(orbitAngle) * distance;
-      const startY = Math.sin(orbitAngle) * distance;
+      // Spawn on a fixed-radius abstract unit circle.
+      const orbitAngle =
+        (Math.PI * 2 * i) / count +
+        (count === 1 ? Math.random() * Math.PI * 2 : 0);
 
-      // 🗡️ naturally points down-left (~225deg at 0 rotation).
-      // Rotate it so its tip points directly toward the center of the enemy blade.
-      const targetAngle = Math.atan2(-startY, -startX) * 180 / Math.PI;
-      const swordRotation = targetAngle - 225;
+      const radius = 125;
+      const startX = Math.cos(orbitAngle) * radius;
+      const startY = Math.sin(orbitAngle) * radius;
 
-      sword.style.setProperty('--sword-start-x', startX + 'px');
-      sword.style.setProperty('--sword-start-y', startY + 'px');
-      sword.style.setProperty('--sword-rotation', swordRotation + 'deg');
-      sword.style.setProperty('--sword-delay', '0ms');
+      // Aim at the actual blade before the sword becomes visible.
+      const targetAngle =
+        Math.atan2(
+          targetY - startY,
+          targetX - startX
+        ) * 180 / Math.PI;
+
+      const swordRotation =
+        targetAngle - 225;
+
+      sword.style.setProperty(
+        '--sword-start-x',
+        startX + 'px'
+      );
+
+      sword.style.setProperty(
+        '--sword-start-y',
+        startY + 'px'
+      );
+
+      sword.style.setProperty(
+        '--sword-target-x',
+        targetX + 'px'
+      );
+
+      sword.style.setProperty(
+        '--sword-target-y',
+        targetY + 'px'
+      );
+
+      sword.style.setProperty(
+        '--sword-rotation',
+        swordRotation + 'deg'
+      );
+
+      sword.style.setProperty(
+        '--sword-delay',
+        '0ms'
+      );
 
       defender.appendChild(sword);
       swords.push(sword);
     }
 
     return new Promise(resolve => {
-      const duration = count > 1 ? 800 : 650;
+      let finished = 0;
 
-      window.setTimeout(() => {
-        swords.forEach(sword => sword.remove());
-        resolve();
-      }, duration);
+      swords.forEach(sword => {
+        sword.addEventListener(
+          'animationend',
+          () => {
+            finished++;
+
+            if (finished === swords.length) {
+              swords.forEach(item => item.remove());
+              resolve();
+            }
+          },
+          { once: true }
+        );
+      });
     });
 
   }
