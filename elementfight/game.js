@@ -545,17 +545,18 @@ export class Game {
 
   async playerDilate() {
 
+    const player =
+      this.state.player;
+
     if (
       this.timeUltimateResolving ||
-      this.timeUltimateActionBusy
+      this.timeUltimateActionBusy ||
+      player.timeUltimateHitsRemaining <= 0
     ) {
       return;
     }
 
     this.timeUltimateActionBusy = true;
-
-    const player =
-      this.state.player;
 
     const enemy =
       this.state.enemy;
@@ -576,7 +577,11 @@ export class Game {
       totalHits
     );
 
-    player.timeUltimateHitsRemaining--;
+    player.timeUltimateHitsRemaining =
+      Math.max(
+        0,
+        player.timeUltimateHitsRemaining - 1
+      );
 
     this.timeUltimateActionBusy = false;
 
