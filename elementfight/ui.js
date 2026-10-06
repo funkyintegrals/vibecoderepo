@@ -197,90 +197,85 @@ export class UI {
   }
 
 
-  createTimeSwords(defender, count) {
+  createTimeSword(defender, index, total) {
 
     const targetOffset =
       this.getTimeTargetOffset(defender);
 
-    const swords = [];
+    const sword =
+      document.createElement('div');
 
-    for (let i = 0; i < count; i++) {
-      const sword = document.createElement('div');
+    sword.className =
+      'ultimate-effect time-sword';
 
-      sword.className =
-        'ultimate-effect time-sword';
+    sword.textContent =
+      '🗡️';
 
-      sword.textContent =
-        '🗡️';
+    // Each Dilate summons the next sword on the same fixed-radius circle.
+    const orbitAngle =
+      (Math.PI * 2 * index) / total;
 
-      const orbitAngle =
-        (Math.PI * 2 * i) / count;
+    const radius = 125;
 
-      const radius = 125;
+    const startX =
+      Math.cos(orbitAngle) * radius;
 
-      const startX =
-        Math.cos(orbitAngle) * radius;
+    const startY =
+      Math.sin(orbitAngle) * radius;
 
-      const startY =
-        Math.sin(orbitAngle) * radius;
+    // Aim at the actual weapon before the sword is revealed.
+    const targetAngle =
+      Math.atan2(
+        targetOffset.y - startY,
+        targetOffset.x - startX
+      ) * 180 / Math.PI;
 
-      const targetAngle =
-        Math.atan2(
-          targetOffset.y - startY,
-          targetOffset.x - startX
-        ) * 180 / Math.PI;
+    const swordTipAngle = 315;
 
-      const swordTipAngle = 315;
+    const swordRotation =
+      targetAngle - swordTipAngle + 180;
 
-      const swordRotation =
-        targetAngle - swordTipAngle + 180;
+    sword.style.setProperty(
+      '--sword-start-x',
+      startX + 'px'
+    );
 
-      sword.style.setProperty(
-        '--sword-start-x',
-        startX + 'px'
-      );
+    sword.style.setProperty(
+      '--sword-start-y',
+      startY + 'px'
+    );
 
-      sword.style.setProperty(
-        '--sword-start-y',
-        startY + 'px'
-      );
+    sword.style.setProperty(
+      '--sword-hold-x',
+      startX * 0.26 + 'px'
+    );
 
-      sword.style.setProperty(
-        '--sword-hold-x',
-        startX * 0.26 + 'px'
-      );
+    sword.style.setProperty(
+      '--sword-hold-y',
+      startY * 0.26 + 'px'
+    );
 
-      sword.style.setProperty(
-        '--sword-hold-y',
-        startY * 0.26 + 'px'
-      );
+    sword.style.setProperty(
+      '--sword-target-x',
+      targetOffset.x + 'px'
+    );
 
-      sword.style.setProperty(
-        '--sword-target-x',
-        targetOffset.x + 'px'
-      );
+    sword.style.setProperty(
+      '--sword-target-y',
+      targetOffset.y + 'px'
+    );
 
-      sword.style.setProperty(
-        '--sword-target-y',
-        targetOffset.y + 'px'
-      );
+    sword.style.setProperty(
+      '--sword-rotation',
+      swordRotation + 'deg'
+    );
 
-      sword.style.setProperty(
-        '--sword-rotation',
-        swordRotation + 'deg'
-      );
+    defender.appendChild(sword);
 
-      sword.style.setProperty(
-        '--sword-delay',
-        '0ms'
-      );
-
-      defender.appendChild(sword);
-
-      swords.push(sword);
-    }
-
-    return swords;
+    return {
+      sword,
+      targetOffset
+    };
 
   }
 
@@ -296,6 +291,8 @@ export class UI {
     field.className =
       'ultimate-effect time-field';
 
+    defender.appendChild(field);
+
     const targetOffset =
       this.getTimeTargetOffset(defender);
 
@@ -308,8 +305,6 @@ export class UI {
       '--target-y',
       targetOffset.y + 'px'
     );
-
-    defender.appendChild(field);
 
     return new Promise(resolve => {
       field.addEventListener(
@@ -340,12 +335,9 @@ export class UI {
             defender,
             field,
             stopwatch,
-            swords:
-              this.createTimeSwords(
-                defender,
-                count
-              ),
-            targetOffset
+            swords: [],
+            targetOffset,
+            count
           };
 
           resolve();
@@ -357,16 +349,58 @@ export class UI {
   }
 
 
-  playTimeAnimation(defender, options = {}) {
+  playTimeStopSword(defender, index, total) {
 
-    const count =
-      options.timeHits || 1;
+    const effect =
+      this.timeStopEffect;
+
+    if (!effect) {
+      return Promise.resolve();
+    }
+
+    const created =
+      this.createTimeSword(
+        defender,
+        index,
+        total
+      );
+
+    effect.swords.push(
+      created.sword
+    );
+
+    return new Promise(resolve => {
+      created.sword.addEventListener(
+        'animationend',
+        resolve,
+        { once: true }
+      );
+    });
+
+  }
+
+
+  playTimeStopRelease() {
+
+    const effect =
+      this.timeStopEffect;
+
+    if (!effect || !effect.swords.length) {
+      return Promise.resolve();
+    }
 
     const swords =
-      this.createTimeSwords(
-        defender,
-        count
+      [...effect.swords];
+
+    swords.forEach(sword => {
+      sword.classList.remove(
+        'time-sword'
       );
+
+      sword.classList.add(
+        'time-sword-impact'
+      );
+    });
 
     return new Promise(resolve => {
       let finished = 0;
@@ -378,60 +412,12 @@ export class UI {
             finished++;
 
             if (finished === swords.length) {
-              swords.forEach(
-                item => item.remove()
-              );
-
               resolve();
             }
           },
           { once: true }
         );
       });
-    });
-
-  }
-
-
-  playTimeDilationHit(defender) {
-
-    const effect =
-      this.timeStopEffect;
-
-    if (!effect || !effect.swords.length) {
-      return Promise.resolve();
-    }
-
-    const sword =
-      effect.swords.shift();
-
-    sword.classList.remove(
-      'time-sword'
-    );
-
-    sword.classList.add(
-      'time-sword-impact'
-    );
-
-    sword.style.setProperty(
-      '--sword-target-x',
-      effect.targetOffset.x + 'px'
-    );
-
-    sword.style.setProperty(
-      '--sword-target-y',
-      effect.targetOffset.y + 'px'
-    );
-
-    return new Promise(resolve => {
-      sword.addEventListener(
-        'animationend',
-        () => {
-          sword.remove();
-          resolve();
-        },
-        { once: true }
-      );
     });
 
   }
@@ -466,38 +452,24 @@ export class UI {
         ? this.playerPortrait
         : this.enemyPortrait;
 
-    let number =
-      portrait.querySelector(
-        '.damage-total'
-      );
+    const number =
+      document.createElement('div');
 
-    if (!number) {
-      number =
-        document.createElement('div');
-
-      number.className =
-        'damage-number damage-total';
-
-      portrait.appendChild(number);
-    }
+    number.className =
+      'damage-number damage-total';
 
     number.textContent =
       damage;
+
+    number.style.marginLeft =
+      '0px';
 
     number.classList.toggle(
       'critical',
       critical
     );
 
-    number.classList.remove(
-      'damage-total-pulse'
-    );
-
-    void number.offsetWidth;
-
-    number.classList.add(
-      'damage-total-pulse'
-    );
+    portrait.appendChild(number);
 
     return number;
 
@@ -524,7 +496,7 @@ export class UI {
 
     window.setTimeout(
       () => number.remove(),
-      850
+      1000
     );
 
   }
