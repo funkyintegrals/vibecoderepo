@@ -448,6 +448,10 @@ export class UI {
     const swords =
       [...effect.swords];
 
+    // Time resumes after the field vanishes, then the stored swords release.
+    effect.field.remove();
+    effect.field = null;
+
     return new Promise(resolve => {
       let finished = 0;
       let releaseDelay = 0;
@@ -509,15 +513,32 @@ export class UI {
       return;
     }
 
-    this.timeStopEffect.swords.forEach(
+    const {
+      defender,
+      field,
+      stopwatch,
+      swords
+    } = this.timeStopEffect;
+
+    swords.forEach(
       sword => sword.remove()
     );
 
-    this.timeStopEffect.field.remove();
-
-    if (this.timeStopEffect.stopwatch) {
-      this.timeStopEffect.stopwatch.remove();
+    if (field) {
+      field.remove();
     }
+
+    if (stopwatch) {
+      stopwatch.remove();
+    }
+
+    defender
+      .querySelectorAll(
+        '.time-sword, .time-sword-impact'
+      )
+      .forEach(
+        sword => sword.remove()
+      );
 
     this.timeStopEffect = null;
 
