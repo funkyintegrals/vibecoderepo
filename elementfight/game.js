@@ -597,6 +597,69 @@ export class Game {
   }
 
 
+  getPlayerLethalDamage(enemy, player) {
+
+    const playerKit =
+      getKit(player.blade);
+
+    const lightReduction =
+      enemy.blade === 'Light' && enemy.lightUltimateTurnsRemaining > 0
+        ? 0.7
+        : 1;
+
+    const defense =
+      enemy.isDefending
+        ? 0.5
+        : 1;
+
+    const postDefense = rawDamage =>
+      Math.max(
+        1,
+        Math.floor(
+          Math.max(1, rawDamage - enemy.def) *
+          defense *
+          lightReduction
+        )
+      );
+
+    let lethalDamage =
+      postDefense(playerKit.attackDamage);
+
+    if (player.blade === 'Electricity') {
+      lethalDamage = Math.max(
+        lethalDamage,
+        postDefense(playerKit.criticalDamage)
+      );
+    }
+
+    if (player.blade === 'Time') {
+      lethalDamage = Math.max(
+        lethalDamage,
+        postDefense(playerKit.ultimate.criticalDamage) * playerKit.ultimate.hits
+      );
+    }
+
+    if (player.blade === 'Light') {
+      lethalDamage = Math.max(
+        lethalDamage,
+        postDefense(playerKit.utilityDamage)
+      );
+    }
+
+    if (player.focus >= playerKit.focusCap) {
+      if (player.blade === 'Electricity') {
+        lethalDamage = Math.max(
+          lethalDamage,
+          postDefense(playerKit.ultimateDamage)
+        );
+      }
+    }
+
+    return lethalDamage;
+
+  }
+
+
   chooseEnemyAction() {
 
     const enemy =
@@ -672,12 +735,19 @@ export class Game {
         player.hp <=
         damageAfterDefense;
 
+      const playerLethalDamage =
+        this.getPlayerLethalDamage(enemy, player);
+
+      const safeFromLethalHit =
+        hpAfterEnlighten > playerLethalDamage;
+
       const safeToUse =
-        hpAfterEnlighten >= 600;
+        hpAfterEnlighten >= 600 &&
+        safeFromLethalHit;
 
       if (
-        safeToUse ||
-        canFinish
+        canFinish ||
+        safeToUse
       ) {
 
         return 'utility';
