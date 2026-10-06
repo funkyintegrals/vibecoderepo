@@ -642,8 +642,21 @@ button:focus-visible {
       rotate(var(--sword-rotation))
       scale(0.7);
   }
-  15% {
+  12% {
+    opacity: 0.35;
+    transform:
+      translate(-50%, -50%)
+      translate(calc(var(--sword-start-x) * 1.22), calc(var(--sword-start-y) * 1.22))
+      rotate(var(--sword-rotation))
+      scale(0.8);
+  }
+  28% {
     opacity: 1;
+    transform:
+      translate(-50%, -50%)
+      translate(var(--sword-start-x), var(--sword-start-y))
+      rotate(var(--sword-rotation))
+      scale(1);
   }
   72% {
     opacity: 1;
