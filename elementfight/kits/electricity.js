@@ -27,11 +27,11 @@ export const ElectricityKit = {
 
     let critical = false;
 
-    if (fighter.guaranteedCrits > 0) {
+    if (fighter.increasedCrits > 0) {
 
       critical = Math.random() < 0.75;
 
-      fighter.guaranteedCrits -= 1;
+      fighter.increasedCrits -= 1;
 
     } else {
 
@@ -57,7 +57,7 @@ export const ElectricityKit = {
 
   utility(fighter) {
 
-    if (fighter.guaranteedCrits > 0) {
+    if (fighter.increasedCrits > 0) {
 
       return {
         success: false,
@@ -67,7 +67,7 @@ export const ElectricityKit = {
       };
     }
 
-    fighter.guaranteedCrits =
+    fighter.increasedCrits =
       this.guaranteedCritAttacks;
 
     return {
