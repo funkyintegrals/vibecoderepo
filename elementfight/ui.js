@@ -211,9 +211,9 @@ export class UI {
     sword.textContent =
       '🗡️';
 
-    // Each Dilate summons the next sword on the same fixed-radius circle.
+    // Each sword gets an independent random point on the same fixed-radius circle.
     const orbitAngle =
-      (Math.PI * 2 * index) / total;
+      Math.random() * Math.PI * 2;
 
     const radius = 125;
 
@@ -247,12 +247,12 @@ export class UI {
 
     sword.style.setProperty(
       '--sword-hold-x',
-      startX * 0.26 + 'px'
+      startX * 0.62 + 'px'
     );
 
     sword.style.setProperty(
       '--sword-hold-y',
-      startY * 0.26 + 'px'
+      startY * 0.62 + 'px'
     );
 
     sword.style.setProperty(
