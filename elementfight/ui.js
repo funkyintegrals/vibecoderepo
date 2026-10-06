@@ -433,6 +433,54 @@ export class UI {
   }
 
 
+  playTimeStopReleaseSword(index, onHit) {
+
+    const effect =
+      this.timeStopEffect;
+
+    if (
+      !effect ||
+      !effect.swords[index]
+    ) {
+      return Promise.resolve();
+    }
+
+    const sword = effect.swords[index];
+
+    if (effect.field) {
+      effect.field.remove();
+      effect.field = null;
+    }
+
+    const holdTransform =
+      `translate(-50%, -50%)` +
+      ` translate(var(--sword-hold-x), var(--sword-hold-y))` +
+      ` rotate(calc(var(--sword-rotation) + 180deg))` +
+      ` scale(1)`;
+
+    sword.style.animation = 'none';
+    sword.style.opacity = '1';
+    sword.style.transform = holdTransform;
+
+    return new Promise(resolve => {
+      if (onHit) {
+        onHit(index);
+      }
+
+      sword.classList.remove('time-sword');
+      sword.classList.add('time-sword-impact');
+      sword.style.animation = '';
+
+      sword.addEventListener(
+        'animationend',
+        resolve,
+        { once: true }
+      );
+    });
+
+  }
+
+
   playTimeStopRelease(onHit) {
 
     const effect =
