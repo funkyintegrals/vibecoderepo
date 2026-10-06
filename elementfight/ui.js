@@ -159,9 +159,22 @@ export class UI {
       const sword = document.createElement('div');
 
       sword.className = 'ultimate-effect time-sword';
-      sword.textContent = '⚔️';
-      sword.style.setProperty('--sword-angle', (360 / count) * i + 'deg');
-      sword.style.setProperty('--sword-delay', Math.min(i * 12, 180) + 'ms');
+      sword.textContent = '🗡️';
+
+      const orbitAngle = Math.random() * Math.PI * 2;
+      const distance = 75 + Math.random() * 55;
+      const startX = Math.cos(orbitAngle) * distance;
+      const startY = Math.sin(orbitAngle) * distance;
+
+      // 🗡️ naturally points 45° toward the bottom-left, so rotate it
+      // to point from its random spawn position toward the enemy blade.
+      const targetAngle = Math.atan2(-startY, -startX) * 180 / Math.PI;
+      const swordRotation = targetAngle - 135;
+
+      sword.style.setProperty('--sword-start-x', startX + 'px');
+      sword.style.setProperty('--sword-start-y', startY + 'px');
+      sword.style.setProperty('--sword-rotation', swordRotation + 'deg');
+      sword.style.setProperty('--sword-delay', '0ms');
 
       defender.appendChild(sword);
       swords.push(sword);
