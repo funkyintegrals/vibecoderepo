@@ -204,8 +204,9 @@ export class UI {
           targetX - startX
         ) * 180 / Math.PI;
 
+      const swordTipAngle = 315;
       const swordRotation =
-        targetAngle - 225;
+        targetAngle - swordTipAngle;
 
       sword.style.setProperty(
         '--sword-start-x',
