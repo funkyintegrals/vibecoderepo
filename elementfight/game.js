@@ -329,7 +329,7 @@ export class Game {
         action === 'dilate'
       ) {
 
-        this.playerDilate();
+        await this.playerDilate();
 
       }
 
@@ -379,6 +379,18 @@ export class Game {
     if (
       action === 'special'
     ) {
+
+      if (
+        player.focus >= getKit(player.blade).focusCap
+      ) {
+        this.ui.setAnimationLock(true);
+        await this.ui.playUltimateAnimation(
+          player.blade,
+          'player',
+          'enemy'
+        );
+        this.ui.setAnimationLock(false);
+      }
 
       const result =
         this.combat.ultimate(
@@ -512,7 +524,7 @@ export class Game {
   }
 
 
-  playerDilate() {
+  async playerDilate() {
 
     const player =
       this.state.player;
@@ -520,6 +532,17 @@ export class Game {
     const enemy =
       this.state.enemy;
 
+
+    this.ui.setAnimationLock(true);
+
+    await this.ui.playUltimateAnimation(
+      'Time',
+      'player',
+      'enemy',
+      { timeHit: true }
+    );
+
+    this.ui.setAnimationLock(false);
 
     const result =
       this.combat.performTimeDilationHit(
@@ -866,6 +889,17 @@ export class Game {
       await delay(500);
 
 
+      this.ui.setAnimationLock(true);
+
+      await this.ui.playUltimateAnimation(
+        'Time',
+        'enemy',
+        'player',
+        { timeHits: getKit('Time').ultimate.hits }
+      );
+
+      this.ui.setAnimationLock(false);
+
       this.combat.performEnemyTimeUltimate(
         enemy,
         player
@@ -910,6 +944,20 @@ export class Game {
       if (
         action === 'special'
       ) {
+
+        if (
+          enemy.focus >= getKit(enemy.blade).focusCap
+        ) {
+          this.ui.setAnimationLock(true);
+
+          await this.ui.playUltimateAnimation(
+            enemy.blade,
+            'enemy',
+            'player'
+          );
+
+          this.ui.setAnimationLock(false);
+        }
 
         const result =
           this.combat.ultimate(
