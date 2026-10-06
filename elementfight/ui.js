@@ -248,12 +248,12 @@ export class UI {
 
     sword.style.setProperty(
       '--sword-hold-x',
-      startX * 0.35 + 'px'
+      startX * 0.62 + 'px'
     );
 
     sword.style.setProperty(
       '--sword-hold-y',
-      startY * 0.35 + 'px'
+      startY * 0.62 + 'px'
     );
 
     sword.style.setProperty(
@@ -264,6 +264,25 @@ export class UI {
     sword.style.setProperty(
       '--sword-target-y',
       targetOffset.y + 'px'
+    );
+
+    // Continue past the blade after impact.
+    const passX =
+      targetOffset.x +
+      (targetOffset.x - startX) * 0.45;
+
+    const passY =
+      targetOffset.y +
+      (targetOffset.y - startY) * 0.45;
+
+    sword.style.setProperty(
+      '--sword-pass-x',
+      passX + 'px'
+    );
+
+    sword.style.setProperty(
+      '--sword-pass-y',
+      passY + 'px'
     );
 
     sword.style.setProperty(
