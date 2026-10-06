@@ -556,7 +556,8 @@ export class Game {
       return;
     }
 
-    this.timeUltimateActionBusy = true;
+    this.timeUltimateActionBusy =
+      true;
 
     const enemy =
       this.state.enemy;
@@ -564,12 +565,22 @@ export class Game {
     const totalHits =
       getKit('Time').ultimate.hits;
 
-    const hitNumber =
-      totalHits -
+    const remainingBefore =
       player.timeUltimateHitsRemaining;
 
+    const hitNumber =
+      totalHits - remainingBefore;
+
     const isFinalDilate =
-      player.timeUltimateHitsRemaining === 1;
+      remainingBefore === 1;
+
+    // Consume the Dilate immediately so the counter can never
+    // remain at one after the final summon.
+    player.timeUltimateHitsRemaining =
+      Math.max(
+        0,
+        remainingBefore - 1
+      );
 
     await this.ui.playTimeStopSword(
       this.ui.enemyPortrait,
@@ -577,13 +588,8 @@ export class Game {
       totalHits
     );
 
-    player.timeUltimateHitsRemaining =
-      Math.max(
-        0,
-        player.timeUltimateHitsRemaining - 1
-      );
-
-    this.timeUltimateActionBusy = false;
+    this.timeUltimateActionBusy =
+      false;
 
     if (!isFinalDilate) {
 
@@ -597,11 +603,9 @@ export class Game {
 
     }
 
-    this.timeUltimateActionBusy = false;
     this.timeUltimateResolving =
       true;
 
-    // Roll all 20 hits while time is still stopped.
     const results = [];
 
     for (
@@ -621,7 +625,6 @@ export class Game {
       'Time resumes.'
     );
 
-    // The swords now land almost simultaneously, with only a tiny stagger.
     await this.ui.playTimeStopRelease(
       index => {
 
@@ -1295,7 +1298,9 @@ export class Game {
       this.ui.showDilationControls(
         this.state.player.timeUltimateHitsRemaining,
 
-        () => this.playerAction('dilate')
+        () => this.playerAction('dilate'),
+        this.timeUltimateResolving ||
+        this.timeUltimateActionBusy
       );
 
     } else {
