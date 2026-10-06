@@ -34,6 +34,7 @@ export class Game {
     this.timeUltimateTotalDamage = 0;
     this.timeUltimateCriticalHits = 0;
     this.timeUltimateResolving = false;
+    this.timeUltimateActionBusy = false;
 
     this.state.player =
       createFighter('Time');
@@ -544,9 +545,14 @@ export class Game {
 
   async playerDilate() {
 
-    if (this.timeUltimateResolving) {
+    if (
+      this.timeUltimateResolving ||
+      this.timeUltimateActionBusy
+    ) {
       return;
     }
+
+    this.timeUltimateActionBusy = true;
 
     const player =
       this.state.player;
@@ -572,6 +578,8 @@ export class Game {
 
     player.timeUltimateHitsRemaining--;
 
+    this.timeUltimateActionBusy = false;
+
     if (!isFinalDilate) {
 
       this.setStatus(
@@ -584,6 +592,7 @@ export class Game {
 
     }
 
+    this.timeUltimateActionBusy = false;
     this.timeUltimateResolving =
       true;
 
