@@ -351,32 +351,44 @@ export class UI {
       field.addEventListener(
         'animationend',
         () => {
-          const stopwatch =
-            document.createElement('div');
+          let stopwatch = null;
 
-          stopwatch.className =
-            'ultimate-effect time-stopwatch';
+          if (
+            options.showStopwatch !== false
+          ) {
+            stopwatch =
+              document.createElement('div');
 
-          stopwatch.textContent =
-            '⏱️';
+            stopwatch.className =
+              'ultimate-effect time-stopwatch';
 
-          stopwatch.style.setProperty(
-            '--target-x',
-            targetOffset.x + 'px'
-          );
+            stopwatch.textContent =
+              '⏱️';
 
-          stopwatch.style.setProperty(
-            '--target-y',
-            targetOffset.y + 'px'
-          );
+            stopwatch.style.setProperty(
+              '--target-x',
+              targetOffset.x + 'px'
+            );
 
-          defender.appendChild(stopwatch);
+            stopwatch.style.setProperty(
+              '--target-y',
+              targetOffset.y + 'px'
+            );
+
+            defender.appendChild(stopwatch);
+          }
 
           this.timeStopEffect = {
             defender,
             field,
             stopwatch,
-            swords: [],
+            swords:
+              options.summonAllSwords
+                ? this.createTimeSwords(
+                    defender,
+                    count
+                  )
+                : [],
             targetOffset,
             count
           };
@@ -502,7 +514,10 @@ export class UI {
     );
 
     this.timeStopEffect.field.remove();
-    this.timeStopEffect.stopwatch.remove();
+
+    if (this.timeStopEffect.stopwatch) {
+      this.timeStopEffect.stopwatch.remove();
+    }
 
     this.timeStopEffect = null;
 
