@@ -627,21 +627,24 @@ button:focus-visible {
 .time-field {
   left: 50%;
   top: 50%;
-  width: 280px;
-  height: 280px;
+  width: 300px;
+  height: 300px;
   border-radius: 50%;
   transform:
-    translate(-50%, -50%)
-    scale(0.75);
-  background: rgba(70, 150, 255, 0.12);
-  border: 3px solid rgba(90, 175, 255, 0.55);
+    translate(
+      calc(-50% + var(--target-x)),
+      calc(-50% + var(--target-y))
+    )
+    scale(0.7);
+  background: rgba(55, 145, 255, 0.14);
+  border: 3px solid rgba(85, 175, 255, 0.6);
   box-shadow:
-    0 0 28px rgba(70, 150, 255, 0.35),
-    inset 0 0 36px rgba(70, 150, 255, 0.12);
+    0 0 34px rgba(70, 155, 255, 0.42),
+    inset 0 0 44px rgba(70, 155, 255, 0.14);
   opacity: 0;
   animation:
     timeFieldAppear
-    0.45s
+    0.5s
     cubic-bezier(0.16, 1, 0.3, 1)
     forwards;
   z-index: 20;
@@ -651,8 +654,11 @@ button:focus-visible {
   0% {
     opacity: 0;
     transform:
-      translate(-50%, -50%)
-      scale(0.7);
+      translate(
+        calc(-50% + var(--target-x)),
+        calc(-50% + var(--target-y))
+      )
+      scale(0.35);
   }
 
   100% {
@@ -669,17 +675,17 @@ button:focus-visible {
 .time-stopwatch {
   left: 50%;
   top: 50%;
-  font-size: 2.4rem;
+  font-size: 2.5rem;
   line-height: 1;
   transform:
     translate(
       calc(-50% + var(--target-x)),
       calc(-50% + var(--target-y))
     )
-    translateY(-54px)
-    scale(0.75);
+    translateY(-62px)
+    scale(0.65);
   filter:
-    drop-shadow(0 0 10px rgba(120, 190, 255, 0.9));
+    drop-shadow(0 0 12px rgba(120, 195, 255, 0.95));
   opacity: 0;
   animation:
     stopwatchAppear
@@ -697,8 +703,8 @@ button:focus-visible {
         calc(-50% + var(--target-x)),
         calc(-50% + var(--target-y))
       )
-      translateY(-54px)
-      scale(0.55);
+      translateY(-62px)
+      scale(0.45);
   }
 
   100% {
@@ -708,7 +714,7 @@ button:focus-visible {
         calc(-50% + var(--target-x)),
         calc(-50% + var(--target-y))
       )
-      translateY(-54px)
+      translateY(-62px)
       scale(1);
   }
 }
@@ -722,9 +728,8 @@ button:focus-visible {
   opacity: 1;
   animation:
     timeSwordTimeStop
-    1.15s
-    cubic-bezier(0.16, 1, 0.3, 1)
-    var(--sword-delay)
+    0.48s
+    cubic-bezier(0.2, 0.8, 0.25, 1)
     both;
   z-index: 35;
 }
@@ -739,7 +744,7 @@ button:focus-visible {
       scale(0.9);
   }
 
-  23% {
+  28% {
     opacity: 1;
     transform:
       translate(-50%, -50%)
@@ -748,7 +753,7 @@ button:focus-visible {
       scale(1);
   }
 
-  32% {
+  40% {
     opacity: 1;
     transform:
       translate(-50%, -50%)
@@ -776,7 +781,7 @@ button:focus-visible {
   opacity: 1;
   animation:
     timeSwordImpact
-    0.28s
+    0.3s
     cubic-bezier(0.2, 0.9, 0.25, 1)
     forwards;
   z-index: 50;
@@ -788,7 +793,7 @@ button:focus-visible {
     transform:
       translate(-50%, -50%)
       translate(var(--sword-hold-x), var(--sword-hold-y))
-      rotate(var(--sword-rotation))
+      rotate(calc(var(--sword-rotation) + 360deg))
       scale(1);
   }
 
@@ -797,10 +802,44 @@ button:focus-visible {
     transform:
       translate(-50%, -50%)
       translate(var(--sword-target-x), var(--sword-target-y))
-      rotate(var(--sword-rotation))
-      scale(1.12);
+      rotate(calc(var(--sword-rotation) + 360deg))
+      scale(1.14);
   }
 }
+
+.damage-number.damage-total {
+  bottom: 32px;
+  animation:
+    damageTotalPulse
+    0.75s
+    ease-out
+    forwards;
+}
+
+@keyframes damageTotalPulse {
+  0% {
+    opacity: 0;
+    transform:
+      translate(-50%, 12px)
+      scale(0.8);
+  }
+
+  20% {
+    opacity: 1;
+    transform:
+      translate(-50%, 0)
+      scale(1.12);
+  }
+
+  100% {
+    opacity: 1;
+    transform:
+      translate(-50%, -16px)
+      scale(1);
+  }
+}
+
+
 
 .shimmer-star {
   left: 50%;
