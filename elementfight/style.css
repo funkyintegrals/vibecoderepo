@@ -783,7 +783,6 @@ button:focus-visible {
     timeSwordImpact
     0.9s
     cubic-bezier(0.2, 0.9, 0.25, 1)
-    var(--sword-release-delay, 0ms)
     forwards;
   z-index: 50;
 }
@@ -794,7 +793,7 @@ button:focus-visible {
     transform:
       translate(-50%, -50%)
       translate(var(--sword-hold-x), var(--sword-hold-y))
-      rotate(calc(var(--sword-rotation) + 360deg))
+      rotate(calc(var(--sword-rotation) + 180deg))
       scale(1);
   }
 
@@ -825,6 +824,8 @@ button:focus-visible {
       scale(1);
   }
 }
+
+
 
 .damage-number.damage-total {
   bottom: 32px;
