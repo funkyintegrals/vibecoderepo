@@ -564,67 +564,71 @@ export class Game {
     const totalHits =
       getKit('Time').ultimate.hits;
 
-    const remainingBefore =
-      player.timeUltimateHitsRemaining;
+    this.timeUltimateTotalDamage = 0;
+    this.timeUltimateCriticalHits = 0;
+    this.timeUltimateResolving = true;
 
-    const hitNumber =
-      totalHits - remainingBefore;
-
-    player.timeUltimateHitsRemaining =
-      Math.max(0, remainingBefore - 1);
-
-    this.setStatus(
-      player.timeUltimateHitsRemaining === 0
-        ? 'Final Dilate. Time resumes.'
-        : `Time stopped. ${player.timeUltimateHitsRemaining} Dilates remain.`
-    );
-
+    this.setStatus('Dilating time 20 times...');
     this.update();
 
-    await this.ui.playTimeStopSword(
-      this.ui.enemyPortrait,
-      hitNumber,
-      totalHits
-    );
+    // One Dilate click performs all 20 stored Dilates automatically.
+    for (let i = 0; i < totalHits; i++) {
 
-    const result =
-      this.combat.rollTimeDilationHit();
-
-    await this.ui.playTimeStopReleaseSword(
-      hitNumber,
-      () => {
-        const hitResult =
-          this.combat.performTimeDilationHit(
-            player,
-            enemy,
-            result,
-            { showDamage: false }
-          );
-
-        this.timeUltimateTotalDamage +=
-          hitResult.damage;
-
-        if (hitResult.critical) {
-          this.timeUltimateCriticalHits++;
-        }
-
-        this.ui.showAccumulatedDamage(
-          'enemy',
-          this.timeUltimateTotalDamage,
-          this.timeUltimateCriticalHits > 0,
-          hitNumber + 1
-        );
+      if (this.state.isBattleOver) {
+        break;
       }
-    );
 
-    this.timeUltimateActionBusy = false;
+      const remainingBefore =
+        player.timeUltimateHitsRemaining;
 
-    if (player.timeUltimateHitsRemaining > 0) {
+      const hitNumber =
+        totalHits - remainingBefore;
+
+      player.timeUltimateHitsRemaining =
+        Math.max(0, remainingBefore - 1);
+
       this.update();
-      return;
+
+      await this.ui.playTimeStopSword(
+        this.ui.enemyPortrait,
+        hitNumber,
+        totalHits
+      );
+
+      const result =
+        this.combat.rollTimeDilationHit();
+
+      await this.ui.playTimeStopReleaseSword(
+        hitNumber,
+        () => {
+          const hitResult =
+            this.combat.performTimeDilationHit(
+              player,
+              enemy,
+              result,
+              { showDamage: false }
+            );
+
+          this.timeUltimateTotalDamage +=
+            hitResult.damage;
+
+          if (hitResult.critical) {
+            this.timeUltimateCriticalHits++;
+          }
+
+          this.ui.showAccumulatedDamage(
+            'enemy',
+            this.timeUltimateTotalDamage,
+            this.timeUltimateCriticalHits > 0,
+            hitNumber + 1
+          );
+        }
+      );
     }
 
+    player.timeUltimateHitsRemaining = 0;
     player.timeUltimateActive = false;
+    this.timeUltimateActionBusy = false;
     this.ui.clearTimeStopEffects();
 
     this.addLog(
