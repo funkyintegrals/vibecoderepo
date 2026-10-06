@@ -48,6 +48,7 @@ export class UI {
       [...document.querySelectorAll('.blade-button')];
 
     this.timeStopEffect = null;
+    this.renderedLog = null;
 
   }
 
@@ -247,12 +248,12 @@ export class UI {
 
     sword.style.setProperty(
       '--sword-hold-x',
-      startX * 0.5 + 'px'
+      startX * 0.35 + 'px'
     );
 
     sword.style.setProperty(
       '--sword-hold-y',
-      startY * 0.5 + 'px'
+      startY * 0.35 + 'px'
     );
 
     sword.style.setProperty(
