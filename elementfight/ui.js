@@ -448,7 +448,7 @@ export class UI {
     const swords =
       [...effect.swords];
 
-    // Time resumes after the field vanishes, then the stored swords release.
+    // Time resumes after the field vanishes.
     effect.field.remove();
     effect.field = null;
 
@@ -457,13 +457,6 @@ export class UI {
       let releaseDelay = 0;
 
       swords.forEach((sword, index) => {
-        sword.classList.remove(
-          'time-sword'
-        );
-
-        sword.classList.add(
-          'time-sword-impact'
-        );
 
         const gap =
           Math.max(
@@ -474,16 +467,38 @@ export class UI {
         const currentDelay =
           releaseDelay;
 
-        sword.style.setProperty(
-          '--sword-release-delay',
-          currentDelay + 'ms'
-        );
+        // Keep the sword frozen at its hold position during the delay.
+        const holdTransform =
+          `translate(-50%, -50%)` +
+          ` translate(var(--sword-hold-x), var(--sword-hold-y))` +
+          ` rotate(calc(var(--sword-rotation) + 180deg))` +
+          ` scale(1)`;
+
+        sword.style.animation = 'none';
+        sword.style.opacity = '1';
+        sword.style.transform = holdTransform;
 
         window.setTimeout(
           () => {
+
             if (onHit) {
               onHit(index);
             }
+
+            sword.classList.remove(
+              'time-sword'
+            );
+
+            sword.classList.add(
+              'time-sword-impact'
+            );
+
+            sword.style.animation = '';
+            sword.style.setProperty(
+              '--sword-release-delay',
+              '0ms'
+            );
+
           },
           currentDelay
         );
@@ -493,15 +508,19 @@ export class UI {
         sword.addEventListener(
           'animationend',
           () => {
+
             finished++;
 
             if (finished === swords.length) {
               resolve();
             }
+
           },
           { once: true }
         );
+
       });
+
     });
 
   }
