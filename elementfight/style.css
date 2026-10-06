@@ -798,13 +798,22 @@ button:focus-visible {
       scale(1);
   }
 
-  100% {
+  82% {
     opacity: 1;
     transform:
       translate(-50%, -50%)
       translate(var(--sword-target-x), var(--sword-target-y))
       rotate(calc(var(--sword-rotation) + 360deg))
       scale(1.14);
+  }
+
+  100% {
+    opacity: 1;
+    transform:
+      translate(-50%, -50%)
+      translate(var(--sword-pass-x), var(--sword-pass-y))
+      rotate(calc(var(--sword-rotation) + 360deg))
+      scale(1);
   }
 }
 
