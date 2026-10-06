@@ -494,10 +494,6 @@ export class UI {
             );
 
             sword.style.animation = '';
-            sword.style.setProperty(
-              '--sword-release-delay',
-              '0ms'
-            );
 
           },
           currentDelay
