@@ -159,8 +159,7 @@ export class Combat {
         attacker,
         defender,
         result.rawDamage,
-        result.critical,
-        options.showDamage !== false
+        result.critical
       );
 
 
@@ -336,19 +335,17 @@ export class Combat {
     const kit =
       this.getKit('Time');
 
-
     const result =
       kit.rollDilationHit();
-
 
     const damage =
       this.dealDamage(
         attacker,
         defender,
         result.rawDamage,
-        result.critical
+        result.critical,
+        options.showDamage !== false
       );
-
 
     return {
       damage,
