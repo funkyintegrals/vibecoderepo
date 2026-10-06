@@ -280,6 +280,27 @@ export class UI {
   }
 
 
+  createTimeSwords(defender, count) {
+
+    const swords = [];
+
+    for (let i = 0; i < count; i++) {
+      const created =
+        this.createTimeSword(
+          defender,
+          i,
+          count
+        );
+
+      swords.push(
+        created.sword
+      );
+    }
+
+    return swords;
+
+  }
+
   playTimeStopSetup(defender, options = {}) {
 
     const count =
