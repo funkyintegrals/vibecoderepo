@@ -47,6 +47,8 @@ export class UI {
     this.bladeButtons =
       [...document.querySelectorAll('.blade-button')];
 
+    this.timeStopEffect = null;
+
   }
 
 
@@ -99,6 +101,10 @@ export class UI {
     }
 
     if (blade === 'Time') {
+      if (options.timeStop) {
+        return this.playTimeStopSetup(defender, options);
+      }
+
       return this.playTimeAnimation(defender, options);
     }
 
@@ -156,15 +162,19 @@ export class UI {
   }
 
 
-  playTimeAnimation(defender, options = {}) {
+  getTimeTarget(defender) {
 
-    const count = options.timeHits || 1;
-    const swords = [];
+    return defender === this.playerPortrait
+      ? this.playerWeapon
+      : this.enemyWeapon;
+
+  }
+
+
+  getTimeTargetOffset(defender) {
 
     const target =
-      defender === this.playerPortrait
-        ? this.playerWeapon
-        : this.enemyWeapon;
+      this.getTimeTarget(defender);
 
     const defenderRect =
       defender.getBoundingClientRect();
@@ -172,39 +182,56 @@ export class UI {
     const targetRect =
       target.getBoundingClientRect();
 
-    const targetX =
-      targetRect.left +
-      targetRect.width / 2 -
-      (defenderRect.left + defenderRect.width / 2);
+    return {
+      x:
+        targetRect.left +
+        targetRect.width / 2 -
+        (defenderRect.left + defenderRect.width / 2),
 
-    const targetY =
-      targetRect.top +
-      targetRect.height / 2 -
-      (defenderRect.top + defenderRect.height / 2);
+      y:
+        targetRect.top +
+        targetRect.height / 2 -
+        (defenderRect.top + defenderRect.height / 2)
+    };
+
+  }
+
+
+  createTimeSwords(defender, count) {
+
+    const targetOffset =
+      this.getTimeTargetOffset(defender);
+
+    const swords = [];
 
     for (let i = 0; i < count; i++) {
       const sword = document.createElement('div');
 
-      sword.className = 'ultimate-effect time-sword';
-      sword.textContent = '🗡️';
+      sword.className =
+        'ultimate-effect time-sword';
 
-      // Spawn on a fixed-radius abstract unit circle.
+      sword.textContent =
+        '🗡️';
+
       const orbitAngle =
-        (Math.PI * 2 * i) / count +
-        (count === 1 ? Math.random() * Math.PI * 2 : 0);
+        (Math.PI * 2 * i) / count;
 
       const radius = 125;
-      const startX = Math.cos(orbitAngle) * radius;
-      const startY = Math.sin(orbitAngle) * radius;
 
-      // Aim at the actual blade before the sword becomes visible.
+      const startX =
+        Math.cos(orbitAngle) * radius;
+
+      const startY =
+        Math.sin(orbitAngle) * radius;
+
       const targetAngle =
         Math.atan2(
-          targetY - startY,
-          targetX - startX
+          targetOffset.y - startY,
+          targetOffset.x - startX
         ) * 180 / Math.PI;
 
       const swordTipAngle = 315;
+
       const swordRotation =
         targetAngle - swordTipAngle + 180;
 
@@ -219,13 +246,23 @@ export class UI {
       );
 
       sword.style.setProperty(
+        '--sword-hold-x',
+        startX * 0.26 + 'px'
+      );
+
+      sword.style.setProperty(
+        '--sword-hold-y',
+        startY * 0.26 + 'px'
+      );
+
+      sword.style.setProperty(
         '--sword-target-x',
-        targetX + 'px'
+        targetOffset.x + 'px'
       );
 
       sword.style.setProperty(
         '--sword-target-y',
-        targetY + 'px'
+        targetOffset.y + 'px'
       );
 
       sword.style.setProperty(
@@ -239,8 +276,97 @@ export class UI {
       );
 
       defender.appendChild(sword);
+
       swords.push(sword);
     }
+
+    return swords;
+
+  }
+
+
+  playTimeStopSetup(defender, options = {}) {
+
+    const count =
+      options.timeHits || 20;
+
+    const field =
+      document.createElement('div');
+
+    field.className =
+      'ultimate-effect time-field';
+
+    const targetOffset =
+      this.getTimeTargetOffset(defender);
+
+    field.style.setProperty(
+      '--target-x',
+      targetOffset.x + 'px'
+    );
+
+    field.style.setProperty(
+      '--target-y',
+      targetOffset.y + 'px'
+    );
+
+    defender.appendChild(field);
+
+    return new Promise(resolve => {
+      field.addEventListener(
+        'animationend',
+        () => {
+          const stopwatch =
+            document.createElement('div');
+
+          stopwatch.className =
+            'ultimate-effect time-stopwatch';
+
+          stopwatch.textContent =
+            '⏱️';
+
+          stopwatch.style.setProperty(
+            '--target-x',
+            targetOffset.x + 'px'
+          );
+
+          stopwatch.style.setProperty(
+            '--target-y',
+            targetOffset.y + 'px'
+          );
+
+          defender.appendChild(stopwatch);
+
+          this.timeStopEffect = {
+            defender,
+            field,
+            stopwatch,
+            swords:
+              this.createTimeSwords(
+                defender,
+                count
+              ),
+            targetOffset
+          };
+
+          resolve();
+        },
+        { once: true }
+      );
+    });
+
+  }
+
+
+  playTimeAnimation(defender, options = {}) {
+
+    const count =
+      options.timeHits || 1;
+
+    const swords =
+      this.createTimeSwords(
+        defender,
+        count
+      );
 
     return new Promise(resolve => {
       let finished = 0;
@@ -252,7 +378,10 @@ export class UI {
             finished++;
 
             if (finished === swords.length) {
-              swords.forEach(item => item.remove());
+              swords.forEach(
+                item => item.remove()
+              );
+
               resolve();
             }
           },
@@ -260,6 +389,143 @@ export class UI {
         );
       });
     });
+
+  }
+
+
+  playTimeDilationHit(defender) {
+
+    const effect =
+      this.timeStopEffect;
+
+    if (!effect || !effect.swords.length) {
+      return Promise.resolve();
+    }
+
+    const sword =
+      effect.swords.shift();
+
+    sword.classList.remove(
+      'time-sword'
+    );
+
+    sword.classList.add(
+      'time-sword-impact'
+    );
+
+    sword.style.setProperty(
+      '--sword-target-x',
+      effect.targetOffset.x + 'px'
+    );
+
+    sword.style.setProperty(
+      '--sword-target-y',
+      effect.targetOffset.y + 'px'
+    );
+
+    return new Promise(resolve => {
+      sword.addEventListener(
+        'animationend',
+        () => {
+          sword.remove();
+          resolve();
+        },
+        { once: true }
+      );
+    });
+
+  }
+
+
+  clearTimeStopEffects() {
+
+    if (!this.timeStopEffect) {
+      return;
+    }
+
+    this.timeStopEffect.swords.forEach(
+      sword => sword.remove()
+    );
+
+    this.timeStopEffect.field.remove();
+    this.timeStopEffect.stopwatch.remove();
+
+    this.timeStopEffect = null;
+
+  }
+
+
+  showAccumulatedDamage(
+    defender,
+    damage,
+    critical = false
+  ) {
+
+    const portrait =
+      defender === 'player'
+        ? this.playerPortrait
+        : this.enemyPortrait;
+
+    let number =
+      portrait.querySelector(
+        '.damage-total'
+      );
+
+    if (!number) {
+      number =
+        document.createElement('div');
+
+      number.className =
+        'damage-number damage-total';
+
+      portrait.appendChild(number);
+    }
+
+    number.textContent =
+      damage;
+
+    number.classList.toggle(
+      'critical',
+      critical
+    );
+
+    number.classList.remove(
+      'damage-total-pulse'
+    );
+
+    void number.offsetWidth;
+
+    number.classList.add(
+      'damage-total-pulse'
+    );
+
+    return number;
+
+  }
+
+
+  finishAccumulatedDamage(
+    defender
+  ) {
+
+    const portrait =
+      defender === 'player'
+        ? this.playerPortrait
+        : this.enemyPortrait;
+
+    const number =
+      portrait.querySelector(
+        '.damage-total'
+      );
+
+    if (!number) {
+      return;
+    }
+
+    window.setTimeout(
+      () => number.remove(),
+      850
+    );
 
   }
 
