@@ -111,9 +111,9 @@ export class UI {
       bolt.className = 'ultimate-effect thunder-bolt';
       bolt.textContent = '⚡';
       const directions = [
-        { x: '12%', y: '8%', startX: '-90px', startY: '-70px', endX: '18px', endY: '42px', rotation: '35deg' },
-        { x: '88%', y: '18%', startX: '90px', startY: '-55px', endX: '-18px', endY: '38px', rotation: '-35deg' },
-        { x: '50%', y: '0%', startX: '0px', startY: '-110px', endX: '0px', endY: '48px', rotation: '0deg' }
+        { x: '12%', y: '8%', startX: '-55px', startY: '-45px', endX: '35px', endY: '70px', rotation: '45deg' },
+        { x: '88%', y: '18%', startX: '55px', startY: '-40px', endX: '-35px', endY: '65px', rotation: '-45deg' },
+        { x: '50%', y: '0%', startX: '0px', startY: '-70px', endX: '0px', endY: '70px', rotation: '0deg' }
       ][i];
 
       bolt.style.setProperty('--bolt-x', directions.x);
