@@ -436,11 +436,9 @@ export class UI {
     const swords =
       [...effect.swords];
 
-    const releaseGap =
-      14;
-
     return new Promise(resolve => {
       let finished = 0;
+      let releaseDelay = 0;
 
       swords.forEach((sword, index) => {
         sword.classList.remove(
@@ -451,9 +449,18 @@ export class UI {
           'time-sword-impact'
         );
 
+        const gap =
+          Math.max(
+            0,
+            300 - index * 10
+          );
+
+        const currentDelay =
+          releaseDelay;
+
         sword.style.setProperty(
           '--sword-release-delay',
-          index * releaseGap + 'ms'
+          currentDelay + 'ms'
         );
 
         window.setTimeout(
@@ -462,8 +469,10 @@ export class UI {
               onHit(index);
             }
           },
-          index * releaseGap
+          currentDelay
         );
+
+        releaseDelay += gap;
 
         sword.addEventListener(
           'animationend',
