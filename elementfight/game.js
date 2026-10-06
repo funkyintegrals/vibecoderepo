@@ -596,13 +596,7 @@ export class Game {
       i++
     ) {
       results.push(
-        this.combat.performTimeDilationHit(
-          player,
-          enemy,
-          {
-            showDamage: false
-          }
-        )
+        this.combat.rollTimeDilationHit()
       );
     }
 
@@ -618,7 +612,14 @@ export class Game {
       index => {
 
         const result =
-          results[index];
+          this.combat.performTimeDilationHit(
+            player,
+            enemy,
+            results[index],
+            {
+              showDamage: false
+            }
+          );
 
         this.timeUltimateTotalDamage +=
           result.damage;
