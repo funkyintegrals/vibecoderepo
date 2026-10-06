@@ -601,6 +601,7 @@ export class Game {
       false;
 
     if (!isFinalDilate) {
+      this.update();
       return;
     }
 
