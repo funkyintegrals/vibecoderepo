@@ -556,8 +556,7 @@ export class Game {
       return;
     }
 
-    this.timeUltimateActionBusy =
-      true;
+    this.timeUltimateActionBusy = true;
 
     const enemy =
       this.state.enemy;
@@ -571,24 +570,15 @@ export class Game {
     const hitNumber =
       totalHits - remainingBefore;
 
-    const isFinalDilate =
-      remainingBefore === 1;
-
-    // Consume the Dilate immediately so the counter never visually
-    // sticks at one while the final sword is being summoned.
     player.timeUltimateHitsRemaining =
-      Math.max(
-        0,
-        remainingBefore - 1
-      );
+      Math.max(0, remainingBefore - 1);
 
     this.setStatus(
-      isFinalDilate
-        ? 'Final sword summoned. Time is about to resume.'
-        : `Time stopped. ${player.timeUltimateHitsRemaining} swords remain.`
+      player.timeUltimateHitsRemaining === 0
+        ? 'Final Dilate. Time resumes.'
+        : `Time stopped. ${player.timeUltimateHitsRemaining} Dilates remain.`
     );
 
-    // Reflect the decrement immediately in the button/counter.
     this.update();
 
     await this.ui.playTimeStopSword(
@@ -597,53 +587,24 @@ export class Game {
       totalHits
     );
 
-    this.timeUltimateActionBusy =
-      false;
+    const result =
+      this.combat.rollTimeDilationHit();
 
-    if (!isFinalDilate) {
-      this.update();
-      return;
-    }
-
-    this.timeUltimateResolving =
-      true;
-
-    const results = [];
-
-    for (
-      let i = 0;
-      i < totalHits;
-      i++
-    ) {
-      results.push(
-        this.combat.rollTimeDilationHit()
-      );
-    }
-
-    this.timeUltimateTotalDamage = 0;
-    this.timeUltimateCriticalHits = 0;
-
-    this.setStatus(
-      'Time resumes.'
-    );
-
-    await this.ui.playTimeStopRelease(
-      index => {
-
-        const result =
+    await this.ui.playTimeStopReleaseSword(
+      hitNumber,
+      () => {
+        const hitResult =
           this.combat.performTimeDilationHit(
             player,
             enemy,
-            results[index],
-            {
-              showDamage: false
-            }
+            result,
+            { showDamage: false }
           );
 
         this.timeUltimateTotalDamage +=
-          result.damage;
+          hitResult.damage;
 
-        if (result.critical) {
+        if (hitResult.critical) {
           this.timeUltimateCriticalHits++;
         }
 
@@ -651,41 +612,38 @@ export class Game {
           'enemy',
           this.timeUltimateTotalDamage,
           this.timeUltimateCriticalHits > 0,
-          index + 1
+          hitNumber + 1
         );
-
       }
     );
 
-    player.timeUltimateActive =
-      false;
+    this.timeUltimateActionBusy = false;
 
+    if (player.timeUltimateHitsRemaining > 0) {
+      this.update();
+      return;
+    }
+
+    player.timeUltimateActive = false;
     this.ui.clearTimeStopEffects();
 
     this.addLog(
       `Player — Age of Stillness: ${this.timeUltimateCriticalHits} total crits, ${this.timeUltimateTotalDamage} total damage.`
     );
 
-    this.timeUltimateResolving =
-      false;
+    this.timeUltimateResolving = false;
 
     const battleOver =
       this.checkBattleOver();
 
-    this.ui.finishAccumulatedDamage(
-      'enemy'
-    );
+    this.ui.finishAccumulatedDamage('enemy');
 
     if (battleOver) {
       return;
     }
 
-    this.setStatus(
-      'Dilation complete.'
-    );
-
+    this.setStatus('Dilation complete.');
     this.update();
-
     await this.enemyTurn();
 
   }
