@@ -326,17 +326,24 @@ export class Combat {
    * player and enemy.
    */
 
+  rollTimeDilationHit() {
+
+    return this.getKit(
+      'Time'
+    ).rollDilationHit();
+
+  }
+
+
   performTimeDilationHit(
     attacker,
     defender,
+    hit = null,
     options = {}
   ) {
 
-    const kit =
-      this.getKit('Time');
-
     const result =
-      kit.rollDilationHit();
+      hit || this.rollTimeDilationHit();
 
     const damage =
       this.dealDamage(
