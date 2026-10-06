@@ -166,10 +166,7 @@ export class UI {
       const startX = Math.cos(orbitAngle) * distance;
       const startY = Math.sin(orbitAngle) * distance;
 
-      // 🗡️ naturally points 45° toward the bottom-left, so rotate it
-      // to point from its random spawn position toward the enemy blade.
-      const targetAngle = Math.atan2(-startY, -startX) * 180 / Math.PI;
-      const swordRotation = targetAngle - 135;
+      const swordRotation = Math.random() * 360;
 
       sword.style.setProperty('--sword-start-x', startX + 'px');
       sword.style.setProperty('--sword-start-y', startY + 'px');
