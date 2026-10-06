@@ -389,7 +389,7 @@ export class Game {
           'player',
           'enemy'
         );
-        this.ui.setAnimationLock(false);
+        
       }
 
       const result =
@@ -542,7 +542,7 @@ export class Game {
       { timeHit: true }
     );
 
-    this.ui.setAnimationLock(false);
+    
 
     const result =
       this.combat.performTimeDilationHit(
@@ -898,7 +898,7 @@ export class Game {
         { timeHits: getKit('Time').ultimate.hits }
       );
 
-      this.ui.setAnimationLock(false);
+      
 
       this.combat.performEnemyTimeUltimate(
         enemy,
@@ -956,7 +956,7 @@ export class Game {
             'player'
           );
 
-          this.ui.setAnimationLock(false);
+          
         }
 
         const result =
