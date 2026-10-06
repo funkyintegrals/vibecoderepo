@@ -824,7 +824,8 @@ export class UI {
 
   showDilationControls(
     remaining,
-    onDilate
+    onDilate,
+    disabled = false
   ) {
 
     this.actionGrid.replaceChildren();
@@ -846,7 +847,8 @@ export class UI {
       `Dilate (${Math.max(0, remaining)})`;
 
     button.disabled =
-      remaining <= 0;
+      remaining <= 0 ||
+      disabled;
 
     button.addEventListener(
       'click',
