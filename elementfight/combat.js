@@ -90,7 +90,8 @@ export class Combat {
     attacker,
     defender,
     rawDamage,
-    critical = false
+    critical = false,
+    showDamage = true
   ) {
 
     let damage =
@@ -118,15 +119,17 @@ export class Combat {
       );
 
 
-    this.ui.addDamageNumber(
-      defender === this.state.player
-        ? 'player'
-        : 'enemy',
+    if (showDamage) {
+      this.ui.addDamageNumber(
+        defender === this.state.player
+          ? 'player'
+          : 'enemy',
 
-      damage,
+        damage,
 
-      critical
-    );
+        critical
+      );
+    }
 
 
     defender.isDefending =
@@ -156,7 +159,8 @@ export class Combat {
         attacker,
         defender,
         result.rawDamage,
-        result.critical
+        result.critical,
+        options.showDamage !== false
       );
 
 
@@ -325,7 +329,8 @@ export class Combat {
 
   performTimeDilationHit(
     attacker,
-    defender
+    defender,
+    options = {}
   ) {
 
     const kit =
