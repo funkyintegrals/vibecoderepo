@@ -929,14 +929,11 @@ export class Game {
 
       enemy.focus = 0;
 
-
       this.setStatus(
         'Enemy uses Age of Stillness...'
       );
 
-
       this.update();
-
 
       await delay(500);
 
@@ -944,28 +941,84 @@ export class Game {
         'Time',
         'enemy',
         'player',
-        { timeHits: getKit('Time').ultimate.hits }
+        {
+          timeStop: true,
+          timeHits:
+            getKit('Time').ultimate.hits,
+          summonAllSwords: true,
+          showStopwatch: false
+        }
       );
 
-      
+      const totalHits =
+        getKit('Time').ultimate.hits;
 
-      this.combat.performEnemyTimeUltimate(
-        enemy,
-        player
+      const results = [];
+
+      for (
+        let i = 0;
+        i < totalHits;
+        i++
+      ) {
+        results.push(
+          this.combat.rollTimeDilationHit()
+        );
+      }
+
+      let totalDamage = 0;
+      let criticalHits = 0;
+
+      this.setStatus(
+        'Time resumes.'
       );
 
+      await this.ui.playTimeStopRelease(
+        index => {
+
+          const result =
+            this.combat.performTimeDilationHit(
+              enemy,
+              player,
+              results[index],
+              {
+                showDamage: false
+              }
+            );
+
+          totalDamage +=
+            result.damage;
+
+          if (result.critical) {
+            criticalHits++;
+          }
+
+          this.ui.showAccumulatedDamage(
+            'player',
+            totalDamage,
+            criticalHits > 0,
+            index + 1
+          );
+
+        }
+      );
+
+      this.ui.clearTimeStopEffects();
+
+      this.addLog(
+        `Enemy — Age of Stillness: ${criticalHits} total crits, ${totalDamage} total damage.`
+      );
+
+      this.ui.finishAccumulatedDamage(
+        'player'
+      );
 
       if (
         this.checkBattleOver()
       ) {
-
         return;
-
       }
 
-
-      await delay(500);
-
+      await delay(300);
 
       this.finishEnemyTurn();
 
