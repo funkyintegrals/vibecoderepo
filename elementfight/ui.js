@@ -247,12 +247,12 @@ export class UI {
 
     sword.style.setProperty(
       '--sword-hold-x',
-      startX * 0.62 + 'px'
+      startX * 0.5 + 'px'
     );
 
     sword.style.setProperty(
       '--sword-hold-y',
-      startY * 0.62 + 'px'
+      startY * 0.5 + 'px'
     );
 
     sword.style.setProperty(
