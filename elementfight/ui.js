@@ -401,32 +401,50 @@ export class UI {
   }
 
 
-  playTimeStopRelease() {
+  playTimeStopRelease(onHit) {
 
     const effect =
       this.timeStopEffect;
 
-    if (!effect || !effect.swords.length) {
+    if (
+      !effect ||
+      !effect.swords.length
+    ) {
       return Promise.resolve();
     }
 
     const swords =
       [...effect.swords];
 
-    swords.forEach(sword => {
-      sword.classList.remove(
-        'time-sword'
-      );
-
-      sword.classList.add(
-        'time-sword-impact'
-      );
-    });
+    const releaseGap =
+      14;
 
     return new Promise(resolve => {
       let finished = 0;
 
-      swords.forEach(sword => {
+      swords.forEach((sword, index) => {
+        sword.classList.remove(
+          'time-sword'
+        );
+
+        sword.classList.add(
+          'time-sword-impact'
+        );
+
+        sword.style.setProperty(
+          '--sword-release-delay',
+          index * releaseGap + 'ms'
+        );
+
+        window.setTimeout(
+          () => {
+            if (onHit) {
+              onHit(index);
+            }
+          },
+          index * releaseGap
+        );
+
         sword.addEventListener(
           'animationend',
           () => {
@@ -465,7 +483,8 @@ export class UI {
   showAccumulatedDamage(
     defender,
     damage,
-    critical = false
+    critical = false,
+    hitCount = 1
   ) {
 
     const portrait =
@@ -473,24 +492,49 @@ export class UI {
         ? this.playerPortrait
         : this.enemyPortrait;
 
-    const number =
-      document.createElement('div');
+    let number =
+      portrait.querySelector(
+        '.damage-total'
+      );
 
-    number.className =
-      'damage-number damage-total';
+    if (!number) {
+      number =
+        document.createElement('div');
+
+      number.className =
+        'damage-number damage-total';
+
+      portrait.appendChild(number);
+    }
 
     number.textContent =
       damage;
-
-    number.style.marginLeft =
-      '0px';
 
     number.classList.toggle(
       'critical',
       critical
     );
 
-    portrait.appendChild(number);
+    const damageScale =
+      1 + Math.min(
+        0.22,
+        hitCount * 0.011
+      );
+
+    number.style.setProperty(
+      '--damage-scale',
+      damageScale
+    );
+
+    number.classList.remove(
+      'damage-total-pulse'
+    );
+
+    void number.offsetWidth;
+
+    number.classList.add(
+      'damage-total-pulse'
+    );
 
     return number;
 
@@ -515,9 +559,20 @@ export class UI {
       return;
     }
 
-    window.setTimeout(
+    number.classList.remove(
+      'damage-total-pulse'
+    );
+
+    void number.offsetWidth;
+
+    number.classList.add(
+      'damage-total-fade'
+    );
+
+    number.addEventListener(
+      'animationend',
       () => number.remove(),
-      1000
+      { once: true }
     );
 
   }
