@@ -642,16 +642,16 @@ button:focus-visible {
     opacity: 1;
     transform:
       translate(-50%, -50%)
-      translate(calc(var(--sword-start-x) * 0.55), calc(var(--sword-start-y) * 0.55))
-      rotate(var(--sword-rotation))
+      translate(var(--sword-start-x), var(--sword-start-y))
+      rotate(calc(var(--sword-rotation) + 270deg))
       scale(1);
   }
   100% {
     opacity: 0;
     transform:
       translate(-50%, -50%)
-      translate(0, 0)
-      rotate(var(--sword-rotation))
+      translate(var(--sword-start-x), var(--sword-start-y))
+      rotate(calc(var(--sword-rotation) + 360deg))
       scale(0.85);
   }
 }
