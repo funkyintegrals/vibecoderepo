@@ -807,8 +807,17 @@ button:focus-visible {
       scale(1.14);
   }
 
-  100% {
+  94% {
     opacity: 1;
+    transform:
+      translate(-50%, -50%)
+      translate(var(--sword-pass-x), var(--sword-pass-y))
+      rotate(calc(var(--sword-rotation) + 360deg))
+      scale(1);
+  }
+
+  100% {
+    opacity: 0;
     transform:
       translate(-50%, -50%)
       translate(var(--sword-pass-x), var(--sword-pass-y))
