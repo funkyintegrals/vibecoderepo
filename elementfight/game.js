@@ -383,7 +383,6 @@ export class Game {
       if (
         player.focus >= getKit(player.blade).focusCap
       ) {
-        this.ui.setAnimationLock(true);
         await this.ui.playUltimateAnimation(
           player.blade,
           'player',
@@ -531,9 +530,6 @@ export class Game {
 
     const enemy =
       this.state.enemy;
-
-
-    this.ui.setAnimationLock(true);
 
     await this.ui.playUltimateAnimation(
       'Time',
@@ -888,9 +884,6 @@ export class Game {
 
       await delay(500);
 
-
-      this.ui.setAnimationLock(true);
-
       await this.ui.playUltimateAnimation(
         'Time',
         'enemy',
@@ -948,7 +941,6 @@ export class Game {
         if (
           enemy.focus >= getKit(enemy.blade).focusCap
         ) {
-          this.ui.setAnimationLock(true);
 
           await this.ui.playUltimateAnimation(
             enemy.blade,
