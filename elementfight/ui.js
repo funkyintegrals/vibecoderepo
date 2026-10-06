@@ -110,7 +110,19 @@ export class UI {
 
       bolt.className = 'ultimate-effect thunder-bolt';
       bolt.textContent = '⚡';
-      bolt.style.setProperty('--bolt-index', i);
+      const directions = [
+        { x: '12%', y: '8%', startX: '-90px', startY: '-70px', endX: '18px', endY: '42px', rotation: '35deg' },
+        { x: '88%', y: '18%', startX: '90px', startY: '-55px', endX: '-18px', endY: '38px', rotation: '-35deg' },
+        { x: '50%', y: '0%', startX: '0px', startY: '-110px', endX: '0px', endY: '48px', rotation: '0deg' }
+      ][i];
+
+      bolt.style.setProperty('--bolt-x', directions.x);
+      bolt.style.setProperty('--bolt-y', directions.y);
+      bolt.style.setProperty('--bolt-start-x', directions.startX);
+      bolt.style.setProperty('--bolt-start-y', directions.startY);
+      bolt.style.setProperty('--bolt-end-x', directions.endX);
+      bolt.style.setProperty('--bolt-end-y', directions.endY);
+      bolt.style.setProperty('--bolt-rotation', directions.rotation);
 
       defender.appendChild(bolt);
       bolts.push(bolt);
