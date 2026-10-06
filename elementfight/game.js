@@ -360,7 +360,7 @@ export class Game {
     if (
       action === 'utility' &&
       player.blade === 'Electricity' &&
-      player.guaranteedCrits > 0
+      player.increasedCrits > 0
     ) {
 
       this.setStatus(
@@ -809,7 +809,7 @@ export class Game {
     ) {
 
       if (
-        enemy.guaranteedCrits > 0
+        enemy.increasedCrits > 0
       ) {
 
         return 'attack';
@@ -1122,7 +1122,7 @@ export class Game {
      * Clear temporary kit effects.
      */
 
-    player.guaranteedCrits =
+    player.increasedCrits =
       0;
 
     player.lightUltimateTurnsRemaining =
