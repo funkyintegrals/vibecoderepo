@@ -38,6 +38,12 @@ export class UI {
     this.enemyPortrait =
       document.getElementById('enemyPortrait');
 
+    this.playerWeapon =
+      document.getElementById('playerWeapon');
+
+    this.enemyWeapon =
+      document.getElementById('enemyWeapon');
+
     this.bladeButtons =
       [...document.querySelectorAll('.blade-button')];
 
@@ -157,8 +163,8 @@ export class UI {
 
     const target =
       defender === this.playerPortrait
-        ? this.playerBlade
-        : this.enemyBlade;
+        ? this.playerWeapon
+        : this.enemyWeapon;
 
     const defenderRect =
       defender.getBoundingClientRect();
