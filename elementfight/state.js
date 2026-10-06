@@ -23,7 +23,7 @@ export function createFighter(blade) {
 
     timeDoubleTurnActive: false,
 
-    guaranteedCrits: 0,
+    increasedCrits: 0,
 
     timeUltimateActive: false,
 
