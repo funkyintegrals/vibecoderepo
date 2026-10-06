@@ -52,6 +52,144 @@ export class UI {
   }
 
 
+  setAnimationLock(locked) {
+
+    this.actionGrid
+      .querySelectorAll('button')
+      .forEach(button => {
+        button.disabled = locked || button.disabled;
+      });
+
+    this.bladeButtons.forEach(button => {
+      button.disabled = locked || button.disabled;
+    });
+
+  }
+
+
+  playUltimateAnimation(
+    blade,
+    attackerSide,
+    defenderSide,
+    options = {}
+  ) {
+
+    const defender =
+      defenderSide === 'player'
+        ? this.playerPortrait
+        : this.enemyPortrait;
+
+    const attacker =
+      attackerSide === 'player'
+        ? this.playerPortrait
+        : this.enemyPortrait;
+
+    if (blade === 'Light') {
+      return this.playShimmerAnimation(attacker);
+    }
+
+    if (blade === 'Electricity') {
+      return this.playThunderstormAnimation(defender);
+    }
+
+    if (blade === 'Time') {
+      return this.playTimeAnimation(defender, options);
+    }
+
+    return Promise.resolve();
+
+  }
+
+
+  playThunderstormAnimation(defender) {
+
+    const bolts = [];
+
+    for (let i = 0; i < 3; i++) {
+      const bolt = document.createElement('div');
+
+      bolt.className = 'ultimate-effect thunder-bolt';
+      bolt.textContent = '⚡';
+      bolt.style.setProperty('--bolt-index', i);
+
+      defender.appendChild(bolt);
+      bolts.push(bolt);
+    }
+
+    return new Promise(resolve => {
+      let finished = 0;
+
+      bolts.forEach(bolt => {
+        bolt.addEventListener(
+          'animationend',
+          () => {
+            finished++;
+
+            if (finished === bolts.length) {
+              bolts.forEach(item => item.remove());
+              resolve();
+            }
+          },
+          { once: true }
+        );
+      });
+    });
+
+  }
+
+
+  playTimeAnimation(defender, options = {}) {
+
+    const count = options.timeHits || 1;
+    const swords = [];
+
+    for (let i = 0; i < count; i++) {
+      const sword = document.createElement('div');
+
+      sword.className = 'ultimate-effect time-sword';
+      sword.textContent = '⚔️';
+      sword.style.setProperty('--sword-angle', (360 / count) * i + 'deg');
+      sword.style.setProperty('--sword-delay', Math.min(i * 12, 180) + 'ms');
+
+      defender.appendChild(sword);
+      swords.push(sword);
+    }
+
+    return new Promise(resolve => {
+      const duration = count > 1 ? 800 : 650;
+
+      window.setTimeout(() => {
+        swords.forEach(sword => sword.remove());
+        resolve();
+      }, duration);
+    });
+
+  }
+
+
+  playShimmerAnimation(attacker) {
+
+    const star = document.createElement('div');
+
+    star.className = 'ultimate-effect shimmer-star';
+    star.textContent = '⭐';
+
+    attacker.appendChild(star);
+
+    return new Promise(resolve => {
+      star.addEventListener(
+        'animationend',
+        () => {
+          star.remove();
+          resolve();
+        },
+        { once: true }
+      );
+    });
+
+  }
+
+
   renderLog(log) {
 
     this.battleLog.replaceChildren();
