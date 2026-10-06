@@ -555,7 +555,7 @@ export class UI {
         if (
           action === 'utility' &&
           player.blade === 'Electricity' &&
-          player.guaranteedCrits > 0
+          player.increasedCrits > 0
         ) {
 
           disabled = true;
