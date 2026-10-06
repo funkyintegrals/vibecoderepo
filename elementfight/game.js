@@ -30,6 +30,11 @@ export class Game {
 
   reset() {
 
+    this.ui.clearTimeStopEffects();
+    this.timeUltimateTotalDamage = 0;
+    this.timeUltimateCriticalHits = 0;
+    this.timeUltimateResolving = false;
+
     this.state.player =
       createFighter('Time');
 
@@ -381,14 +386,14 @@ export class Game {
     ) {
 
       if (
-        player.focus >= getKit(player.blade).focusCap
+        player.focus >= getKit(player.blade).focusCap &&
+        player.blade !== 'Time'
       ) {
         await this.ui.playUltimateAnimation(
           player.blade,
           'player',
           'enemy'
         );
-        
       }
 
       const result =
@@ -493,11 +498,10 @@ export class Game {
    * Player Time Ultimate.
    */
 
-  startPlayerTimeUltimate() {
+  async startPlayerTimeUltimate() {
 
     const player =
       this.state.player;
-
 
     player.focus = 0;
 
@@ -507,16 +511,31 @@ export class Game {
     player.timeUltimateHitsRemaining =
       getKit('Time').ultimate.hits;
 
+    this.timeUltimateTotalDamage = 0;
+    this.timeUltimateCriticalHits = 0;
+    this.timeUltimateResolving = false;
 
     this.setStatus(
-      'Dilation active. Press Dilate to strike.'
+      'Time is stopping...'
     );
 
-
-    this.addLog(
-      'Player — Age of Stillness begins.'
+    await this.ui.playUltimateAnimation(
+      'Time',
+      'player',
+      'enemy',
+      {
+        timeStop: true,
+        timeHits: getKit('Time').ultimate.hits
+      }
     );
 
+    if (this.state.isBattleOver) {
+      return;
+    }
+
+    this.setStatus(
+      'Time stopped. Press Dilate to release the blades.'
+    );
 
     this.update();
 
@@ -525,93 +544,91 @@ export class Game {
 
   async playerDilate() {
 
+    if (this.timeUltimateResolving) {
+      return;
+    }
+
+    this.timeUltimateResolving = true;
+
     const player =
       this.state.player;
 
     const enemy =
       this.state.enemy;
 
-    await this.ui.playUltimateAnimation(
-      'Time',
-      'player',
-      'enemy',
-      { timeHit: true }
-    );
-
-    
-
-    const result =
-      this.combat.performTimeDilationHit(
-        player,
-        enemy
-      );
-
-
-    player.timeUltimateHitsRemaining--;
-
-
     const totalHits =
       getKit('Time').ultimate.hits;
 
-    const hitNumber =
-      totalHits -
-      player.timeUltimateHitsRemaining;
-
-
-    const critText =
-      result.critical
-        ? ' CRITICAL!'
-        : '';
-
-
-    this.addLog(
-      `Player — Dilate ${hitNumber}/${totalHits} deals ${result.damage} damage.${critText}`
-    );
-
-
-    if (
-      this.checkBattleOver()
+    for (
+      let i = 0;
+      i < totalHits;
+      i++
     ) {
-
-      return;
-
-    }
-
-
-    if (
-      player.timeUltimateHitsRemaining <= 0
-    ) {
-
-      player.timeUltimateActive =
-        false;
-
-
-      this.addLog(
-        'Player — Age of Stillness ends.'
+      await this.ui.playTimeDilationHit(
+        this.ui.enemyPortrait
       );
 
+      const result =
+        this.combat.performTimeDilationHit(
+          player,
+          enemy,
+          { showDamage: false }
+        );
 
-      this.setStatus(
-        'Dilation complete.'
+      player.timeUltimateHitsRemaining--;
+
+      this.timeUltimateTotalDamage +=
+        result.damage;
+
+      if (result.critical) {
+        this.timeUltimateCriticalHits++;
+      }
+
+      this.ui.showAccumulatedDamage(
+        'enemy',
+        this.timeUltimateTotalDamage,
+        this.timeUltimateCriticalHits > 0
       );
-
 
       this.update();
 
+      if (enemy.hp <= 0) {
+        this.timeUltimateResolving = false;
+        player.timeUltimateActive = false;
 
-      this.enemyTurn();
+        this.ui.clearTimeStopEffects();
 
-      return;
+        this.addLog(
+          `Player — Age of Stillness: ${this.timeUltimateCriticalHits} criticals, ${this.timeUltimateTotalDamage} total damage.`
+        );
 
+        this.checkBattleOver();
+
+        return;
+      }
+
+      await delay(80);
     }
 
+    this.timeUltimateResolving = false;
+    player.timeUltimateActive = false;
 
-    this.setStatus(
-      `Dilation active — ${player.timeUltimateHitsRemaining} hits remaining.`
+    this.ui.clearTimeStopEffects();
+    this.ui.finishAccumulatedDamage(
+      'enemy'
     );
 
+    this.addLog(
+      `Player — Age of Stillness: ${this.timeUltimateCriticalHits} criticals, ${this.timeUltimateTotalDamage} total damage.`
+    );
+
+    this.setStatus(
+      'Dilation complete.'
+    );
 
     this.update();
+
+    await this.enemyTurn();
 
   }
 
