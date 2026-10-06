@@ -843,7 +843,10 @@ export class UI {
       'action-button dilate-button';
 
     button.textContent =
-      `Dilate (${remaining})`;
+      `Dilate (${Math.max(0, remaining)})`;
+
+    button.disabled =
+      remaining <= 0;
 
     button.addEventListener(
       'click',
