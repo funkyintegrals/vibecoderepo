@@ -571,7 +571,7 @@ export class Game {
     this.setStatus('Dilating time 20 times...');
     this.update();
 
-    // One Dilate click performs all 20 stored Dilates automatically.
+    // One Dilate click performs every stored Dilate automatically.
     for (let i = 0; i < totalHits; i++) {
 
       if (this.state.isBattleOver) {
