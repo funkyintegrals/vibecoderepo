@@ -574,13 +574,22 @@ export class Game {
     const isFinalDilate =
       remainingBefore === 1;
 
-    // Consume the Dilate immediately so the counter can never
-    // remain at one after the final summon.
+    // Consume the Dilate immediately so the counter never visually
+    // sticks at one while the final sword is being summoned.
     player.timeUltimateHitsRemaining =
       Math.max(
         0,
         remainingBefore - 1
       );
+
+    this.setStatus(
+      isFinalDilate
+        ? 'Final sword summoned. Time is about to resume.'
+        : `Time stopped. ${player.timeUltimateHitsRemaining} swords remain.`
+    );
+
+    // Reflect the decrement immediately in the button/counter.
+    this.update();
 
     await this.ui.playTimeStopSword(
       this.ui.enemyPortrait,
@@ -592,15 +601,7 @@ export class Game {
       false;
 
     if (!isFinalDilate) {
-
-      this.setStatus(
-        `Time stopped. ${player.timeUltimateHitsRemaining} swords remain.`
-      );
-
-      this.update();
-
       return;
-
     }
 
     this.timeUltimateResolving =
