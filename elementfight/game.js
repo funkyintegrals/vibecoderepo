@@ -548,8 +548,6 @@ export class Game {
       return;
     }
 
-    this.timeUltimateResolving = true;
-
     const player =
       this.state.player;
 
@@ -559,15 +557,49 @@ export class Game {
     const totalHits =
       getKit('Time').ultimate.hits;
 
+    const hitNumber =
+      totalHits -
+      player.timeUltimateHitsRemaining;
+
+    const currentIndex =
+      hitNumber;
+
+    const isFinalDilate =
+      player.timeUltimateHitsRemaining === 1;
+
+    await this.ui.playTimeStopSword(
+      this.ui.enemyPortrait,
+      currentIndex,
+      totalHits
+    );
+
+    player.timeUltimateHitsRemaining--;
+
+    if (!isFinalDilate) {
+      this.setStatus(
+        `Time stopped. ${player.timeUltimateHitsRemaining} swords remain.`
+      );
+
+      this.update();
+
+      return;
+    }
+
+    this.timeUltimateResolving = true;
+
+    // The last Dilate releases time: every stored sword strikes simultaneously.
+    await this.delayBeforeRelease();
+
+    await this.ui.playTimeStopRelease();
+
+    let totalDamage = 0;
+    let criticalHits = 0;
+
     for (
       let i = 0;
       i < totalHits;
       i++
     ) {
-      await this.ui.playTimeDilationHit(
-        this.ui.enemyPortrait
-      );
-
       const result =
         this.combat.performTimeDilationHit(
           player,
@@ -575,60 +607,57 @@ export class Game {
           { showDamage: false }
         );
 
-      player.timeUltimateHitsRemaining--;
-
-      this.timeUltimateTotalDamage +=
+      totalDamage +=
         result.damage;
 
       if (result.critical) {
-        this.timeUltimateCriticalHits++;
+        criticalHits++;
       }
-
-      this.ui.showAccumulatedDamage(
-        'enemy',
-        this.timeUltimateTotalDamage,
-        this.timeUltimateCriticalHits > 0
-      );
-
-      this.update();
-
-      if (enemy.hp <= 0) {
-        this.timeUltimateResolving = false;
-        player.timeUltimateActive = false;
-
-        this.ui.clearTimeStopEffects();
-
-        this.addLog(
-          `Player — Age of Stillness: ${this.timeUltimateCriticalHits} criticals, ${this.timeUltimateTotalDamage} total damage.`
-        );
-
-        this.checkBattleOver();
-
-        return;
-      }
-
-      await delay(80);
     }
 
-    this.timeUltimateResolving = false;
-    player.timeUltimateActive = false;
+    this.timeUltimateTotalDamage =
+      totalDamage;
+
+    this.timeUltimateCriticalHits =
+      criticalHits;
+
+    this.ui.showAccumulatedDamage(
+      'enemy',
+      totalDamage,
+      criticalHits === totalHits
+    );
+
+    player.timeUltimateActive =
+      false;
 
     this.ui.clearTimeStopEffects();
-    this.ui.finishAccumulatedDamage(
-      'enemy'
-    );
 
     this.addLog(
-      `Player — Age of Stillness: ${this.timeUltimateCriticalHits} criticals, ${this.timeUltimateTotalDamage} total damage.`
+      `Player — Age of Stillness: ${criticalHits} total crits, ${totalDamage} total damage.`
     );
 
+    this.timeUltimateResolving = false;
+
+    if (
+      this.checkBattleOver()
+    ) {
+      return;
+    }
+
     this.setStatus(
-      'Dilation complete.'
+      'Time resumes. Age of Stillness ends.'
     );
 
     this.update();
 
     await this.enemyTurn();
+
+  }
+
+
+  async delayBeforeRelease() {
+
+    await delay(120);
 
   }
 
