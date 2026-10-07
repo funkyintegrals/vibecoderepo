@@ -4,10 +4,10 @@ export const LightKit = {
   utilityName: 'Enlighten',
   specialName: 'Shimmer',
   attackDamage: 200,
-  attackHeal: 100,
-  utilityCost: 500,
+  attackHeal: 200,
+  utilityCost: 300,
   utilityDamage: 550,
-  ultimateTurns: 3,
+  ultimateTurns: 5,
   focusCap: 10,
 
   attack() {
