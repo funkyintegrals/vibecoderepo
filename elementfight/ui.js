@@ -1039,14 +1039,14 @@ export class UI {
     const kit = getKit(player.blade);
 
     const actions = [
-      ['attack', kit.attackName, this.getSkillDescription(player.blade, 'attack')],
-      ['utility', kit.utilityName, this.getSkillDescription(player.blade, 'utility')],
-      ['special', kit.specialName, this.getSkillDescription(player.blade, 'special')]
+      ['attack', kit.attackName, this.getSkillDetails(player.blade, 'attack', kit)],
+      ['utility', kit.utilityName, this.getSkillDetails(player.blade, 'utility', kit)],
+      ['special', kit.specialName, this.getSkillDetails(player.blade, 'special', kit)]
     ];
 
 
     actions.forEach(
-      ([action, label, description]) => {
+      ([action, label, details]) => {
 
         const button =
           document.createElement('button');
@@ -1062,12 +1062,13 @@ export class UI {
         button.textContent =
           label;
 
-        button.dataset.skillDescription =
-          description;
+        button.appendChild(
+          this.createSkillTooltip(label, details)
+        );
 
         button.setAttribute(
           'aria-label',
-          `${label}: ${description}`
+          `${label}: ${details.map(([key, value]) => `${key} ${value}`).join(', ')}`
         );
 
 
@@ -1164,31 +1165,135 @@ export class UI {
   }
 
 
-  getSkillDescription(blade, action) {
-    const descriptions = {
+  getSkillDetails(blade, action, kit) {
+    const percent = value =>
+      `${Math.round(value * 100)}%`;
+
+    const details = {
       Time: {
-        attack: 'Deal 150 damage.',
-        utility: 'Prepare a double-action next turn.',
-        special: 'Store 25 time blades for a massive multi-hit release.'
+        attack: [
+          ['Damage', kit.attackDamage]
+        ],
+        utility: [
+          ['Effect', 'Next turn is a double turn']
+        ],
+        special: [
+          ['Hits', kit.ultimate.hits],
+          ['Normal Damage', kit.ultimate.normalDamage],
+          ['Critical Damage', kit.ultimate.criticalDamage],
+          ['Crit Chance', percent(kit.ultimate.criticalChance)],
+          ['Defense Pierce', 'Every 5th hit'],
+          ['Jackpot Chance', '12%']
+        ]
       },
       Electricity: {
-        attack: 'Deal 110 damage with a 15% critical chance; boosted attacks can crit for 480.',
-        utility: 'Give the next 3 attacks a 65% critical chance.',
-        special: 'Deal 1,350 damage.'
+        attack: [
+          ['Damage', kit.attackDamage],
+          ['Crit Chance', percent(kit.criticalChance)],
+          ['Critical Damage', kit.criticalDamage]
+        ],
+        utility: [
+          ['Boosted Crit Chance', '65%'],
+          ['Attacks', kit.guaranteedCritAttacks]
+        ],
+        special: [
+          ['Damage', kit.ultimateDamage]
+        ]
       },
       Light: {
-        attack: 'Deal 185 damage and restore 150 HP.',
-        utility: 'Spend up to 300 HP to deal 625 damage.',
-        special: 'Enter Shimmer for 5 turns, reducing incoming damage.'
+        attack: [
+          ['Damage', kit.attackDamage],
+          ['Heal', `${kit.attackHeal} HP`]
+        ],
+        utility: [
+          ['Damage', kit.utilityDamage],
+          ['HP Cost', `Up to ${kit.utilityCost} HP`]
+        ],
+        special: [
+          ['Duration', `${kit.ultimateTurns} turns`],
+          ['Effect', 'Reduces incoming damage']
+        ]
       },
       Flash: {
-        attack: 'Deal escalating damage based on Flash attack stacks.',
-        utility: 'Double defense for 2 turns.',
-        special: 'Gain 2 Flash attack stacks.'
+        attack: [
+          ['Base Damage', kit.attackDamage],
+          ['Stack Scaling', `+${Math.round((kit.attackMultiplierPerStack - 1) * 1000) / 10}% per stack`]
+        ],
+        utility: [
+          ['Defense', '2×'],
+          ['Duration', '2 turns']
+        ],
+        special: [
+          ['Attack Stacks', `+${kit.ultimateStacks}`]
+        ]
       }
     };
 
-    return descriptions[blade]?.[action] || 'Skill information unavailable.';
+    return details[blade]?.[action] || [['Effect', 'Skill information unavailable.']];
+  }
+
+
+  createSkillTooltip(label, details) {
+    const tooltip =
+      document.createElement('span');
+
+    tooltip.className =
+      'skill-tooltip';
+
+    tooltip.setAttribute(
+      'role',
+      'tooltip'
+    );
+
+    const title =
+      document.createElement('span');
+
+    title.className =
+      'skill-tooltip-title';
+
+    title.textContent =
+      label;
+
+    tooltip.appendChild(title);
+
+    details.forEach(
+      ([key, value]) => {
+        const row =
+          document.createElement('span');
+
+        row.className =
+          'skill-tooltip-row';
+
+        const name =
+          document.createElement('span');
+
+        name.className =
+          'skill-tooltip-key';
+
+        name.textContent =
+          key;
+
+        const val =
+          document.createElement('strong');
+
+        val.className =
+          'skill-tooltip-value';
+
+        val.textContent =
+          value;
+
+        row.append(
+          name,
+          val
+        );
+
+        tooltip.appendChild(
+          row
+        );
+      }
+    );
+
+    return tooltip;
   }
 
 
