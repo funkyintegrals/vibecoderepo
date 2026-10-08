@@ -49,6 +49,8 @@ export class UI {
 
     this.timeStopEffect = null;
     this.renderedLog = null;
+    this.passiveDataVisible = false;
+    this.passiveDataPanel = null;
 
   }
 
@@ -1037,14 +1039,14 @@ export class UI {
     const kit = getKit(player.blade);
 
     const actions = [
-      ['attack', kit.attackName],
-      ['utility', kit.utilityName],
-      ['special', kit.specialName]
+      ['attack', kit.attackName, this.getSkillDescription(player.blade, 'attack')],
+      ['utility', kit.utilityName, this.getSkillDescription(player.blade, 'utility')],
+      ['special', kit.specialName, this.getSkillDescription(player.blade, 'special')]
     ];
 
 
     actions.forEach(
-      ([action, label]) => {
+      ([action, label, description]) => {
 
         const button =
           document.createElement('button');
@@ -1059,6 +1061,14 @@ export class UI {
 
         button.textContent =
           label;
+
+        button.dataset.skillDescription =
+          description;
+
+        button.setAttribute(
+          'aria-label',
+          `${label}: ${description}`
+        );
 
 
         let disabled =
@@ -1125,6 +1135,130 @@ export class UI {
       }
     );
 
+    const passiveButton =
+      document.createElement('button');
+
+    passiveButton.type = 'button';
+    passiveButton.className = 'action-button passive-button';
+    passiveButton.dataset.action = 'passive';
+    passiveButton.textContent = 'Passive Data';
+    passiveButton.title = 'Show passive effects and key stats for the selected blade.';
+
+    passiveButton.disabled =
+      state.isBattleOver ||
+      state.phase !== 'player';
+
+    passiveButton.addEventListener(
+      'click',
+      () => this.togglePassiveData(player.blade, kit)
+    );
+
+    this.actionGrid.appendChild(
+      passiveButton
+    );
+
+    if (this.passiveDataVisible) {
+      this.renderPassiveData(player.blade, kit);
+    }
+
+  }
+
+
+  getSkillDescription(blade, action) {
+    const descriptions = {
+      Time: {
+        attack: 'Deal 150 damage.',
+        utility: 'Prepare a double-action next turn.',
+        special: 'Store 25 time blades for a massive multi-hit release.'
+      },
+      Electricity: {
+        attack: 'Deal 110 damage with a 15% critical chance; boosted attacks can crit for 480.',
+        utility: 'Give the next 3 attacks a 65% critical chance.',
+        special: 'Deal 1,350 damage.'
+      },
+      Light: {
+        attack: 'Deal 185 damage and restore 150 HP.',
+        utility: 'Spend up to 300 HP to deal 625 damage.',
+        special: 'Enter Shimmer for 5 turns, reducing incoming damage.'
+      },
+      Flash: {
+        attack: 'Deal escalating damage based on Flash attack stacks.',
+        utility: 'Double defense for 2 turns.',
+        special: 'Gain 2 Flash attack stacks.'
+      }
+    };
+
+    return descriptions[blade]?.[action] || 'Skill information unavailable.';
+  }
+
+
+  togglePassiveData(blade, kit) {
+    this.passiveDataVisible =
+      !this.passiveDataVisible;
+
+    if (this.passiveDataVisible) {
+      this.renderPassiveData(blade, kit);
+    } else {
+      this.removePassiveData();
+    }
+  }
+
+
+  renderPassiveData(blade, kit) {
+    this.removePassiveData();
+
+    const panel =
+      document.createElement('div');
+
+    panel.className = 'passive-data-panel';
+    panel.setAttribute('role', 'status');
+
+    const rows = [
+      ['Base Attack', kit.attackDamage ? kit.attackDamage : '—'],
+      ['Focus Cap', kit.focusCap],
+      ['Passive', this.getPassiveDescription(blade)]
+    ];
+
+    if (kit.criticalChance !== undefined) {
+      rows.splice(1, 0, ['Crit Chance', `${Math.round(kit.criticalChance * 100)}%`]);
+    }
+
+    rows.forEach(([label, value]) => {
+      const row = document.createElement('div');
+      row.className = 'passive-data-row';
+
+      const key = document.createElement('span');
+      key.textContent = label;
+
+      const val = document.createElement('strong');
+      val.textContent = value;
+
+      row.append(key, val);
+      panel.appendChild(row);
+    });
+
+    this.actionGrid.after(panel);
+    this.passiveDataPanel = panel;
+  }
+
+
+  getPassiveDescription(blade) {
+    const descriptions = {
+      Time: 'Every 5th Dilation hit pierces defense; Temporal Guard also enables the double-turn mechanic.',
+      Electricity: 'Critical attacks can deal 480 damage; Static Impulse boosts the next 3 attacks to a 65% crit chance.',
+      Light: 'Radiant Strike restores 150 HP; Shimmer reduces incoming damage while active.',
+      Flash: 'Flash Strike scales by 22.5% per stored attack stack.'
+    };
+
+    return descriptions[blade] || 'No passive data available.';
+  }
+
+
+  removePassiveData() {
+    if (this.passiveDataPanel) {
+      this.passiveDataPanel.remove();
+      this.passiveDataPanel = null;
+    }
   }
 
 
