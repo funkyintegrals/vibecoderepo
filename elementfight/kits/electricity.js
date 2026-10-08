@@ -16,7 +16,7 @@ export const ElectricityKit = {
 
   ultimateDamage: 1500,
 
-  focusCap: 10,
+  focusCap: 8,
 
 
   /*
