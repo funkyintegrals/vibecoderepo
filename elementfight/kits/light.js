@@ -5,7 +5,7 @@ export const LightKit = {
   specialName: 'Shimmer',
   attackDamage: 185,
   attackHeal: 150,
-  utilityCost: 350,
+  utilityCost: 200,
   utilityDamage: 500,
   ultimateTurns: 5,
   focusCap: 6,
