@@ -1356,7 +1356,7 @@ export class UI {
 
     if (blade === 'Electricity') {
       return [
-        ['Boosted Crit Attacks Left', fighter.increasedCrits]
+        ['Hits Left', fighter.increasedCrits]
       ];
     }
 
