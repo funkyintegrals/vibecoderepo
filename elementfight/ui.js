@@ -1151,7 +1151,7 @@ export class UI {
 
     passiveButton.addEventListener(
       'click',
-      () => this.togglePassiveData(player.blade, kit)
+      () => this.togglePassiveData(player.blade, player)
     );
 
     this.actionGrid.appendChild(
@@ -1159,7 +1159,7 @@ export class UI {
     );
 
     if (this.passiveDataVisible) {
-      this.renderPassiveData(player.blade, kit);
+      this.renderPassiveData(player.blade, player);
     }
 
   }
@@ -1297,19 +1297,19 @@ export class UI {
   }
 
 
-  togglePassiveData(blade, kit) {
+  togglePassiveData(blade, fighter) {
     this.passiveDataVisible =
       !this.passiveDataVisible;
 
     if (this.passiveDataVisible) {
-      this.renderPassiveData(blade, kit);
+      this.renderPassiveData(blade, fighter);
     } else {
       this.removePassiveData();
     }
   }
 
 
-  renderPassiveData(blade, kit) {
+  renderPassiveData(blade, fighter) {
     this.removePassiveData();
 
     const panel =
@@ -1318,14 +1318,10 @@ export class UI {
     panel.className = 'passive-data-panel';
     panel.setAttribute('role', 'status');
 
-    const rows = [
-      ['Base Attack', kit.attackDamage ? kit.attackDamage : '—'],
-      ['Focus Cap', kit.focusCap],
-      ['Passive', this.getPassiveDescription(blade)]
-    ];
+    const rows = this.getPassiveData(blade, fighter);
 
-    if (kit.criticalChance !== undefined) {
-      rows.splice(1, 0, ['Crit Chance', `${Math.round(kit.criticalChance * 100)}%`]);
+    if (!rows.length) {
+      return;
     }
 
     rows.forEach(([label, value]) => {
@@ -1347,15 +1343,33 @@ export class UI {
   }
 
 
-  getPassiveDescription(blade) {
-    const descriptions = {
-      Time: 'Every 5th Dilation hit pierces defense; Temporal Guard also enables the double-turn mechanic.',
-      Electricity: 'Critical attacks can deal 480 damage; Static Impulse boosts the next 3 attacks to a 65% crit chance.',
-      Light: 'Radiant Strike restores 150 HP; Shimmer reduces incoming damage while active.',
-      Flash: 'Flash Strike scales by 22.5% per stored attack stack.'
-    };
+  getPassiveData(blade, fighter) {
+    if (blade === 'Time') {
+      return [];
+    }
 
-    return descriptions[blade] || 'No passive data available.';
+    if (blade === 'Flash') {
+      return [
+        ['Flash Stacks', fighter.flashAttackStacks]
+      ];
+    }
+
+    if (blade === 'Electricity') {
+      return [
+        ['Boosted Crit Attacks Left', fighter.increasedCrits]
+      ];
+    }
+
+    if (blade === 'Light') {
+      const turns =
+        fighter.lightUltimateTurnsRemaining || 0;
+
+      return [
+        ['Damage Reduction Buff', turns > 0 ? `Active — ${turns} turn${turns === 1 ? '' : 's'} left` : 'Inactive']
+      ];
+    }
+
+    return [];
   }
 
 
