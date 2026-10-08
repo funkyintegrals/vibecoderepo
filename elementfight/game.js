@@ -572,7 +572,7 @@ export class Game {
     this.timeUltimateCriticalHits = 0;
     this.timeUltimateResolving = true;
 
-    this.setStatus('Summoning 20 Dilates...');
+    this.setStatus('Summoning 25 Dilates...');
     this.update();
 
     // One Dilate click automatically summons all 20 swords.
