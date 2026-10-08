@@ -6,7 +6,7 @@ export const LightKit = {
   attackDamage: 185,
   attackHeal: 150,
   utilityCost: 200,
-  utilityDamage: 750,
+  utilityDamage: 600,
   ultimateTurns: 5,
   focusCap: 6,
 
