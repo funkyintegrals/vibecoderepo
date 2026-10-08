@@ -31,6 +31,7 @@ export class Game {
   reset() {
 
     this.ui.clearTimeStopEffects();
+    this.ui.setBladeButtonsLocked(true);
     this.timeUltimateTotalDamage = 0;
     this.timeUltimateCriticalHits = 0;
     this.timeUltimateResolving = false;
@@ -575,28 +576,33 @@ export class Game {
     this.setStatus('Summoning 25 Dilates...');
     this.update();
 
-    // One Dilate click automatically summons all 20 swords.
-    for (let i = 0; i < totalHits; i++) {
+    // One Dilate click summons all 25 swords with a 30ms stagger.
+    await Promise.all(
+      Array.from(
+        { length: totalHits },
+        async (_, i) => {
 
-      if (this.state.isBattleOver) {
-        break;
-      }
+          await delay(i * 30);
 
-      player.timeUltimateHitsRemaining =
-        Math.max(
-          0,
-          player.timeUltimateHitsRemaining - 1
-        );
+          if (this.state.isBattleOver) {
+            return;
+          }
 
-      await this.ui.playTimeStopSword(
-        this.ui.enemyPortrait,
-        i,
-        totalHits
-      );
+          player.timeUltimateHitsRemaining =
+            Math.max(
+              0,
+              player.timeUltimateHitsRemaining - 1
+            );
 
-      this.update();
+          await this.ui.playTimeStopSword(
+            this.ui.enemyPortrait,
+            i,
+            totalHits
+          );
 
-    }
+        }
+      )
+    );
 
     const results = [];
 
@@ -608,7 +614,7 @@ export class Game {
 
     player.timeUltimateHitsRemaining = 0;
 
-    this.setStatus('Time resumes. Releasing all 20 Dilates...');
+    this.setStatus('Time resumes. Releasing all 25 Dilates...');
 
     await this.ui.playTimeStopRelease(
       index => {
