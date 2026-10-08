@@ -1189,7 +1189,7 @@ export class UI {
       Electricity: {
         attack: [
           ['Damage', kit.attackDamage],
-          ['Crit Chance', percent(kit.criticalChance)],
+          ['Critical Chance', percent(kit.criticalChance)],
           ['Critical Damage', kit.criticalDamage]
         ],
         utility: [
