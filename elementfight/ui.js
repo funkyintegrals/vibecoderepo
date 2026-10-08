@@ -565,8 +565,8 @@ export class UI {
 
         const gap =
           Math.max(
-            0,
-            300 - index * 10
+            30,
+            100 - index * 4
           );
 
         const currentDelay =
