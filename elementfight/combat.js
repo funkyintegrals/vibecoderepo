@@ -97,13 +97,15 @@ export class Combat {
     defender,
     rawDamage,
     critical = false,
-    showDamage = true
+    showDamage = true,
+    defenseMultiplier = 1
   ) {
 
     let damage =
       this.applyDefense(
         rawDamage,
-        defender
+        defender,
+        defenseMultiplier
       );
 
 
@@ -387,7 +389,8 @@ export class Combat {
         defender,
         result.rawDamage,
         result.critical,
-        options.showDamage !== false
+        options.showDamage !== false,
+        result.defensePiercing ? 0.5 : 1
       );
 
     return {
