@@ -608,7 +608,7 @@ export class Game {
 
     for (let i = 0; i < totalHits; i++) {
       results.push(
-        this.combat.rollTimeDilationHit()
+        this.combat.rollTimeDilationHit(i + 1)
       );
     }
 
