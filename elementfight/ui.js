@@ -371,7 +371,7 @@ export class UI {
   playTimeStopSetup(defender, options = {}) {
 
     const count =
-      options.timeHits || 20;
+      options.timeHits || 25;
 
     const field =
       document.createElement('div');
