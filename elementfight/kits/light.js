@@ -15,12 +15,20 @@ export const LightKit = {
   },
 
   utility(fighter) {
-    fighter.hp = Math.max(1, fighter.hp - this.utilityCost);
+    const hpBefore = fighter.hp;
+    const selfDamage = Math.min(
+      this.utilityCost,
+      Math.max(0, hpBefore - 1)
+    );
+
+    fighter.hp = Math.max(1, hpBefore - selfDamage);
+
     return {
       success: true,
       rawDamage: this.utilityDamage,
+      selfDamage,
       critical: false,
-      message: 'Enlighten — uses 500 HP to deal 550 damage.'
+      message: `Enlighten — consumes ${selfDamage} HP to deal ${this.utilityDamage} damage.`
     };
   },
 
