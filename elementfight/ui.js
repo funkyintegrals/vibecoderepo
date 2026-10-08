@@ -873,9 +873,6 @@ export class UI {
       `${enemy.focus} / ${getKit(enemy.blade).focusCap}`;
 
 
-    this.playerBlade.textContent =
-      `Blade: ${player.blade}`;
-
     this.enemyBlade.textContent =
       `Blade: ${enemy.blade}`;
 
@@ -902,6 +899,12 @@ export class UI {
       return;
     }
 
+
+    if (!state.player.blade) {
+      this.turnInfo.textContent =
+        'Choose your starting blade';
+      return;
+    }
 
     if (
       state.player.timeUltimateActive
@@ -1001,6 +1004,24 @@ export class UI {
 
 
     const player = state.player;
+
+    if (!player.blade) {
+      const prompt =
+        document.createElement('div');
+
+      prompt.className =
+        'blade-selection-prompt';
+
+      prompt.textContent =
+        'Choose a blade to begin.';
+
+      this.actionGrid.appendChild(
+        prompt
+      );
+
+      return;
+    }
+
     const kit = getKit(player.blade);
 
     const actions = [
