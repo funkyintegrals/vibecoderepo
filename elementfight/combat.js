@@ -189,6 +189,11 @@ export class Combat {
     );
 
 
+    if (attacker.blade === 'Flash') {
+      attacker.flashAttackStacks += 1;
+    }
+
+
     this.gainFocus(
       attacker
     );
