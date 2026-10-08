@@ -31,7 +31,8 @@ export class Game {
   reset() {
 
     this.ui.clearTimeStopEffects();
-    this.ui.setBladeButtonsLocked(true);
+    this.state.bladeSelectionLocked = false;
+    this.ui.setBladeButtonsLocked(false);
     this.timeUltimateTotalDamage = 0;
     this.timeUltimateCriticalHits = 0;
     this.timeUltimateResolving = false;
@@ -413,6 +414,9 @@ export class Game {
         result === 'time-dilation'
       ) {
 
+        this.state.bladeSelectionLocked = true;
+        this.ui.setBladeButtonsLocked(true);
+
         this.startPlayerTimeUltimate();
 
         return;
@@ -468,6 +472,9 @@ export class Game {
     this.endAction(
       player
     );
+
+    this.state.bladeSelectionLocked = true;
+    this.ui.setBladeButtonsLocked(true);
 
 
     if (
@@ -1237,7 +1244,8 @@ export class Game {
     if (
       this.state.isBattleOver ||
       this.state.phase !== 'player' ||
-      player.timeUltimateActive
+      player.timeUltimateActive ||
+      this.state.bladeSelectionLocked
     ) {
 
       return;
