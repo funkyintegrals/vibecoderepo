@@ -8,7 +8,7 @@ export const ElectricityKit = {
 
   attackDamage: 110,
 
-  criticalDamage: 470,
+  criticalDamage: 480,
 
   criticalChance: 0.15,
 
