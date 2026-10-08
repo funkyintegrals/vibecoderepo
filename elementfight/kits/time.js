@@ -15,7 +15,7 @@ export const TimeKit = {
 
     criticalDamage: 180,
 
-    criticalChance: 0.8
+    criticalChance: 0.85
   },
 
   focusCap: 15,
