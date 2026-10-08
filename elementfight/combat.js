@@ -64,7 +64,7 @@ export class Combat {
     const effectiveDefense =
       defender.blade === 'Flash' &&
       defender.flashDefenseTurnsRemaining > 0
-        ? defender.def * 4
+        ? defender.def * 2
         : defender.def;
 
     let finalDamage =
