@@ -93,8 +93,7 @@ export const TimeKit = {
         (jackpot ? 2 : 1),
 
       critical,
-      jackpot,
-      defensePiercing: hitNumber % 5 === 0
+      jackpot
     };
   }
 
