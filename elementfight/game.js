@@ -582,7 +582,7 @@ export class Game {
         { length: totalHits },
         async (_, i) => {
 
-          await delay(i * 30);
+          await delay(i * 50);
 
           if (this.state.isBattleOver) {
             return;
