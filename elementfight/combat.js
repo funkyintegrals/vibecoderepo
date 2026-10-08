@@ -58,7 +58,8 @@ export class Combat {
 
   applyDefense(
     damage,
-    defender
+    defender,
+    defenseMultiplier = 1
   ) {
 
     const effectiveDefense =
@@ -67,10 +68,13 @@ export class Combat {
         ? defender.def * 2
         : defender.def;
 
+    const adjustedDefense =
+      effectiveDefense * defenseMultiplier;
+
     let finalDamage =
       Math.max(
         1,
-        damage - effectiveDefense
+        damage - adjustedDefense
       );
 
 
@@ -442,7 +446,8 @@ export class Combat {
       let damage =
         this.applyDefense(
           result.rawDamage,
-          defender
+          defender,
+          result.defensePiercing ? 0.5 : 1
         );
 
 
