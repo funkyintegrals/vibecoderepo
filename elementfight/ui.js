@@ -1146,11 +1146,21 @@ export class UI {
         );
 
 
-        // Blade selection is locked for the entire battle.
-        button.disabled = true;
+        const locked =
+          state.isBattleOver ||
+          state.phase !== 'player' ||
+          state.player.timeUltimateActive ||
+          state.bladeSelectionLocked;
 
+        button.disabled =
+          locked;
 
-        button.onclick = null;
+        button.onclick =
+          locked
+            ? null
+            : () => onBladeChange(
+                button.dataset.blade
+              );
 
       }
     );
