@@ -18,7 +18,7 @@ export const TimeKit = {
     criticalChance: 0.50
   },
 
-  focusCap: 10,
+  focusCap: 15,
 
 
   /*
