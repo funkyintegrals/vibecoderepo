@@ -912,7 +912,7 @@ export class UI {
     }
 
 
-    if (!state.player.blade) {
+    if (state.phase === 'selecting') {
       this.turnInfo.textContent =
         'Choose your starting blade';
       return;
@@ -1148,7 +1148,8 @@ export class UI {
 
         const locked =
           state.isBattleOver ||
-          state.phase !== 'player' ||
+          state.phase === 'enemy' ||
+          state.phase === 'over' ||
           state.player.timeUltimateActive ||
           state.bladeSelectionLocked;
 
