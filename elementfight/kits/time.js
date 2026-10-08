@@ -6,7 +6,7 @@ export const TimeKit = {
   utilityName: 'Temporal Guard',
   specialName: 'Age of Stillness',
 
-  attackDamage: 125,
+  attackDamage: 150,
 
   ultimate: {
     hits: 25,
@@ -76,19 +76,25 @@ export const TimeKit = {
    *   Enemy automatic Dilation
    */
 
-  rollDilationHit() {
+  rollDilationHit(hitNumber = 1) {
 
     const critical =
       Math.random() <
       this.ultimate.criticalChance;
 
+    const jackpot =
+      Math.random() < 0.12;
+
     return {
       rawDamage:
-        critical
+        (critical
           ? this.ultimate.criticalDamage
-          : this.ultimate.normalDamage,
+          : this.ultimate.normalDamage) *
+        (jackpot ? 2 : 1),
 
-      critical
+      critical,
+      jackpot,
+      defensePiercing: hitNumber % 5 === 0
     };
   }
 
