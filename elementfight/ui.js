@@ -862,8 +862,20 @@ export class UI {
     this.playerHp.textContent =
       player.hp;
 
-    this.playerFocus.textContent =
-      `${player.focus} / ${getKit(player.blade).focusCap}`;
+    if (player.blade) {
+      this.playerFocus.textContent =
+        `${player.focus} / ${getKit(player.blade).focusCap}`;
+      this.playerBlade.textContent =
+        `Blade: ${player.blade}`;
+    } else {
+      this.playerFocus.textContent =
+        'Choose a blade';
+      this.playerBlade.textContent =
+        'Blade: None';
+    }
+
+    this.enemyHp.textContent =
+      enemy.hp;
 
 
     this.enemyHp.textContent =
