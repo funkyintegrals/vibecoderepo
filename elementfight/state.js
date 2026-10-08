@@ -50,7 +50,9 @@ export function createGameState(blade) {
 
     turn: 1,
 
-    phase: 'player',
+    phase: blade ? 'player' : 'selecting',
+
+    bladeSelectionLocked: false,
 
     isBattleOver: false,
 
