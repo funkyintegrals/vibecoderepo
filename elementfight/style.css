@@ -594,6 +594,76 @@ button:focus-visible {
   user-select: none;
 }
 
+.blade-sphere {
+  left: 0;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(255, 255, 255, 0.92) 18%,
+      rgba(255, 255, 255, 0.45) 42%,
+      rgba(255, 255, 255, 0) 72%
+    );
+  box-shadow:
+    0 0 16px rgba(255, 255, 255, 1),
+    0 0 36px rgba(255, 255, 255, 0.85),
+    0 0 70px rgba(255, 255, 255, 0.55);
+  transform:
+    translate(
+      calc(var(--sphere-x) - 50%),
+      calc(var(--sphere-y) - 50%)
+    )
+    scale(0.25);
+  opacity: 0;
+  animation:
+    bladeSphereExpand
+    0.9s
+    cubic-bezier(0.16, 1, 0.3, 1)
+    forwards;
+  z-index: 55;
+}
+
+@keyframes bladeSphereExpand {
+  0% {
+    opacity: 0;
+    transform:
+      translate(
+        calc(var(--sphere-x) - 50%),
+        calc(var(--sphere-y) - 50%)
+      )
+      scale(0.25);
+  }
+
+  18% {
+    opacity: 1;
+  }
+
+  72% {
+    opacity: 0.9;
+    transform:
+      translate(
+        calc(var(--sphere-x) - 50%),
+        calc(var(--sphere-y) - 50%)
+      )
+      scale(6);
+  }
+
+  100% {
+    opacity: 0;
+    transform:
+      translate(
+        calc(var(--sphere-x) - 50%),
+        calc(var(--sphere-y) - 50%)
+      )
+      scale(8);
+  }
+}
+
+
 .thunder-bolt {
   left: var(--bolt-x);
   top: var(--bolt-y);
