@@ -61,10 +61,16 @@ export class Combat {
     defender
   ) {
 
+    const effectiveDefense =
+      defender.blade === 'Flash' &&
+      defender.flashDefenseTurnsRemaining > 0
+        ? defender.def * 4
+        : defender.def;
+
     let finalDamage =
       Math.max(
         1,
-        damage - defender.def
+        damage - effectiveDefense
       );
 
 
@@ -242,6 +248,10 @@ export class Combat {
     }
 
 
+    if (fighter.blade === 'Flash') {
+      fighter.flashAttackStacks += 1;
+    }
+
     this.gainFocus(
       fighter
     );
@@ -294,6 +304,17 @@ export class Combat {
       attacker.lightUltimateTurnsRemaining = kit.ultimate().turns;
       this.addLog(
         `${this.getName(attacker)} — Shimmer activated for ${attacker.lightUltimateTurnsRemaining} turns.`
+      );
+      return true;
+    }
+
+
+    if (attacker.blade === 'Flash') {
+      attacker.focus = 0;
+      const result = kit.ultimate();
+      attacker.flashAttackStacks += result.stacks;
+      this.addLog(
+        `${this.getName(attacker)} — Flash Burst grants ${result.stacks} Momentum stacks. Flash is now at ${attacker.flashAttackStacks} stacks.`
       );
       return true;
     }
