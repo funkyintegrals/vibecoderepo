@@ -39,7 +39,7 @@ export class Game {
     this.timeUltimateActionBusy = false;
 
     this.state.player =
-      createFighter('Time');
+      createFighter(null);
 
 
     this.state.enemy =
