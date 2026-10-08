@@ -10,7 +10,7 @@ export const FlashKit = {
 
   focusCap: 5,
 
-  attackMultiplierPerStack: 1.5,
+  attackMultiplierPerStack: 1.2,
   ultimateStacks: 2,
 
 
@@ -18,10 +18,12 @@ export const FlashKit = {
 
     return {
       rawDamage:
-        this.attackDamage *
-        Math.pow(
-          this.attackMultiplierPerStack,
-          fighter.flashAttackStacks
+        Math.floor(
+          this.attackDamage *
+          Math.pow(
+            this.attackMultiplierPerStack,
+            fighter.flashAttackStacks
+          )
         ),
       critical: false
     };
