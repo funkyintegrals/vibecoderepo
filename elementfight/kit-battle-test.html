@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Element Fight - Kit Battle Simulator</title>
+<style>
+  :root{color-scheme:dark}
+  body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:0;background:#111827;color:#f3f4f6}
+  main{max-width:1100px;margin:0 auto;padding:24px}
+  h1{margin:0 0 6px} p{color:#9ca3af}
+  button{padding:10px 16px;border:0;border-radius:8px;background:#6366f1;color:white;font-weight:700;cursor:pointer}
+  button:hover{background:#818cf8}
+  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:20px 0}
+  input{width:80px;padding:9px;border-radius:8px;border:1px solid #374151;background:#1f2937;color:white}
+  .card{background:#1f2937;border:1px solid #374151;border-radius:12px;padding:16px;margin-top:16px;overflow:auto}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:8px 10px;border-bottom:1px solid #374151;text-align:left;white-space:nowrap}
+  th{color:#c4b5fd}
+  .winner{font-weight:700}
+  #status{color:#a5b4fc}
+</style>
+</head>
+<body>
+<main>
+  <h1>Kit Battle Simulator</h1>
+  <p>Runs every unique blade matchup against every other blade. This page is standalone and does not modify the game.</p>
+
+  <div class="controls">
+    <label>Repeats <input id="repeats" type="number" min="1" max="1000" value="5"></label>
+    <button id="run" type="button">Run Simulation</button>
+    <span id="status"></span>
+  </div>
+
+  <section class="card">
+    <h2>Aggregate Results</h2>
+    <div id="aggregate">Run the simulation to see results.</div>
+  </section>
+
+  <section class="card">
+    <h2>Individual Battles</h2>
+    <div id="battles">No battles run yet.</div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const KITS = {
+    Time: {
+      attackDamage: 125, focusCap: 15,
+      ultimate: {hits:25, normalDamage:100, criticalDamage:180, criticalChance:0.65}
+    },
+    Electricity: {
+      attackDamage:100, criticalChance:0.25, criticalDamage:500,
+      guaranteedCritAttacks:3, ultimateDamage:1500, focusCap:8
+    },
+    Light: {
+      attackDamage:200, attackHeal:200, utilityCost:300, utilityDamage:550,
+      ultimateTurns:5, focusCap:6
+    },
+    Flash: {
+      attackDamage:10, attackMultiplierPerStack:1.2,
+      ultimateStacks:2, focusCap:5
+    }
+  };
+
+  const BLADES = Object.keys(KITS);
+  const MAX_TURNS = 100;
+  const MAX_HP = 2000;
+  const BASE_DEF = 50;
+
+  function rng(seed) {
+    let s = seed >>> 0;
+    return () => {
+      s = (Math.imul(1664525, s) + 1013904223) >>> 0;
+      return s / 4294967296;
+    };
+  }
+
+  function fighter(blade) {
+    return {
+      blade, hp: MAX_HP, def: BASE_DEF, focus: 0,
+      isDefending: false, increasedCrits: 0,
+      flashAttackStacks: 0, flashDefenseTurnsRemaining: 0,
+      timeDoubleTurnPending: false, timeDoubleTurnActive: false,
+      lightUltimateTurnsRemaining: 0, actionsThisTurn: 1
+    };
+  }
+
+  function damage(raw, attacker, defender) {
+    let defense = defender.def;
+    if (defender.blade === 'Flash' && defender.flashDefenseTurnsRemaining > 0) defense *= 2;
+    let amount = Math.max(1, Math.floor(raw - defense));
+    if (defender.isDefending) amount = Math.max(1, Math.floor(amount * 0.5));
+    if (attacker.blade === 'Light' && attacker.lightUltimateTurnsRemaining > 0) amount = Math.max(1, Math.floor(amount * 1.3));
+    if (defender.blade === 'Light' && defender.lightUltimateTurnsRemaining > 0) amount = Math.max(1, Math.floor(amount * 0.7));
+    defender.hp = Math.max(0, defender.hp - amount);
+    return amount;
+  }
+
+  function attack(a,b,random) {
+    const kit = KITS[a.blade];
+    let raw = kit.attackDamage;
+    if (a.blade === 'Electricity') {
+      const crit = random() < (a.increasedCrits > 0 ? 0.75 : kit.criticalChance);
+      if (a.increasedCrits > 0) a.increasedCrits--;
+      raw = crit ? kit.criticalDamage : kit.attackDamage;
+    } else if (a.blade === 'Flash') {
+      raw = Math.floor(kit.attackDamage * Math.pow(kit.attackMultiplierPerStack, a.flashAttackStacks));
+    }
+    damage(raw,a,b);
+    if (a.blade === 'Light') a.hp = Math.min(MAX_HP,a.hp + kit.attackHeal);
+    if (a.blade === 'Flash') a.flashAttackStacks++;
+    a.focus = Math.min(kit.focusCap,a.focus + 1);
+  }
+
+  function utility(a,b) {
+    const kit=KITS[a.blade];
+    if(a.blade==='Electricity'){
+      if(a.increasedCrits>0) return false;
+      a.increasedCrits=kit.guaranteedCritAttacks;
+    } else if(a.blade==='Flash'){
+      a.flashDefenseTurnsRemaining=2;
+      a.flashAttackStacks++;
+    } else if(a.blade==='Light'){
+      const selfDamage=Math.min(kit.utilityCost,Math.max(0,a.hp-1));
+      a.hp=Math.max(1,a.hp-selfDamage);
+      damage(kit.utilityDamage,a,b);
+    } else if(a.blade==='Time'){
+      if(a.timeDoubleTurnPending||a.timeDoubleTurnActive) return false;
+      a.timeDoubleTurnPending=true;
+    }
+    a.focus=Math.min(kit.focusCap,a.focus+1);
+    return true;
+  }
+
+  function ultimate(a,b,random){
+    const kit=KITS[a.blade];
+    if(a.focus<kit.focusCap) return false;
+    a.focus=0;
+    if(a.blade==='Electricity') damage(kit.ultimateDamage,a,b);
+    else if(a.blade==='Light') a.lightUltimateTurnsRemaining=kit.ultimateTurns;
+    else if(a.blade==='Flash') a.flashAttackStacks+=kit.ultimateStacks;
+    else if(a.blade==='Time'){
+      for(let i=0;i<kit.ultimate.hits && b.hp>0;i++){
+        const crit=random()<kit.ultimate.criticalChance;
+        damage(crit?kit.ultimate.criticalDamage:kit.ultimate.normalDamage,a,b);
+      }
+    }
+    return true;
+  }
+
+  function beginTurn(a){
+    a.isDefending=false;
+    if(a.flashDefenseTurnsRemaining>0)a.flashDefenseTurnsRemaining--;
+    if(a.timeDoubleTurnPending){
+      a.timeDoubleTurnPending=false;
+      a.timeDoubleTurnActive=true;
+      a.actionsThisTurn=2;
+    }else{
+      a.timeDoubleTurnActive=false;
+      a.actionsThisTurn=1;
+    }
+  }
+
+  function action(a){
+    const cap=KITS[a.blade].focusCap;
+    if(a.focus>=cap)return 'ultimate';
+    if(a.actionsThisTurn>1)return 'attack';
+    if(a.blade==='Time')return(a.timeDoubleTurnPending||a.timeDoubleTurnActive)?'attack':'utility';
+    if(a.blade==='Flash')return a.flashDefenseTurnsRemaining>0?'attack':'utility';
+    if(a.blade==='Electricity')return a.increasedCrits>0?'attack':'utility';
+    if(a.blade==='Light')return a.lightUltimateTurnsRemaining>0?'attack':'utility';
+    return 'attack';
+  }
+
+  function battle(aName,bName,seed){
+    const random=rng(seed), a=fighter(aName), b=fighter(bName);
+    let turn=1;
+    while(a.hp>0&&b.hp>0&&turn<=MAX_TURNS){
+      for(const [x,y] of [[a,b],[b,a]]){
+        beginTurn(x);
+        while(x.actionsThisTurn>0&&x.hp>0&&y.hp>0){
+          const act=action(x);
+          let success=true;
+          if(act==='ultimate') success=ultimate(x,y,random);
+          else if(act==='utility') success=utility(x,y);
+          else attack(x,y,random);
+          if(!success) attack(x,y,random);
+          x.actionsThisTurn--;
+        }
+        if(a.hp<=0||b.hp<=0)break;
+      }
+      if(a.hp>0&&b.hp>0&&turn%3===0){
+        a.hp=Math.min(MAX_HP,a.hp+300);
+        b.hp=Math.min(MAX_HP,b.hp+300);
+      }
+      if(a.lightUltimateTurnsRemaining>0)a.lightUltimateTurnsRemaining--;
+      if(b.lightUltimateTurnsRemaining>0)b.lightUltimateTurnsRemaining--;
+      turn++;
+    }
+    const winner=a.hp>0&&b.hp<=0?aName:b.hp>0&&a.hp<=0?bName:'Draw';
+    return {winner,turns:turn-1,aHp:a.hp,bHp:b.hp};
+  }
+
+  function run(repeats){
+    const results=[], totals=Object.fromEntries(BLADES.map(x=>[x,{wins:0,losses:0,draws:0}]));
+    for(let repeat=1;repeat<=repeats;repeat++){
+      for(let i=0;i<BLADES.length;i++){
+        for(let j=i+1;j<BLADES.length;j++){
+          const a=BLADES[i],b=BLADES[j];
+          const r=battle(a,b,repeat*1000+i*100+j);
+          results.push({repeat,matchup:a+' vs '+b,...r});
+          if(r.winner===a){totals[a].wins++;totals[b].losses++}
+          else if(r.winner===b){totals[b].wins++;totals[a].losses++}
+          else{totals[a].draws++;totals[b].draws++}
+        }
+      }
+    }
+    return {results,totals};
+  }
+
+  function table(headers, rows){
+    return '<table><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
+      rows.map(row=>'<tr>'+row.map(v=>'<td>'+v+'</td>').join('')+'</tr>').join('')+
+      '</tbody></table>';
+  }
+
+  document.getElementById('run').addEventListener('click',()=>{
+    const repeats=Math.max(1,Math.min(1000,Number(document.getElementById('repeats').value)||5));
+    const out=run(repeats);
+    const totalBattles=out.results.length;
+    const aggregate=Object.entries(out.totals)
+      .map(([blade,s])=>({blade,...s,total:s.wins+s.losses+s.draws,rate:s.wins/(s.wins+s.losses+s.draws)*100}))
+      .sort((a,b)=>b.wins-a.wins||b.rate-a.rate);
+    document.getElementById('aggregate').innerHTML=table(
+      ['Rank','Blade','Wins','Losses','Draws','Win rate'],
+      aggregate.map((x,i)=>[i+1,x.blade,x.wins,x.losses,x.draws,x.rate.toFixed(1)+'%'])
+    );
+    document.getElementById('battles').innerHTML=table(
+      ['Repeat','Matchup','Winner','Turns','A HP','B HP'],
+      out.results.map(x=>[x.repeat,x.matchup,'<span class="winner">'+x.winner+'</span>',x.turns,x.aHp,x.bHp])
+    );
+    document.getElementById('status').textContent='Ran '+totalBattles+' battles ('+repeats+' repeats × 6 matchups).';
+  });
+})();
+</script>
+</body>
+</html>
