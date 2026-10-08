@@ -6,15 +6,15 @@ export const ElectricityKit = {
   utilityName: 'Static Impulse',
   specialName: 'Thunderstorm',
 
-  attackDamage: 100,
+  attackDamage: 90,
 
   criticalDamage: 500,
 
-  criticalChance: 0.25,
+  criticalChance: 0.15,
 
   guaranteedCritAttacks: 3,
 
-  ultimateDamage: 1500,
+  ultimateDamage: 1200,
 
   focusCap: 8,
 
@@ -29,7 +29,7 @@ export const ElectricityKit = {
 
     if (fighter.increasedCrits > 0) {
 
-      critical = Math.random() < 0.75;
+      critical = Math.random() < 0.65;
 
       fighter.increasedCrits -= 1;
 
