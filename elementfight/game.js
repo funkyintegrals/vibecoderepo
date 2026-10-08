@@ -1290,11 +1290,16 @@ export class Game {
     player.flashDefenseTurnsRemaining = 0;
 
 
+    const selectingStartingBlade =
+      this.state.phase === 'selecting';
+
     player.blade =
       newBlade;
 
-    if (this.state.phase === 'selecting') {
+    if (selectingStartingBlade) {
       this.state.phase = 'player';
+      this.state.bladeSelectionLocked = true;
+      this.ui.setBladeButtonsLocked(true);
     }
 
     this.addLog(
