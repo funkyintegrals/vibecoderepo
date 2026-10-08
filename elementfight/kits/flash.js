@@ -10,7 +10,7 @@ export const FlashKit = {
 
   focusCap: 5,
 
-  attackMultiplierPerStack: 1.24,
+  attackMultiplierPerStack: 1.23,
   ultimateStacks: 2,
 
 
