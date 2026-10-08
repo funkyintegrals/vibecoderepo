@@ -522,6 +522,12 @@ h3 {
 .action-button:focus-visible .skill-tooltip {
   opacity: 1;
   transform: translate(-50%, 0);
+  transition-delay: 2s;
+}
+
+.action-button:not(:hover) .skill-tooltip,
+.action-button:not(:focus-visible) .skill-tooltip {
+  transition-delay: 0s;
 }
 
 .passive-button {
