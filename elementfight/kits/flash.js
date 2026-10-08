@@ -6,11 +6,11 @@ export const FlashKit = {
   utilityName: 'Flash Guard',
   specialName: 'Flash Burst',
 
-  attackDamage: 12,
+  attackDamage: 10,
 
   focusCap: 5,
 
-  attackMultiplierPerStack: 1.2,
+  attackMultiplierPerStack: 1.21,
   ultimateStacks: 2,
 
 
