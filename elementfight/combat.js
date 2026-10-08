@@ -214,6 +214,16 @@ export class Combat {
     }
 
 
+    if (result.selfDamage > 0) {
+      this.ui.addDamageNumber(
+        fighter === this.state.player
+          ? 'player'
+          : 'enemy',
+        result.selfDamage,
+        false
+      );
+    }
+
     if (result.rawDamage !== undefined && defender) {
       const damage = this.dealDamage(
         fighter,
