@@ -1356,7 +1356,7 @@ export class UI {
 
     if (blade === 'Electricity') {
       return [
-        ['Hits Left', fighter.increasedCrits]
+        ['Increased Crit rate hits Left', fighter.increasedCrits]
       ];
     }
 
