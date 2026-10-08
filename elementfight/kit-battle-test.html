@@ -275,7 +275,9 @@ function performTimeUltimate(combat, attacker, defender) {
 
   const hits = getKit('Time').ultimate.hits;
 
-  for (let i = 0; i < hits && defender.hp > 0; i++) {
+  // Match Game.playerDilate(): all 25 hits are rolled and released,
+  // even if the defender reaches 0 HP before the sequence finishes.
+  for (let i = 0; i < hits; i++) {
     const result = combat.rollTimeDilationHit();
 
     const hit = combat.performTimeDilationHit(
@@ -536,31 +538,33 @@ document.getElementById('run').addEventListener('click', () => {
     ])
   );
 
+  // Group by the actual matchup name instead of relying on array
+  // positions. This keeps the table correct if matchup generation changes.
+  const matchupGroups = new Map();
+
+  for (const result of output.results) {
+    if (!matchupGroups.has(result.matchup)) {
+      matchupGroups.set(result.matchup, []);
+    }
+    matchupGroups.get(result.matchup).push(result);
+  }
+
   document.getElementById('matchups').innerHTML = table(
     ['Matchup', 'A wins', 'B wins', 'Draws', 'Total'],
-    Array.from(
-      { length: 6 },
-      (_, matchupIndex) => {
-        const start = matchupIndex * repeats;
-        const group = output.results.slice(
-          start,
-          start + repeats
-        );
+    Array.from(matchupGroups.entries()).map(([matchup, group]) => {
+      const [a, b] = matchup.split(' vs ');
+      const aWins = group.filter(x => x.winner === a).length;
+      const bWins = group.filter(x => x.winner === b).length;
+      const draws = group.filter(x => x.winner === 'Draw').length;
 
-        const [a, b] = group[0].matchup.split(' vs ');
-        const aWins = group.filter(x => x.winner === a).length;
-        const bWins = group.filter(x => x.winner === b).length;
-        const draws = group.filter(x => x.winner === 'Draw').length;
-
-        return [
-          a + ' vs ' + b,
-          aWins,
-          bWins,
-          draws,
-          group.length
-        ];
-      }
-    )
+      return [
+        matchup,
+        aWins,
+        bWins,
+        draws,
+        group.length
+      ];
+    })
   );
 
   document.getElementById('battles').innerHTML = table(
