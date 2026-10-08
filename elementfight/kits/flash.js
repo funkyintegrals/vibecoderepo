@@ -10,7 +10,7 @@ export const FlashKit = {
 
   focusCap: 5,
 
-  attackMultiplierPerStack: 1.12,
+  attackMultiplierPerStack: 1.2,
   ultimateStacks: 2,
 
 
@@ -38,7 +38,7 @@ export const FlashKit = {
     return {
       success: true,
       message:
-        'Flash Guard — defense is multiplied by 2 for 1 turn.'
+        'Flash Guard — defense is multiplied by 2 for 2 turns.'
     };
 
   },
