@@ -119,6 +119,10 @@ export class Game {
     fighter.isDefending =
       false;
 
+    if (fighter.flashDefenseTurnsRemaining > 0) {
+      fighter.flashDefenseTurnsRemaining -= 1;
+    }
+
 
     if (
       fighter.timeDoubleTurnPending
@@ -1232,6 +1236,9 @@ export class Game {
 
     player.isDefending =
       false;
+
+    player.flashAttackStacks = 0;
+    player.flashDefenseTurnsRemaining = 0;
 
 
     player.blade =
