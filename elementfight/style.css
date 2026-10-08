@@ -467,35 +467,59 @@ h3 {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
 }
 
-.action-button[data-skill-description] {
+.action-button {
   position: relative;
 }
 
-.action-button[data-skill-description]::after {
-  content: attr(data-skill-description);
+.skill-tooltip {
   position: absolute;
   left: 50%;
   bottom: calc(100% + 10px);
   z-index: 100;
-  width: min(280px, 75vw);
-  padding: 9px 11px;
+  width: min(290px, 75vw);
+  display: grid;
+  gap: 6px;
+  padding: 11px 12px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   background: #111728;
   color: var(--text);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
-  font-size: 0.78rem;
-  font-weight: 500;
-  line-height: 1.35;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.38);
   text-align: left;
   pointer-events: none;
   opacity: 0;
-  transform: translate(-50%, 5px);
+  transform: translate(-50%, 6px);
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
-.action-button[data-skill-description]:hover:not(:disabled)::after,
-.action-button[data-skill-description]:focus-visible::after {
+.skill-tooltip-title {
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.skill-tooltip-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: baseline;
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.skill-tooltip-key {
+  color: var(--muted);
+}
+
+.skill-tooltip-value {
+  color: #ffffff;
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+.action-button:hover:not(:disabled) .skill-tooltip,
+.action-button:focus-visible .skill-tooltip {
   opacity: 1;
   transform: translate(-50%, 0);
 }
