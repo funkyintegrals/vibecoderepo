@@ -14,7 +14,7 @@ export const ElectricityKit = {
 
   guaranteedCritAttacks: 3,
 
-  ultimateDamage: 1300,
+  ultimateDamage: 1350,
 
   focusCap: 8,
 
