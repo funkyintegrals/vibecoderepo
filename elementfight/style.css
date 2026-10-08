@@ -459,6 +459,88 @@ h3 {
   background: rgba(255, 191, 105, 0.14);
 }
 
+.action-button[data-action="attack"]:hover:not(:disabled),
+.action-button[data-action="utility"]:hover:not(:disabled),
+.action-button[data-action="special"]:hover:not(:disabled) {
+  transform: translateY(-3px);
+  filter: brightness(1.14);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+}
+
+.action-button[data-skill-description] {
+  position: relative;
+}
+
+.action-button[data-skill-description]::after {
+  content: attr(data-skill-description);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  z-index: 100;
+  width: min(280px, 75vw);
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #111728;
+  color: var(--text);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: left;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 5px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.action-button[data-skill-description]:hover:not(:disabled)::after,
+.action-button[data-skill-description]:focus-visible::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.passive-button {
+  background: rgba(124, 140, 255, 0.12);
+  border-color: rgba(124, 140, 255, 0.35);
+}
+
+.passive-button:hover:not(:disabled) {
+  background: rgba(124, 140, 255, 0.2);
+}
+
+.passive-data-panel {
+  display: grid;
+  gap: 8px;
+  margin: -6px 0 18px;
+  padding: 12px;
+  border: 1px solid rgba(124, 140, 255, 0.35);
+  border-radius: 12px;
+  background: rgba(124, 140, 255, 0.07);
+}
+
+.passive-data-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.passive-data-row span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.passive-data-row strong {
+  max-width: 70%;
+  text-align: right;
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
 .action-grid.dilate-mode {
   grid-template-columns: 1fr;
 }
