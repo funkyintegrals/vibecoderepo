@@ -16,7 +16,7 @@ const ui =
 
 
 const state =
-  createGameState('Time');
+  createGameState(null);
 
 
 const combat =
