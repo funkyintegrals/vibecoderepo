@@ -712,6 +712,19 @@ export class Game {
       );
     }
 
+    if (player.blade === 'Flash') {
+      lethalDamage = Math.max(
+        lethalDamage,
+        postDefense(
+          playerKit.attackDamage *
+          Math.pow(
+            playerKit.attackMultiplierPerStack,
+            player.flashAttackStacks
+          )
+        )
+      );
+    }
+
     if (player.focus >= playerKit.focusCap) {
       if (player.blade === 'Electricity') {
         lethalDamage = Math.max(
@@ -836,6 +849,27 @@ export class Game {
       if (
         enemy.timeDoubleTurnPending ||
         enemy.timeDoubleTurnActive
+      ) {
+
+        return 'attack';
+
+      }
+
+      return 'utility';
+
+    }
+
+
+    /*
+     * Flash AI.
+     */
+
+    if (
+      enemy.blade === 'Flash'
+    ) {
+
+      if (
+        enemy.flashDefenseTurnsRemaining > 0
       ) {
 
         return 'attack';
