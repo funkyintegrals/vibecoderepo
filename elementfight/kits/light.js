@@ -8,7 +8,7 @@ export const LightKit = {
   utilityCost: 300,
   utilityDamage: 650,
   ultimateTurns: 5,
-  focusCap: 6,
+  focusCap: 7,
 
   attack() {
     return { rawDamage: this.attackDamage, critical: false };
