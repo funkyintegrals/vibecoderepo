@@ -339,25 +339,41 @@ function battle(aBlade, bBlade) {
     state.phase = 'player';
     beginTurn(a);
 
-    while (
-      a.actionsThisTurn > 0 &&
-      a.hp > 0 &&
-      b.hp > 0
+    // In the real game, Time Dilation is a special full-turn sequence.
+    // It does not fall through to a second action after the 25 hits.
+    if (
+      a.blade === 'Time' &&
+      a.focus >= getKit('Time').focusCap
     ) {
-      const action = chooseEnemyAction(a, b);
-      const result = performAction(combat, a, b, action);
+      const result = performAction(combat, a, b, 'special');
 
       if (result.timeUltimate) {
         timeCrits += result.timeUltimate.criticalHits;
         timeDamage += result.timeUltimate.totalDamage;
       }
 
-      if (!result.success) {
-        combat.normalAttack(a, b);
-      }
-
-      endAction(a);
       actionCount += 1;
+    } else {
+      while (
+        a.actionsThisTurn > 0 &&
+        a.hp > 0 &&
+        b.hp > 0
+      ) {
+        const action = chooseEnemyAction(a, b);
+        const result = performAction(combat, a, b, action);
+
+        if (result.timeUltimate) {
+          timeCrits += result.timeUltimate.criticalHits;
+          timeDamage += result.timeUltimate.totalDamage;
+        }
+
+        if (!result.success) {
+          combat.normalAttack(a, b);
+        }
+
+        endAction(a);
+        actionCount += 1;
+      }
     }
 
     if (a.hp <= 0 || b.hp <= 0) break;
@@ -366,25 +382,41 @@ function battle(aBlade, bBlade) {
     state.phase = 'enemy';
     beginTurn(b);
 
-    while (
-      b.actionsThisTurn > 0 &&
-      a.hp > 0 &&
-      b.hp > 0
+    // This mirrors Game.enemyTurn(): a ready Time ultimate is handled
+    // before the normal action loop and consumes the whole enemy turn.
+    if (
+      b.blade === 'Time' &&
+      b.focus >= getKit('Time').focusCap
     ) {
-      const action = chooseEnemyAction(b, a);
-      const result = performAction(combat, b, a, action);
+      const result = performAction(combat, b, a, 'special');
 
       if (result.timeUltimate) {
         timeCrits += result.timeUltimate.criticalHits;
         timeDamage += result.timeUltimate.totalDamage;
       }
 
-      if (!result.success) {
-        combat.normalAttack(b, a);
-      }
-
-      endAction(b);
       actionCount += 1;
+    } else {
+      while (
+        b.actionsThisTurn > 0 &&
+        a.hp > 0 &&
+        b.hp > 0
+      ) {
+        const action = chooseEnemyAction(b, a);
+        const result = performAction(combat, b, a, action);
+
+        if (result.timeUltimate) {
+          timeCrits += result.timeUltimate.criticalHits;
+          timeDamage += result.timeUltimate.totalDamage;
+        }
+
+        if (!result.success) {
+          combat.normalAttack(b, a);
+        }
+
+        endAction(b);
+        actionCount += 1;
+      }
     }
 
     if (a.hp <= 0 || b.hp <= 0) break;
