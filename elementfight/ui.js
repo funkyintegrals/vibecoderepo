@@ -97,6 +97,10 @@ export class UI {
       return this.playShimmerAnimation(attacker);
     }
 
+    if (blade === 'Flash') {
+      return this.playBladeSphereAnimation(attacker);
+    }
+
     if (blade === 'Electricity') {
       return this.playThunderstormAnimation(defender);
     }
@@ -110,6 +114,49 @@ export class UI {
     }
 
     return Promise.resolve();
+
+  }
+
+
+  playBladeSphereAnimation(attacker) {
+
+    const weapon =
+      attacker.querySelector('.weapon-icon');
+
+    const portraitRect =
+      attacker.getBoundingClientRect();
+
+    const weaponRect =
+      weapon.getBoundingClientRect();
+
+    const sphere =
+      document.createElement('div');
+
+    sphere.className =
+      'ultimate-effect blade-sphere';
+
+    sphere.style.setProperty(
+      '--sphere-x',
+      `${weaponRect.left - portraitRect.left + weaponRect.width / 2}px`
+    );
+
+    sphere.style.setProperty(
+      '--sphere-y',
+      `${weaponRect.top - portraitRect.top + weaponRect.height / 2}px`
+    );
+
+    attacker.appendChild(sphere);
+
+    return new Promise(resolve => {
+      sphere.addEventListener(
+        'animationend',
+        () => {
+          sphere.remove();
+          resolve();
+        },
+        { once: true }
+      );
+    });
 
   }
 
