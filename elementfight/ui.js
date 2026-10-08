@@ -69,8 +69,13 @@ export class UI {
         button.disabled = locked || button.disabled;
       });
 
+  }
+
+
+  setBladeButtonsLocked(locked) {
+
     this.bladeButtons.forEach(button => {
-      button.disabled = locked || button.disabled;
+      button.disabled = locked;
     });
 
   }
