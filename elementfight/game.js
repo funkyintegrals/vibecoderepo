@@ -51,7 +51,7 @@ export class Game {
     this.state.turn = 1;
 
     this.state.phase =
-      'player';
+      'selecting';
 
     this.state.isBattleOver =
       false;
@@ -1243,7 +1243,8 @@ export class Game {
 
     if (
       this.state.isBattleOver ||
-      this.state.phase !== 'player' ||
+      (this.state.phase !== 'player' &&
+       this.state.phase !== 'selecting') ||
       player.timeUltimateActive ||
       this.state.bladeSelectionLocked
     ) {
@@ -1292,9 +1293,14 @@ export class Game {
     player.blade =
       newBlade;
 
+    if (this.state.phase === 'selecting') {
+      this.state.phase = 'player';
+    }
 
     this.addLog(
-      `Player — switched from ${oldBlade} to ${newBlade}.`
+      oldBlade
+        ? `Player — switched from ${oldBlade} to ${newBlade}.`
+        : `Player — selected ${newBlade} blade.`
     );
 
 
