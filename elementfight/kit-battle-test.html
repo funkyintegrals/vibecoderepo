@@ -278,7 +278,7 @@ function performTimeUltimate(combat, attacker, defender) {
   // Match Game.playerDilate(): all 25 hits are rolled and released,
   // even if the defender reaches 0 HP before the sequence finishes.
   for (let i = 0; i < hits; i++) {
-    const result = combat.rollTimeDilationHit();
+    const result = combat.rollTimeDilationHit(i + 1);
 
     const hit = combat.performTimeDilationHit(
       attacker,
