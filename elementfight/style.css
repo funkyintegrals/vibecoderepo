@@ -65,6 +65,42 @@ button {
   margin-bottom: 18px;
 }
 
+.mode-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mode-button {
+  min-height: 38px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+}
+
+.mode-button.active {
+  background: rgba(124, 140, 255, 0.24);
+  border-color: rgba(124, 140, 255, 0.82);
+  box-shadow: inset 0 0 0 1px rgba(124, 140, 255, 0.16);
+}
+
+@media (max-width: 760px) {
+  .title-bar {
+    flex-wrap: wrap;
+  }
+
+  .mode-switch {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  #restartBtn {
+    margin-left: auto;
+  }
+}
+
 .eyebrow {
   margin: 0 0 4px;
 
