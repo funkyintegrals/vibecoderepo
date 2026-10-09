@@ -580,10 +580,10 @@ export class Game {
     this.timeUltimateCriticalHits = 0;
     this.timeUltimateResolving = true;
 
-    this.setStatus('Summoning 25 Dilates...');
+    this.setStatus('Summoning ' + totalHits + ' Dilates...');
     this.update();
 
-    // One Dilate click summons all 25 swords with a 30ms stagger.
+    // One Dilate click summons every configured sword with a 50ms stagger.
     await Promise.all(
       Array.from(
         { length: totalHits },
@@ -621,7 +621,7 @@ export class Game {
 
     player.timeUltimateHitsRemaining = 0;
 
-    this.setStatus('Time resumes. Releasing all 25 Dilates...');
+    this.setStatus('Time resumes. Releasing all ' + totalHits + ' Dilates...');
 
     await this.ui.playTimeStopRelease(
       index => {
@@ -956,7 +956,7 @@ export class Game {
 
     /*
      * Time Ultimate is special because the enemy's
-     * 10 Dilation hits happen automatically.
+     * all configured Dilation hits happen automatically.
      */
 
     if (
