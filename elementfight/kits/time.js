@@ -9,13 +9,13 @@ export const TimeKit = {
   attackDamage: 150,
 
   ultimate: {
-    hits: 25,
+    hits: 50,
 
-    normalDamage: 100,
+    normalDamage: 60,
 
-    criticalDamage: 180,
+    criticalDamage: 300,
 
-    criticalChance: 0.85
+    criticalChance: 0.2
   },
 
   focusCap: 15,
