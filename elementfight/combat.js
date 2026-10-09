@@ -31,6 +31,12 @@ export class Combat {
 
   getName(fighter) {
 
+    if (this.state.mode === 'pvp') {
+      return fighter === this.state.player
+        ? 'Player 1'
+        : 'Player 2';
+    }
+
     return fighter === this.state.player
       ? 'Player'
       : 'Enemy';
