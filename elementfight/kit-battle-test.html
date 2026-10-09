@@ -467,7 +467,8 @@ function run(repeats) {
 
   for (let repeat = 1; repeat <= repeats; repeat++) {
     for (let i = 0; i < BLADES.length; i++) {
-      for (let j = i + 1; j < BLADES.length; j++) {
+      for (let j = 0; j < BLADES.length; j++) {
+        if (i === j) continue;
         const a = BLADES[i];
         const b = BLADES[j];
         const result = battle(a, b);
@@ -593,7 +594,7 @@ document.getElementById('run').addEventListener('click', () => {
     output.results.length +
     ' battles (' +
     repeats +
-    ' repeats × 6 matchups).';
+    ' repeats × 12 ordered matchups).';
 });
 
 </script>
