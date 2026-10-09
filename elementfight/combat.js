@@ -65,7 +65,7 @@ export class Combat {
     const effectiveDefense =
       defender.blade === 'Flash' &&
       defender.flashDefenseTurnsRemaining > 0
-        ? defender.def * 2
+        ? defender.def * 1.8
         : defender.def;
 
     const adjustedDefense =
@@ -114,7 +114,7 @@ export class Combat {
 
 
     if (attackerHasLightBuff(attacker)) {
-      damage = Math.max(1, Math.floor(damage * 1.3));
+      damage = Math.max(1, Math.floor(damage * 1.33));
     }
 
 
