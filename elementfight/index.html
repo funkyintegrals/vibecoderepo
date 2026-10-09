@@ -19,6 +19,11 @@
         <h1>ElementFight</h1>
       </div>
 
+      <div class="mode-switch" role="group" aria-label="Game mode">
+        <button id="soloModeBtn" class="secondary mode-button active" type="button" aria-pressed="true">Solo vs AI</button>
+        <button id="localPvpBtn" class="secondary mode-button" type="button" aria-pressed="false">Local PvP</button>
+      </div>
+
       <button id="restartBtn" class="secondary">
         New Battle
       </button>
@@ -31,7 +36,7 @@
       <div class="fighter-panel">
 
         <div class="fighter-header">
-          <h2>Player</h2>
+          <h2 id="playerTitle">Player</h2>
 
           <span id="playerBlade" class="blade-badge">
             Blade: None
@@ -83,7 +88,7 @@
       <div class="fighter-panel">
 
         <div class="fighter-header">
-          <h2>Enemy</h2>
+          <h2 id="enemyTitle">Enemy</h2>
 
           <span id="enemyBlade" class="blade-badge">
             Blade: ???
