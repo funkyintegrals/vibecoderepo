@@ -368,11 +368,11 @@ export class Combat {
    * player and enemy.
    */
 
-  rollTimeDilationHit() {
+  rollTimeDilationHit(hitNumber = 1) {
 
     return this.getKit(
       'Time'
-    ).rollDilationHit();
+    ).rollDilationHit(hitNumber);
 
   }
 
@@ -440,7 +440,7 @@ export class Combat {
     ) {
 
       const result =
-        kit.rollDilationHit();
+        kit.rollDilationHit(i + 1);
 
 
       let damage =
