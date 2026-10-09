@@ -408,7 +408,7 @@ export class Combat {
   /*
    * Enemy Time Ultimate.
    *
-   * Mechanically it still performs 10 separate hits.
+   * Mechanically it performs the configured number of separate hits.
    *
    * But instead of showing 10 separate damage numbers,
    * we suppress the individual UI numbers and display
