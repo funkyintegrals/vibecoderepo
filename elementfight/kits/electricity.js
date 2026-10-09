@@ -6,15 +6,15 @@ export const ElectricityKit = {
   utilityName: 'Static Impulse',
   specialName: 'Thunderstorm',
 
-  attackDamage: 110,
+  attackDamage: 125,
 
-  criticalDamage: 480,
+  criticalDamage: 500,
 
-  criticalChance: 0.15,
+  criticalChance: 0.18,
 
   guaranteedCritAttacks: 3,
 
-  ultimateDamage: 1350,
+  ultimateDamage: 1600,
 
   focusCap: 8,
 
@@ -29,7 +29,7 @@ export const ElectricityKit = {
 
     if (fighter.increasedCrits > 0) {
 
-      critical = Math.random() < 0.65;
+      critical = Math.random() < Math.min(1, this.criticalChance + 0.5);
 
       fighter.increasedCrits -= 1;
 
@@ -74,7 +74,7 @@ export const ElectricityKit = {
       success: true,
 
       message:
-        `Static Impulse — next ${this.guaranteedCritAttacks} attacks have 50% increased chance of critical hits.`
+        `Static Impulse — next ${this.guaranteedCritAttacks} attacks have critical chance increased by 50 percentage points.`
     };
   },
 
