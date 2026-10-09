@@ -6,15 +6,15 @@ export const ElectricityKit = {
   utilityName: 'Static Impulse',
   specialName: 'Thunderstorm',
 
-  attackDamage: 125,
+  attackDamage: 115,
 
-  criticalDamage: 500,
+  criticalDamage: 480,
 
-  criticalChance: 0.18,
+  criticalChance: 0.16,
 
   guaranteedCritAttacks: 3,
 
-  ultimateDamage: 1600,
+  ultimateDamage: 1450,
 
   focusCap: 8,
 
