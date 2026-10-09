@@ -25,10 +25,20 @@ export class Game {
     this.state =
       this.combat.state;
 
+    this.mode = 'ai';
+    this.activeSide = 'player';
+    this.pvpSelectionStep = 1;
+    this.timeUltimateSide = 'player';
+
   }
 
 
-  reset() {
+  reset(mode = this.mode || 'ai') {
+
+    this.mode = mode === 'pvp' ? 'pvp' : 'ai';
+    this.activeSide = 'player';
+    this.pvpSelectionStep = 1;
+    this.timeUltimateSide = 'player';
 
     this.ui.clearTimeStopEffects();
     this.state.bladeSelectionLocked = false;
@@ -38,51 +48,31 @@ export class Game {
     this.timeUltimateResolving = false;
     this.timeUltimateActionBusy = false;
 
-    this.state.player =
-      createFighter(null);
+    this.state.player = createFighter(null);
+    this.state.enemy = createFighter(
+      this.mode === 'pvp' ? null : getRandomBlade()
+    );
 
-
-    this.state.enemy =
-      createFighter(
-        getRandomBlade()
-      );
-
-
+    this.state.mode = this.mode;
+    this.state.activeSide = this.activeSide;
+    this.state.selectionStep = this.pvpSelectionStep;
     this.state.turn = 1;
-
-    this.state.phase =
-      'selecting';
-
-    this.state.isBattleOver =
-      false;
-
+    this.state.phase = 'selecting';
+    this.state.isBattleOver = false;
     this.state.log = [];
 
-
-    this.addLog(
-      `Enemy — chose ${this.state.enemy.blade} blade.`
-    );
-
-
-    this.addLog(
-      'Battle — A new blade duel begins.'
-    );
-
-
-    this.beginTurn(
-      this.state.player
-    );
-
-
-    this.setStatus(
-      'Choose your blade and move.'
-    );
-
+    if (this.mode === 'pvp') {
+      this.addLog('Local PvP — Player 1, choose your blade.');
+      this.setStatus('Local PvP selected. Player 1, choose your blade.');
+    } else {
+      this.addLog(`Enemy — chose ${this.state.enemy.blade} blade.`);
+      this.addLog('Battle — A new blade duel begins.');
+      this.setStatus('Choose your blade and move.');
+    }
 
     this.update();
 
   }
-
 
   addLog(message) {
 
@@ -201,14 +191,13 @@ export class Game {
         false;
 
 
-      this.setStatus(
-        'Victory! The enemy blade is broken.'
-      );
-
-
-      this.addLog(
-        'Battle — You won the battle.'
-      );
+      if (this.mode === 'pvp') {
+        this.setStatus('Player 1 wins! Player 2\'s blade is broken.');
+        this.addLog('Battle — Player 1 wins.');
+      } else {
+        this.setStatus('Victory! The enemy blade is broken.');
+        this.addLog('Battle — You won the battle.');
+      }
 
 
       this.update();
@@ -235,14 +224,13 @@ export class Game {
         false;
 
 
-      this.setStatus(
-        'Defeat. Press New Battle to try again.'
-      );
-
-
-      this.addLog(
-        'Battle — You lost the battle.'
-      );
+      if (this.mode === 'pvp') {
+        this.setStatus('Player 2 wins! Player 1\'s blade is broken.');
+        this.addLog('Battle — Player 2 wins.');
+      } else {
+        this.setStatus('Defeat. Press New Battle to try again.');
+        this.addLog('Battle — You lost the battle.');
+      }
 
 
       this.update();
@@ -312,230 +300,136 @@ export class Game {
 
   async playerAction(action) {
 
+    const localPvp = this.mode === 'pvp';
+    const side = localPvp ? this.activeSide : 'player';
+
     if (
       this.state.isBattleOver ||
-      this.state.phase !== 'player'
+      (localPvp && this.state.phase !== side) ||
+      (!localPvp && this.state.phase !== 'player')
     ) {
-
       return;
-
     }
 
+    const player = this.state[side];
+    const enemySide = side === 'player' ? 'enemy' : 'player';
+    const enemy = this.state[enemySide];
 
-    const player =
-      this.state.player;
-
-    const enemy =
-      this.state.enemy;
-
-
-    /*
-     * Time Dilation.
-     */
-
-    if (
-      player.timeUltimateActive
-    ) {
-
-      if (
-        action === 'dilate'
-      ) {
-
-        await this.playerDilate();
-
+    if (player.timeUltimateActive) {
+      if (action === 'dilate') {
+        await this.playerDilate(side);
       }
-
       return;
-
     }
-
-
-    /*
-     * Utility restrictions.
-     */
 
     if (
       action === 'utility' &&
       player.blade === 'Time' &&
       player.timeDoubleTurnActive
     ) {
-
-      this.setStatus(
-        'Time Utility is disabled during the double turn.'
-      );
-
+      this.setStatus('Time Utility is disabled during the double turn.');
       return;
-
     }
-
 
     if (
       action === 'utility' &&
       player.blade === 'Electricity' &&
       player.increasedCrits > 0
     ) {
-
-      this.setStatus(
-        'Electricity Utility is already active.'
-      );
-
+      this.setStatus('Electricity Utility is already active.');
       return;
-
     }
 
-
-    /*
-     * Ultimate.
-     */
-
-    if (
-      action === 'special'
-    ) {
-
+    if (action === 'special') {
       if (
         player.focus >= getKit(player.blade).focusCap &&
         player.blade !== 'Time'
       ) {
         await this.ui.playUltimateAnimation(
           player.blade,
-          'player',
-          'enemy'
+          side,
+          enemySide
         );
       }
 
-      const result =
-        this.combat.ultimate(
-          player,
-          enemy
-        );
+      const result = this.combat.ultimate(player, enemy);
 
-
-      if (
-        result === 'time-dilation'
-      ) {
-
+      if (result === 'time-dilation') {
         this.state.bladeSelectionLocked = true;
         this.ui.setBladeButtonsLocked(true);
-
-        this.startPlayerTimeUltimate();
-
+        this.startPlayerTimeUltimate(side);
         return;
-
       }
-
 
       if (!result) {
-
         this.update();
-
         return;
-
       }
-
-    }
-
-
-    else if (
-      action === 'attack'
-    ) {
-
-      this.combat.normalAttack(
-        player,
-        enemy
-      );
-
-    }
-
-
-    else if (
-      action === 'utility'
-    ) {
-
-      const success =
-        this.combat.utility(
-          player,
-          enemy
-        );
-
+    } else if (action === 'attack') {
+      this.combat.normalAttack(player, enemy);
+    } else if (action === 'utility') {
+      const success = this.combat.utility(player, enemy);
 
       if (!success) {
-
         this.update();
-
         return;
-
       }
-
+    } else {
+      return;
     }
 
-
-    this.endAction(
-      player
-    );
-
+    this.endAction(player);
     this.state.bladeSelectionLocked = true;
     this.ui.setBladeButtonsLocked(true);
 
-
-    if (
-      this.checkBattleOver()
-    ) {
-
+    if (this.checkBattleOver()) {
       return;
-
     }
 
-
-    if (
-      player.actionsThisTurn > 0
-    ) {
-
+    if (player.actionsThisTurn > 0) {
       this.setStatus(
-        'Extra action available. Choose your next move.'
+        localPvp
+          ? `${this.combat.getName(player)} has an extra action. Choose the next move.`
+          : 'Extra action available. Choose your next move.'
       );
-
-
       this.update();
-
       return;
-
     }
 
+    if (localPvp) {
+      this.finishPvpTurn(side);
+      return;
+    }
 
     await this.enemyTurn();
 
   }
 
-
   /*
    * Player Time Ultimate.
    */
 
-  async startPlayerTimeUltimate() {
+  async startPlayerTimeUltimate(side = 'player') {
 
-    const player =
-      this.state.player;
+    const attackerSide = side;
+    const defenderSide = side === 'player' ? 'enemy' : 'player';
+    const attacker = this.state[attackerSide];
 
-    player.focus = 0;
-
-    player.timeUltimateActive =
-      true;
-
-    player.timeUltimateHitsRemaining =
-      getKit('Time').ultimate.hits;
+    this.timeUltimateSide = attackerSide;
+    attacker.focus = 0;
+    attacker.timeUltimateActive = true;
+    attacker.timeUltimateHitsRemaining = getKit('Time').ultimate.hits;
 
     this.timeUltimateTotalDamage = 0;
     this.timeUltimateCriticalHits = 0;
     this.timeUltimateResolving = false;
 
-    this.setStatus(
-      'Time is stopping...'
-    );
+    this.setStatus(`${this.combat.getName(attacker)} is stopping time...`);
 
     await this.ui.playUltimateAnimation(
       'Time',
-      'player',
-      'enemy',
+      attackerSide,
+      defenderSide,
       {
         timeStop: true,
         timeHits: getKit('Time').ultimate.hits
@@ -547,66 +441,65 @@ export class Game {
     }
 
     this.setStatus(
-      'Time stopped. Press Dilate to release the blades.'
+      `Time stopped. ${this.combat.getName(attacker)}: press Dilate to release the blades.`
     );
-
     this.update();
 
   }
 
 
-  async playerDilate() {
+  async playerDilate(side = null) {
 
-    const player =
-      this.state.player;
+    const attackerSide =
+      side || this.timeUltimateSide || (this.mode === 'pvp' ? this.activeSide : 'player');
+    const defenderSide = attackerSide === 'player' ? 'enemy' : 'player';
+    const attacker = this.state[attackerSide];
+    const defender = this.state[defenderSide];
 
     if (
       this.timeUltimateResolving ||
       this.timeUltimateActionBusy ||
-      player.timeUltimateHitsRemaining <= 0
+      attacker.timeUltimateHitsRemaining <= 0
     ) {
       return;
     }
 
     this.timeUltimateActionBusy = true;
 
-    const enemy =
-      this.state.enemy;
-
-    const totalHits =
-      getKit('Time').ultimate.hits;
+    const totalHits = getKit('Time').ultimate.hits;
 
     this.timeUltimateTotalDamage = 0;
     this.timeUltimateCriticalHits = 0;
     this.timeUltimateResolving = true;
 
-    this.setStatus('Summoning ' + totalHits + ' Dilates...');
+    this.setStatus(`Summoning ${totalHits} Dilates...`);
     this.update();
 
-    // One Dilate click summons every configured sword with a 50ms stagger.
+    const defenderPortrait =
+      defenderSide === 'player'
+        ? this.ui.playerPortrait
+        : this.ui.enemyPortrait;
+
     await Promise.all(
       Array.from(
         { length: totalHits },
         async (_, i) => {
-
           await delay(i * 50);
 
           if (this.state.isBattleOver) {
             return;
           }
 
-          player.timeUltimateHitsRemaining =
-            Math.max(
-              0,
-              player.timeUltimateHitsRemaining - 1
-            );
+          attacker.timeUltimateHitsRemaining = Math.max(
+            0,
+            attacker.timeUltimateHitsRemaining - 1
+          );
 
           await this.ui.playTimeStopSword(
-            this.ui.enemyPortrait,
+            defenderPortrait,
             i,
             totalHits
           );
-
         }
       )
     );
@@ -614,57 +507,47 @@ export class Game {
     const results = [];
 
     for (let i = 0; i < totalHits; i++) {
-      results.push(
-        this.combat.rollTimeDilationHit(i + 1)
-      );
+      results.push(this.combat.rollTimeDilationHit(i + 1));
     }
 
-    player.timeUltimateHitsRemaining = 0;
+    attacker.timeUltimateHitsRemaining = 0;
 
-    this.setStatus('Time resumes. Releasing all ' + totalHits + ' Dilates...');
+    this.setStatus(`Time resumes. Releasing all ${totalHits} Dilates...`);
 
-    await this.ui.playTimeStopRelease(
-      index => {
+    await this.ui.playTimeStopRelease(index => {
+      const hitResult = this.combat.performTimeDilationHit(
+        attacker,
+        defender,
+        results[index],
+        { showDamage: false }
+      );
 
-        const hitResult =
-          this.combat.performTimeDilationHit(
-            player,
-            enemy,
-            results[index],
-            { showDamage: false }
-          );
+      this.timeUltimateTotalDamage += hitResult.damage;
 
-        this.timeUltimateTotalDamage +=
-          hitResult.damage;
-
-        if (hitResult.critical) {
-          this.timeUltimateCriticalHits++;
-        }
-
-        this.ui.showAccumulatedDamage(
-          'enemy',
-          this.timeUltimateTotalDamage,
-          this.timeUltimateCriticalHits > 0,
-          index + 1
-        );
-
+      if (hitResult.critical) {
+        this.timeUltimateCriticalHits++;
       }
-    );
 
-    player.timeUltimateActive = false;
+      this.ui.showAccumulatedDamage(
+        defenderSide,
+        this.timeUltimateTotalDamage,
+        this.timeUltimateCriticalHits > 0,
+        index + 1
+      );
+    });
+
+    attacker.timeUltimateActive = false;
     this.timeUltimateActionBusy = false;
     this.ui.clearTimeStopEffects();
 
     this.addLog(
-      `Player — Age of Stillness: ${this.timeUltimateCriticalHits} total crits, ${this.timeUltimateTotalDamage} total damage.`
+      `${this.combat.getName(attacker)} — Age of Stillness: ${this.timeUltimateCriticalHits} total crits, ${this.timeUltimateTotalDamage} total damage.`
     );
 
     this.timeUltimateResolving = false;
 
-    const battleOver =
-      this.checkBattleOver();
-
-    this.ui.finishAccumulatedDamage('enemy');
+    const battleOver = this.checkBattleOver();
+    this.ui.finishAccumulatedDamage(defenderSide);
 
     if (battleOver) {
       return;
@@ -672,7 +555,12 @@ export class Game {
 
     this.setStatus('Dilation complete.');
     this.update();
-    await this.enemyTurn();
+
+    if (this.mode === 'pvp') {
+      this.finishPvpTurn(attackerSide);
+    } else {
+      await this.enemyTurn();
+    }
 
   }
 
@@ -1237,64 +1125,64 @@ export class Game {
 
   switchBlade(newBlade) {
 
-    const player =
-      this.state.player;
-
-
     if (
       this.state.isBattleOver ||
       (this.state.phase !== 'player' &&
        this.state.phase !== 'selecting') ||
-      player.timeUltimateActive ||
+      this.state.player.timeUltimateActive ||
+      this.state.enemy.timeUltimateActive ||
       this.state.bladeSelectionLocked
     ) {
-
       return;
-
     }
 
+    if (this.mode === 'pvp' && this.state.phase === 'selecting') {
+      if (this.pvpSelectionStep === 1) {
+        this.state.player.blade = newBlade;
+        this.pvpSelectionStep = 2;
+        this.state.selectionStep = 2;
 
-    if (
-      newBlade === player.blade
-    ) {
+        this.addLog(`Player 1 — chose ${newBlade} blade.`);
+        this.setStatus(`Pass the device to Player 2. Choose your blade.`);
+        this.update();
+        return;
+      }
 
+      this.state.enemy.blade = newBlade;
+      this.pvpSelectionStep = 0;
+      this.state.selectionStep = 0;
+      this.activeSide = 'player';
+      this.state.activeSide = this.activeSide;
+      this.state.phase = 'player';
+      this.state.bladeSelectionLocked = true;
+      this.ui.setBladeButtonsLocked(true);
+
+      this.beginTurn(this.state.player);
+      this.addLog(`Player 2 — chose ${newBlade} blade.`);
+      this.addLog('Local PvP — Player 1 goes first.');
+      this.setStatus('Player 1, choose your move.');
+      this.update();
       return;
-
     }
 
+    const player = this.state.player;
 
-    const oldBlade =
-      player.blade;
+    if (newBlade === player.blade) {
+      return;
+    }
 
+    const oldBlade = player.blade;
 
-    /*
-     * Clear temporary kit effects.
-     */
-
-    player.increasedCrits =
-      0;
-
-    player.lightUltimateTurnsRemaining =
-      0;
-
-    player.timeDoubleTurnPending =
-      false;
-
-    player.timeDoubleTurnActive =
-      false;
-
-    player.isDefending =
-      false;
-
+    player.increasedCrits = 0;
+    player.lightUltimateTurnsRemaining = 0;
+    player.timeDoubleTurnPending = false;
+    player.timeDoubleTurnActive = false;
+    player.isDefending = false;
     player.flashAttackStacks = 0;
     player.flashDefenseTurnsRemaining = 0;
 
-
-    const selectingStartingBlade =
-      this.state.phase === 'selecting';
-
-    player.blade =
-      newBlade;
+    const selectingStartingBlade = this.state.phase === 'selecting';
+    player.blade = newBlade;
 
     if (selectingStartingBlade) {
       this.state.phase = 'player';
@@ -1308,12 +1196,38 @@ export class Game {
         : `Player — selected ${newBlade} blade.`
     );
 
+    this.setStatus(`${newBlade} selected. Choose your action.`);
+    this.update();
 
-    this.setStatus(
-      `${newBlade} selected. Choose your action.`
-    );
+  }
 
+  finishPvpTurn(side) {
 
+    if (this.state.isBattleOver) {
+      return;
+    }
+
+    if (side === 'player') {
+      this.activeSide = 'enemy';
+      this.state.activeSide = this.activeSide;
+      this.state.phase = 'enemy';
+      this.beginTurn(this.state.enemy);
+      this.setStatus('Player 2\'s turn — pass the device.');
+      this.update();
+      return;
+    }
+
+    this.state.turn++;
+    this.healEveryThreeTurns();
+    this.advanceLightUltimate(this.state.player);
+    this.advanceLightUltimate(this.state.enemy);
+
+    this.activeSide = 'player';
+    this.state.activeSide = this.activeSide;
+    this.state.phase = 'player';
+    this.beginTurn(this.state.player);
+
+    this.setStatus(`Round ${this.state.turn} — Player 1, choose your move.`);
     this.update();
 
   }
@@ -1321,34 +1235,36 @@ export class Game {
 
   update() {
 
+    this.state.mode = this.mode;
+    this.state.activeSide = this.activeSide;
+    this.state.selectionStep = this.pvpSelectionStep;
+
     this.ui.render(
       this.state,
       getKit
     );
 
+    const activeSide =
+      this.mode === 'pvp'
+        ? this.activeSide
+        : 'player';
 
-    if (
-      this.state.player.timeUltimateActive
-    ) {
+    const activeFighter =
+      this.state[activeSide];
 
+    if (activeFighter?.timeUltimateActive) {
       this.ui.showDilationControls(
-        this.state.player.timeUltimateHitsRemaining,
-
+        activeFighter.timeUltimateHitsRemaining,
         () => this.playerAction('dilate'),
         this.timeUltimateResolving ||
         this.timeUltimateActionBusy
       );
-
     } else {
-
       this.ui.showNormalControls(
         this.state,
         getKit,
-
-        action =>
-          this.playerAction(action)
+        action => this.playerAction(action)
       );
-
     }
 
 
