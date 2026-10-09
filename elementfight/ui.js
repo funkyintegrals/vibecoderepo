@@ -17,6 +17,12 @@ export class UI {
     this.playerBlade =
       document.getElementById('playerBlade');
 
+    this.playerTitle =
+      document.getElementById('playerTitle');
+
+    this.enemyTitle =
+      document.getElementById('enemyTitle');
+
     this.enemyBlade =
       document.getElementById('enemyBlade');
 
@@ -854,115 +860,87 @@ export class UI {
 
   render(state, getKit) {
 
-    const player =
-      state.player;
+    const player = state.player;
+    const enemy = state.enemy;
+    const localPvp = state.mode === 'pvp';
 
-    const enemy =
-      state.enemy;
+    this.playerTitle.textContent = localPvp ? 'Player 1' : 'Player';
+    this.enemyTitle.textContent = localPvp ? 'Player 2' : 'Enemy';
 
+    this.playerHp.textContent = player.hp;
+    this.playerFocus.textContent = player.blade
+      ? `${player.focus} / ${getKit(player.blade).focusCap}`
+      : 'Choose a blade';
+    this.playerBlade.textContent = player.blade
+      ? `Blade: ${player.blade}`
+      : 'Blade: None';
 
-    this.playerHp.textContent =
-      player.hp;
+    this.enemyHp.textContent = enemy.hp;
+    this.enemyFocus.textContent = enemy.blade
+      ? `${enemy.focus} / ${getKit(enemy.blade).focusCap}`
+      : 'Choose a blade';
+    this.enemyBlade.textContent = enemy.blade
+      ? `Blade: ${enemy.blade}`
+      : (localPvp ? 'Blade: Not chosen' : 'Blade: ???');
 
-    if (player.blade) {
-      this.playerFocus.textContent =
-        `${player.focus} / ${getKit(player.blade).focusCap}`;
-      this.playerBlade.textContent =
-        `Blade: ${player.blade}`;
-    } else {
-      this.playerFocus.textContent =
-        'Choose a blade';
-      this.playerBlade.textContent =
-        'Blade: None';
-    }
-
-    this.enemyHp.textContent =
-      enemy.hp;
-
-
-    this.enemyHp.textContent =
-      enemy.hp;
-
-    this.enemyFocus.textContent =
-      `${enemy.focus} / ${getKit(enemy.blade).focusCap}`;
-
-
-    this.enemyBlade.textContent =
-      `Blade: ${enemy.blade}`;
-
-
-    this.renderLog(
-      state.log
-    );
-
-
-    this.updateTurnInfo(
-      state
-    );
+    this.renderLog(state.log);
+    this.updateTurnInfo(state);
 
   }
-
 
   updateTurnInfo(state) {
 
     if (state.isBattleOver) {
-
-      this.turnInfo.textContent =
-        'Battle finished';
-
+      this.turnInfo.textContent = 'Battle finished';
       return;
     }
-
 
     if (state.phase === 'selecting') {
-      this.turnInfo.textContent =
-        'Choose your starting blade';
+      if (state.mode === 'pvp') {
+        this.turnInfo.textContent =
+          state.selectionStep === 1
+            ? 'Player 1: choose a blade'
+            : 'Player 2: choose a blade';
+      } else {
+        this.turnInfo.textContent = 'Choose your starting blade';
+      }
       return;
     }
 
-    if (
-      state.player.timeUltimateActive
-    ) {
+    const activeSide =
+      state.mode === 'pvp'
+        ? state.activeSide
+        : 'player';
+    const activeFighter = state[activeSide];
 
+    if (activeFighter?.timeUltimateActive) {
       this.turnInfo.textContent =
-        `Time Dilation • ${state.player.timeUltimateHitsRemaining} hits remaining`;
-
+        `Time Dilation • ${activeFighter.timeUltimateHitsRemaining} hits remaining`;
       return;
     }
 
-
-    if (state.phase === 'enemy') {
-
-      this.turnInfo.textContent =
-        'Enemy turn...';
-
+    if (state.phase === 'enemy' && state.mode !== 'pvp') {
+      this.turnInfo.textContent = 'Enemy turn...';
       return;
     }
 
+    const actions = activeFighter.actionsThisTurn;
+    const owner =
+      state.mode === 'pvp'
+        ? (activeSide === 'player' ? 'Player 1' : 'Player 2')
+        : '';
 
-    const actions =
-      state.player.actionsThisTurn;
+    let text = state.mode === 'pvp'
+      ? `Round ${state.turn} • ${owner} • ${actions} action${actions === 1 ? '' : 's'} remaining`
+      : `Turn ${state.turn} • ${actions} action${actions === 1 ? '' : 's'} remaining`;
 
-
-    let text =
-      `Turn ${state.turn} • ${actions} action${actions === 1 ? '' : 's'} remaining`;
-
-
-    if (
-      state.player.timeDoubleTurnActive
-    ) {
-
-      text +=
-        ' • Double Turn';
-
+    if (activeFighter.timeDoubleTurnActive) {
+      text += ' • Double Turn';
     }
 
-
-    this.turnInfo.textContent =
-      text;
+    this.turnInfo.textContent = text;
 
   }
-
 
   showDilationControls(
     remaining,
@@ -1011,159 +989,101 @@ export class UI {
   ) {
 
     this.actionGrid.replaceChildren();
+    this.actionGrid.classList.remove('dilate-mode');
 
-    this.actionGrid.classList.remove(
-      'dilate-mode'
-    );
+    const activeSide =
+      state.mode === 'pvp'
+        ? state.activeSide
+        : 'player';
+    const player = state[activeSide];
 
-
-    const player = state.player;
-
-    if (!player.blade) {
-      const prompt =
-        document.createElement('div');
-
-      prompt.className =
-        'blade-selection-prompt';
-
-      prompt.textContent =
-        'Choose a blade to begin.';
-
-      this.actionGrid.appendChild(
-        prompt
-      );
-
+    if (state.phase === 'selecting' || !player?.blade) {
+      const prompt = document.createElement('div');
+      prompt.className = 'blade-selection-prompt';
+      prompt.textContent = state.mode === 'pvp'
+        ? (state.selectionStep === 1
+            ? 'Player 1: choose a blade above.'
+            : 'Player 2: choose a blade above.')
+        : 'Choose a blade to begin.';
+      this.actionGrid.appendChild(prompt);
       return;
     }
 
     const kit = getKit(player.blade);
-
     const actions = [
       ['attack', kit.attackName, this.getSkillDetails(player.blade, 'attack', kit)],
       ['utility', kit.utilityName, this.getSkillDetails(player.blade, 'utility', kit)],
       ['special', kit.specialName, this.getSkillDetails(player.blade, 'special', kit)]
     ];
 
+    const activeTurn =
+      state.mode === 'pvp'
+        ? state.phase === activeSide
+        : state.phase === 'player';
 
-    actions.forEach(
-      ([action, label, details]) => {
+    actions.forEach(([action, label, details]) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'action-button';
+      button.dataset.action = action;
+      button.textContent = label;
+      button.appendChild(this.createSkillTooltip(label, details));
+      button.setAttribute(
+        'aria-label',
+        `${label}: ${details.map(([key, value]) => `${key} ${value}`).join(', ')}`
+      );
 
-        const button =
-          document.createElement('button');
+      let disabled = state.isBattleOver || !activeTurn;
 
-        button.type = 'button';
-
-        button.className =
-          'action-button';
-
-        button.dataset.action =
-          action;
-
-        button.textContent =
-          label;
-
-        button.appendChild(
-          this.createSkillTooltip(label, details)
-        );
-
-        button.setAttribute(
-          'aria-label',
-          `${label}: ${details.map(([key, value]) => `${key} ${value}`).join(', ')}`
-        );
-
-
-        let disabled =
-          state.isBattleOver ||
-          state.phase !== 'player';
-
-
-        if (
-          action === 'special' &&
-          player.focus <
-            getKit(player.blade).focusCap
-        ) {
-
-          disabled = true;
-
-          button.title =
-            'Not enough Focus';
-
-        }
-
-
-        if (
-          action === 'utility' &&
-          player.blade === 'Time' &&
-          player.timeDoubleTurnActive
-        ) {
-
-          disabled = true;
-
-          button.title =
-            'Utility is disabled during the double turn.';
-
-        }
-
-
-        if (
-          action === 'utility' &&
-          player.blade === 'Electricity' &&
-          player.increasedCrits > 0
-        ) {
-
-          disabled = true;
-
-          button.title =
-            'Electricity Utility is already active.';
-
-        }
-
-
-        button.disabled =
-          disabled;
-
-
-        button.addEventListener(
-          'click',
-          () => onAction(action)
-        );
-
-
-        this.actionGrid.appendChild(
-          button
-        );
-
+      if (
+        action === 'special' &&
+        player.focus < getKit(player.blade).focusCap
+      ) {
+        disabled = true;
+        button.title = 'Not enough Focus';
       }
-    );
 
-    const passiveButton =
-      document.createElement('button');
+      if (
+        action === 'utility' &&
+        player.blade === 'Time' &&
+        player.timeDoubleTurnActive
+      ) {
+        disabled = true;
+        button.title = 'Utility is disabled during the double turn.';
+      }
 
+      if (
+        action === 'utility' &&
+        player.blade === 'Electricity' &&
+        player.increasedCrits > 0
+      ) {
+        disabled = true;
+        button.title = 'Electricity Utility is already active.';
+      }
+
+      button.disabled = disabled;
+      button.addEventListener('click', () => onAction(action));
+      this.actionGrid.appendChild(button);
+    });
+
+    const passiveButton = document.createElement('button');
     passiveButton.type = 'button';
     passiveButton.className = 'action-button passive-button';
     passiveButton.dataset.action = 'passive';
     passiveButton.textContent = 'Passive Data';
     passiveButton.title = 'Show passive effects and key stats for the selected blade.';
-
-    passiveButton.disabled =
-      state.isBattleOver ||
-      state.phase !== 'player';
-
+    passiveButton.disabled = state.isBattleOver || !activeTurn;
     passiveButton.addEventListener(
       'click',
       () => this.togglePassiveData(player.blade, player)
     );
-
-    this.actionGrid.appendChild(
-      passiveButton
-    );
+    this.actionGrid.appendChild(passiveButton);
 
     if (this.passiveDataVisible) {
       this.renderPassiveData(player.blade, player);
     }
 
   }
-
 
   getSkillDetails(blade, action, kit) {
     const percent = value =>
@@ -1193,7 +1113,7 @@ export class UI {
           ['Critical Damage', kit.criticalDamage]
         ],
         utility: [
-          ['Boosted Crit Chance', '65%'],
+          ['Boosted Crit Chance', percent(kit.criticalChance + 0.5)],
           ['Attacks', kit.guaranteedCritAttacks]
         ],
         special: [
@@ -1220,7 +1140,7 @@ export class UI {
           ['Stack Scaling', `+${Math.round((kit.attackMultiplierPerStack - 1) * 1000) / 10}% per stack`]
         ],
         utility: [
-          ['Defense', '2×'],
+          ['Defense', '1.8×'],
           ['Duration', '2 turns']
         ],
         special: [
@@ -1386,38 +1306,39 @@ export class UI {
     onBladeChange
   ) {
 
-    this.bladeButtons.forEach(
-      button => {
+    const selectingPvp =
+      state.mode === 'pvp' &&
+      state.phase === 'selecting';
 
-        const active =
-          button.dataset.blade ===
-          state.player.blade;
+    const selectionSide =
+      state.selectionStep === 2
+        ? 'enemy'
+        : 'player';
 
-        button.classList.toggle(
-          'active',
-          active
-        );
+    const selectedFighter =
+      selectingPvp
+        ? state[selectionSide]
+        : state.player;
 
+    this.bladeButtons.forEach(button => {
+      const active =
+        button.dataset.blade === selectedFighter?.blade;
 
-        const locked =
-          state.isBattleOver ||
-          state.phase === 'enemy' ||
-          state.phase === 'over' ||
-          state.player.timeUltimateActive ||
-          state.bladeSelectionLocked;
+      button.classList.toggle('active', active);
 
-        button.disabled =
-          locked;
+      const locked =
+        state.isBattleOver ||
+        (state.phase === 'enemy' && !selectingPvp) ||
+        state.phase === 'over' ||
+        state.player.timeUltimateActive ||
+        state.enemy.timeUltimateActive ||
+        state.bladeSelectionLocked;
 
-        button.onclick =
-          locked
-            ? null
-            : () => onBladeChange(
-                button.dataset.blade
-              );
-
-      }
-    );
+      button.disabled = locked;
+      button.onclick = locked
+        ? null
+        : () => onBladeChange(button.dataset.blade);
+    });
 
   }
 
