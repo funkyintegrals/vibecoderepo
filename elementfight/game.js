@@ -999,7 +999,7 @@ export class Game {
         i++
       ) {
         results.push(
-          this.combat.rollTimeDilationHit()
+          this.combat.rollTimeDilationHit(i + 1)
         );
       }
 
