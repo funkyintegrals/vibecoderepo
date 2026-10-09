@@ -38,7 +38,7 @@ export const FlashKit = {
     return {
       success: true,
       message:
-        'Flash Guard — defense is multiplied by 2 for 2 turns.'
+        'Flash Guard — defense is multiplied by 1.8 for 2 turns.'
     };
 
   },
