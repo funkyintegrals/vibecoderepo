@@ -34,6 +34,22 @@ const game =
   );
 
 
+const soloModeBtn =
+  document.getElementById('soloModeBtn');
+
+const localPvpBtn =
+  document.getElementById('localPvpBtn');
+
+function updateModeButtons(mode) {
+  const isPvp = mode === 'pvp';
+
+  soloModeBtn.classList.toggle('active', !isPvp);
+  soloModeBtn.setAttribute('aria-pressed', String(!isPvp));
+
+  localPvpBtn.classList.toggle('active', isPvp);
+  localPvpBtn.setAttribute('aria-pressed', String(isPvp));
+}
+
 document
   .getElementById('restartBtn')
   .addEventListener(
@@ -41,5 +57,15 @@ document
     () => game.reset()
   );
 
+soloModeBtn.addEventListener('click', () => {
+  game.reset('ai');
+  updateModeButtons('ai');
+});
 
-game.reset();
+localPvpBtn.addEventListener('click', () => {
+  game.reset('pvp');
+  updateModeButtons('pvp');
+});
+
+game.reset('ai');
+updateModeButtons('ai');
