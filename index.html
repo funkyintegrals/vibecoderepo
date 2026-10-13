@@ -1,7 +1,700 @@
-<!DOCTYPE html>
+<!doctype html>
+<html lang="en">
 <head>
-  <title>Main</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#090c14" />
+  <meta name="description" content="A small playground for bold ideas, fun experiments, and things worth playing." />
+  <title>Vibe Code Repo — Ideas in motion</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090c14;
+      --panel: rgba(19, 24, 37, 0.82);
+      --panel-strong: #121827;
+      --text: #f4f6fb;
+      --muted: #a4aec2;
+      --line: rgba(255, 255, 255, 0.11);
+      --lime: #c4fa79;
+      --violet: #9d92ff;
+      --cyan: #7debd9;
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 32px;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(ellipse at 12% 4%, rgba(104, 92, 220, 0.17), transparent 35rem),
+        radial-gradient(ellipse at 88% 32%, rgba(41, 160, 146, 0.1), transparent 31rem),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before {
+      position: fixed;
+      z-index: -1;
+      inset: 0;
+      pointer-events: none;
+      content: "";
+      opacity: 0.18;
+      background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(to bottom, black, transparent 78%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    a:focus-visible { outline: 3px solid var(--lime); outline-offset: 4px; }
+
+    .page-shell {
+      width: min(1120px, calc(100% - 48px));
+      margin-inline: auto;
+    }
+
+    .site-header {
+      min-height: 88px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.98rem;
+      font-weight: 760;
+      letter-spacing: -0.035em;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(196, 250, 121, 0.32);
+      border-radius: 13px;
+      background: linear-gradient(145deg, rgba(196,250,121,.18), rgba(157,146,255,.15));
+      color: var(--lime);
+      box-shadow: inset 0 1px rgba(255,255,255,.08);
+    }
+
+    .brand-mark svg { width: 22px; height: 22px; }
+
+    .brand-name span { color: var(--muted); font-weight: 520; }
+
+    .site-nav {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .site-nav a { transition: color .18s ease; }
+    .site-nav a:hover { color: var(--text); }
+
+    .nav-cta {
+      padding: 10px 15px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--text) !important;
+      background: rgba(255,255,255,.045);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(350px, .95fr);
+      align-items: center;
+      gap: clamp(40px, 7vw, 88px);
+      padding: 78px 0 84px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 22px;
+      color: var(--lime);
+      font-size: .75rem;
+      font-weight: 760;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--lime);
+      box-shadow: 0 0 14px rgba(196,250,121,.7);
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      max-width: 650px;
+      margin-bottom: 24px;
+      font-size: clamp(3.35rem, 6.6vw, 5.7rem);
+      line-height: .98;
+      letter-spacing: -.078em;
+      font-weight: 780;
+    }
+
+    h1 .accent {
+      color: var(--lime);
+      font-weight: 680;
+    }
+
+    .hero-copy {
+      max-width: 500px;
+      margin-bottom: 30px;
+      color: var(--muted);
+      font-size: clamp(1.02rem, 1.5vw, 1.15rem);
+      line-height: 1.8;
+    }
+
+    .hero-copy strong { color: #e5eaf4; font-weight: 620; }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .button {
+      min-height: 49px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 11px;
+      padding: 0 19px;
+      border: 1px solid transparent;
+      border-radius: 13px;
+      font-size: .93rem;
+      font-weight: 760;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .button:hover { transform: translateY(-2px); }
+
+    .button-primary {
+      background: var(--lime);
+      color: #151b10;
+      box-shadow: 0 8px 28px rgba(167, 227, 95, .16);
+    }
+
+    .button-primary:hover { box-shadow: 0 12px 34px rgba(167, 227, 95, .25); }
+
+    .button-secondary {
+      border-color: var(--line);
+      background: rgba(255,255,255,.035);
+      color: var(--text);
+    }
+
+    .button-secondary:hover { border-color: rgba(255,255,255,.24); }
+
+    .button svg { width: 17px; height: 17px; }
+
+    .hero-footnote {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 25px 0 0;
+      color: #808ba2;
+      font-size: .82rem;
+    }
+
+    .footnote-line {
+      width: 25px;
+      height: 1px;
+      background: rgba(196,250,121,.7);
+    }
+
+    .showcase {
+      position: relative;
+      isolation: isolate;
+    }
+
+    .showcase-glow {
+      position: absolute;
+      z-index: -1;
+      inset: 9% -8% -9% 8%;
+      border-radius: 50%;
+      background: rgba(100, 89, 220, .17);
+      filter: blur(54px);
+    }
+
+    .arena-card {
+      position: relative;
+      overflow: hidden;
+      padding: 25px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 27px;
+      background:
+        radial-gradient(ellipse at 50% 46%, rgba(99, 89, 183, .13), transparent 58%),
+        linear-gradient(155deg, rgba(25, 32, 49, .97), rgba(13, 17, 28, .98));
+      box-shadow: 0 28px 90px rgba(0,0,0,.34), inset 0 1px rgba(255,255,255,.06);
+    }
+
+    .arena-card::after {
+      position: absolute;
+      z-index: -1;
+      right: -75px;
+      top: -110px;
+      width: 250px;
+      height: 250px;
+      border: 1px solid rgba(157,146,255,.14);
+      border-radius: 50%;
+      box-shadow: 0 0 0 28px rgba(157,146,255,.025), 0 0 0 58px rgba(157,146,255,.02);
+      content: "";
+      pointer-events: none;
+    }
+
+    .arena-topline, .arena-bottomline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .arena-label, .arena-code {
+      color: #8d99af;
+      font-size: .7rem;
+      font-weight: 730;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .arena-ready {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 9px;
+      border: 1px solid rgba(125,235,217,.2);
+      border-radius: 999px;
+      background: rgba(125,235,217,.07);
+      color: var(--cyan);
+      font-size: .68rem;
+      font-weight: 730;
+      letter-spacing: .04em;
+    }
+
+    .arena-ready::before {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px rgba(125,235,217,.55);
+      content: "";
+    }
+
+    .arena-title {
+      margin: 26px 0 5px;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      letter-spacing: -.055em;
+      line-height: 1.1;
+    }
+
+    .arena-subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: .86rem;
+    }
+
+    .battle-visual {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr);
+      align-items: center;
+      gap: 9px;
+      margin: 27px 0 23px;
+    }
+
+    .fighter {
+      position: relative;
+      min-width: 0;
+      min-height: 155px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 18px;
+      background: rgba(255,255,255,.025);
+    }
+
+    .fighter::before, .fighter::after {
+      position: absolute;
+      width: 104px;
+      height: 104px;
+      border: 1px solid currentColor;
+      border-radius: 50%;
+      content: "";
+      opacity: .13;
+    }
+
+    .fighter::after { width: 142px; height: 142px; opacity: .07; }
+
+    .fighter-time {
+      color: var(--violet);
+      background: radial-gradient(ellipse at 50% 43%, rgba(157,146,255,.16), transparent 65%), rgba(255,255,255,.02);
+    }
+
+    .fighter-light {
+      color: var(--lime);
+      background: radial-gradient(ellipse at 50% 43%, rgba(196,250,121,.13), transparent 65%), rgba(255,255,255,.02);
+    }
+
+    .fighter-symbol {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      width: 67px;
+      height: 67px;
+      place-items: center;
+      border: 1px solid currentColor;
+      border-radius: 21px;
+      background: rgba(9,12,20,.46);
+      box-shadow: 0 0 30px color-mix(in srgb, currentColor 12%, transparent);
+      font-size: 2rem;
+    }
+
+    .fighter-name {
+      position: relative;
+      z-index: 1;
+      margin: 12px 0 0;
+      color: #e8ebf5;
+      font-size: .69rem;
+      font-weight: 760;
+      letter-spacing: .1em;
+    }
+
+    .versus {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: #171c2a;
+      color: #b0b8c9;
+      font-size: .7rem;
+      font-weight: 800;
+    }
+
+    .blade-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      padding-bottom: 21px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .blade-chip {
+      padding: 6px 9px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 8px;
+      background: rgba(255,255,255,.035);
+      color: #b8c1d2;
+      font-size: .7rem;
+      font-weight: 650;
+    }
+
+    .blade-chip:first-child { color: var(--violet); border-color: rgba(157,146,255,.22); }
+    .blade-chip:nth-child(2) { color: #f3c979; }
+    .blade-chip:nth-child(3) { color: var(--lime); }
+    .blade-chip:nth-child(4) { color: var(--cyan); }
+
+    .arena-bottomline { padding-top: 18px; }
+    .arena-bottomline span:first-child { color: #8d99af; font-size: .78rem; }
+    .arena-bottomline span:last-child { color: var(--lime); font-size: .78rem; font-weight: 740; }
+
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 27px;
+      color: #8590a5;
+      font-size: .72rem;
+      font-weight: 750;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .section-divider::after {
+      height: 1px;
+      flex: 1;
+      background: var(--line);
+      content: "";
+    }
+
+    .how-section { padding: 0 0 78px; }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 30px;
+      margin-bottom: 25px;
+    }
+
+    .section-heading h2 {
+      max-width: 540px;
+      margin: 0;
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      line-height: 1.12;
+      letter-spacing: -.06em;
+    }
+
+    .section-heading p {
+      max-width: 320px;
+      margin: 0;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .feature-card {
+      min-height: 190px;
+      padding: 21px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.018));
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255,255,255,.19);
+      background: linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.025));
+    }
+
+    .feature-number {
+      display: inline-block;
+      margin-bottom: 23px;
+      color: var(--lime);
+      font-size: .74rem;
+      font-weight: 780;
+      letter-spacing: .12em;
+    }
+
+    .feature-card:nth-child(2) .feature-number { color: var(--violet); }
+    .feature-card:nth-child(3) .feature-number { color: var(--cyan); }
+
+    .feature-card h3 {
+      margin-bottom: 8px;
+      font-size: 1.06rem;
+      letter-spacing: -.025em;
+    }
+
+    .feature-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .88rem;
+      line-height: 1.7;
+    }
+
+    .site-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 23px 0 28px;
+      border-top: 1px solid var(--line);
+      color: #7f8aa0;
+      font-size: .8rem;
+    }
+
+    .footer-brand { color: #b9c1d1; font-weight: 670; }
+    .footer-link { color: #bac3d4; transition: color .18s ease; }
+    .footer-link:hover { color: var(--lime); }
+
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: minmax(0, 1fr) minmax(310px, .9fr);
+        gap: 34px;
+        padding-top: 62px;
+      }
+
+      h1 { font-size: clamp(3rem, 6vw, 4.7rem); }
+      .arena-card { padding: 20px; }
+      .fighter { min-height: 137px; }
+      .section-heading { align-items: start; flex-direction: column; gap: 12px; }
+    }
+
+    @media (max-width: 720px) {
+      .page-shell { width: min(100% - 36px, 560px); }
+      .site-header { min-height: 76px; }
+      .site-nav { gap: 15px; font-size: .83rem; }
+      .site-nav .nav-about { display: none; }
+      .hero { grid-template-columns: 1fr; gap: 42px; padding: 62px 0 68px; }
+      h1 { max-width: 540px; font-size: clamp(3.35rem, 11vw, 5rem); }
+      .hero-copy { max-width: 540px; }
+      .showcase { width: min(100%, 480px); margin-inline: auto; }
+      .how-section { padding-bottom: 58px; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .feature-card { min-height: auto; }
+      .feature-number { margin-bottom: 15px; }
+    }
+
+    @media (max-width: 430px) {
+      .page-shell { width: calc(100% - 30px); }
+      .brand { gap: 9px; font-size: .9rem; }
+      .brand-mark { width: 34px; height: 34px; border-radius: 11px; }
+      .site-nav { gap: 11px; }
+      .nav-cta { padding: 8px 10px; }
+      .hero { padding-top: 48px; }
+      h1 { font-size: clamp(3rem, 15vw, 4rem); }
+      .hero-actions { align-items: stretch; flex-direction: column; }
+      .hero-actions .button { width: 100%; }
+      .arena-card { padding: 17px; border-radius: 22px; }
+      .arena-ready { font-size: .61rem; }
+      .battle-visual { grid-template-columns: minmax(0, 1fr) 32px minmax(0, 1fr); gap: 6px; }
+      .fighter { min-height: 128px; border-radius: 14px; }
+      .fighter-symbol { width: 56px; height: 56px; border-radius: 17px; font-size: 1.7rem; }
+      .versus { width: 32px; height: 32px; }
+      .blade-chip { font-size: .65rem; }
+      .site-footer { align-items: flex-start; flex-direction: column; gap: 7px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+  </style>
 </head>
 <body>
-  <a href= "/elementfight/">elementfight?!</a>
+  <div class="page-shell">
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="Vibe Code Repo home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M5 16.5 10 7l3.2 6 2.1-3.8L19 16.5H5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+            <path d="M8 18.5h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="brand-name">vibe code <span>repo</span></span>
+      </a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a class="nav-about" href="#about">The idea</a>
+        <a class="nav-cta" href="./elementfight/">Play ElementFight <span aria-hidden="true">↗</span></a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-content">
+          <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> A little playground for big ideas</p>
+          <h1 id="hero-title">Ideas in motion.<br /><span class="accent">Made to play.</span></h1>
+          <p class="hero-copy">
+            Welcome to my corner of the internet: a place for <strong>curious experiments</strong>,
+            unexpected ideas, and projects that are more fun when you can actually click around.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="./elementfight/">
+              Enter the arena
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h11M10 5l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <a class="button button-secondary" href="#about">Take a look around <span aria-hidden="true">↓</span></a>
+          </div>
+          <p class="hero-footnote"><span class="footnote-line" aria-hidden="true"></span> Built from curiosity. Best explored hands-on.</p>
+        </div>
+
+        <div class="showcase" id="play" aria-label="Featured project preview: ElementFight">
+          <div class="showcase-glow" aria-hidden="true"></div>
+          <article class="arena-card">
+            <div class="arena-topline">
+              <span class="arena-label">Featured experiment</span>
+              <span class="arena-ready">Ready to play</span>
+            </div>
+            <h2 class="arena-title">ElementFight<span style="color: var(--lime)">.</span></h2>
+            <p class="arena-subtitle">Pick your blade. Make your move. Own the match.</p>
+
+            <div class="battle-visual" aria-hidden="true">
+              <div class="fighter fighter-time">
+                <span class="fighter-symbol">⌛</span>
+                <span class="fighter-name">TIME</span>
+              </div>
+              <span class="versus">VS</span>
+              <div class="fighter fighter-light">
+                <span class="fighter-symbol">✦</span>
+                <span class="fighter-name">LIGHT</span>
+              </div>
+            </div>
+
+            <div class="blade-list" aria-label="Available blades">
+              <span class="blade-chip">◷ Time</span>
+              <span class="blade-chip">ϟ Electricity</span>
+              <span class="blade-chip">✦ Light</span>
+              <span class="blade-chip">↯ Flash</span>
+            </div>
+
+            <div class="arena-bottomline">
+              <span>Turn-based combat</span>
+              <span>Choose your power&nbsp; ↗</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="how-section" id="about" aria-labelledby="about-title">
+        <div class="section-divider">Inside the repo</div>
+        <div class="section-heading">
+          <h2 id="about-title">Part experiment.<br />Part excuse to have fun.</h2>
+          <p>No grand roadmap. Just ideas made real, one project at a time.</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card">
+            <span class="feature-number">01 / PICK</span>
+            <h3>Choose your power</h3>
+            <p>Four blades, each with its own flavor. Find the one that fits your play style.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-number">02 / THINK</span>
+            <h3>Play your strategy</h3>
+            <p>Manage your focus, read the battle, and decide when to make your move.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-number">03 / REPEAT</span>
+            <h3>Try another run</h3>
+            <p>Go solo against the AI or challenge someone beside you in local PvP.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span><span class="footer-brand">Vibe Code Repo</span> <span aria-hidden="true">·</span> A work in progress, by design.</span>
+      <a class="footer-link" href="https://github.com/funkyintegrals/vibecoderepo" target="_blank" rel="noreferrer">Find the code on GitHub <span aria-hidden="true">↗</span></a>
+    </footer>
+  </div>
 </body>
+</html>
