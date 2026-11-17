@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#10131c" />
+  <title>Notes</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #10131c;
+      --panel: #171c2b;
+      --text: #f4f6fb;
+      --muted: #a4aec2;
+      --line: rgba(255,255,255,.12);
+      --lime: #c4fa79;
+      --ink: #3a3320;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      overflow: hidden;
+      background: radial-gradient(ellipse at 15% 0%, rgba(104,92,220,.14), transparent 34rem), var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button { font: inherit; color: inherit; cursor: pointer; }
+    :focus-visible { outline: 3px solid var(--lime); outline-offset: 3px; }
+    [hidden] { display: none !important; }
+
+    /* top bar */
+    .topbar {
+      position: fixed; inset: 0 0 auto 0; z-index: 50; height: 60px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 20px;
+    }
+    .topbar-right { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: .85rem; min-width: 0; }
+    #userEmail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
+    .title { font-weight: 700; letter-spacing: -.02em; }
+    .btn {
+      min-height: 38px; padding: 0 16px; border: 1px solid var(--line); border-radius: 11px;
+      background: rgba(255,255,255,.05); font-weight: 650; font-size: .88rem;
+    }
+    .btn:hover { border-color: rgba(255,255,255,.28); }
+    .btn-primary { background: var(--lime); border-color: transparent; color: #151b10; }
+    .btn-link { border: 0; background: none; padding: 0; min-height: 0; color: var(--muted); text-decoration: underline; font-weight: 500; }
+
+    /* notes */
+    #desk { position: fixed; inset: 0; }
+    .hint { position: fixed; inset: 0; display: grid; place-items: center; color: var(--muted); pointer-events: none; }
+    .note {
+      position: absolute; left: 0; top: 0; width: min(250px, 72vw); height: 230px;
+      display: flex; flex-direction: column;
+      background: linear-gradient(170deg, #fffce8, #fbf4cc);
+      border-radius: 3px; box-shadow: 0 10px 24px rgba(0,0,0,.4);
+      color: var(--ink);
+    }
+    .note.lift { box-shadow: 0 22px 40px rgba(0,0,0,.5); }
+    .grip {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 30px; padding: 0 6px 0 12px; cursor: grab; touch-action: none;
+      border-bottom: 1px solid rgba(90,70,20,.1);
+    }
+    .lift .grip { cursor: grabbing; }
+    .dots { width: 28px; height: 6px; background: radial-gradient(circle, rgba(90,70,20,.35) 1.5px, transparent 2px) 0 0 / 9px 6px; }
+    .fuse { flex: 1; padding-left: 10px; color: #b4491a; font-size: .72rem; font-weight: 700; letter-spacing: .02em; }
+    .bin-note { margin: 0; padding: 8px 14px 0; color: var(--muted); font-size: .78rem; }
+    .toss { width: 26px; height: 26px; display: grid; place-items: center; border: 0; border-radius: 7px; background: none; color: rgba(90,70,20,.55); }
+    .toss:hover { background: rgba(90,70,20,.1); color: var(--ink); }
+    .toss svg { width: 16px; height: 16px; }
+    .note textarea {
+      flex: 1; width: 100%; padding: 10px 14px 14px; border: 0; resize: none; background: none; color: var(--ink);
+      font: 1.05rem/1.5 "Segoe Print", "Bradley Hand", "Chalkboard SE", "Comic Sans MS", ui-rounded, cursive;
+    }
+    .note textarea:focus-visible { outline: none; }
+    .note textarea::placeholder { color: rgba(90,70,20,.4); }
+
+    /* bin */
+    #binBtn {
+      position: fixed; right: 24px; bottom: 24px; z-index: 55; width: 84px; height: 96px;
+      display: grid; place-items: center; border: 1px solid var(--line); border-radius: 20px;
+      background: rgba(255,255,255,.04); color: #9aa6bd; transition: border-color .18s, color .18s;
+    }
+    #binBtn:hover, #binBtn.over { border-color: rgba(196,250,121,.5); color: var(--lime); }
+    #binBtn svg { width: 54px; height: 62px; fill: currentColor; stroke: none; }
+    #binBtn .lid { transform-origin: 12px 15px; transition: transform .2s ease; }
+    #binBtn.over .lid { transform: rotate(-24deg); }
+    .badge {
+      position: absolute; top: -8px; right: -8px; min-width: 24px; height: 24px; padding: 0 6px;
+      display: grid; place-items: center; border-radius: 12px; background: var(--lime); color: #151b10; font-size: .75rem; font-weight: 800;
+    }
+    #binPanel {
+      position: fixed; right: 24px; bottom: 132px; z-index: 60; width: min(340px, calc(100vw - 32px)); max-height: 60vh;
+      display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 18px;
+      background: var(--panel); box-shadow: 0 24px 60px rgba(0,0,0,.5);
+    }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--line); font-weight: 650; }
+    #binList { margin: 0; padding: 12px; list-style: none; overflow-y: auto; display: grid; gap: 12px; }
+    .bin-empty { color: var(--muted); text-align: center; padding: 18px 0; font-size: .9rem; }
+    .bin-paper {
+      padding: 12px 14px; max-height: 110px; overflow: hidden; border-radius: 3px; color: var(--ink);
+      background: linear-gradient(170deg, #fffce8, #fbf4cc); box-shadow: 0 4px 10px rgba(0,0,0,.3);
+      font: .95rem/1.45 "Segoe Print", "Bradley Hand", "Chalkboard SE", "Comic Sans MS", ui-rounded, cursive;
+      white-space: pre-wrap; overflow-wrap: anywhere;
+    }
+    .bin-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .bin-actions .btn { min-height: 32px; padding: 0 12px; font-size: .8rem; }
+
+    /* burn effect (transform / opacity only) */
+    .burn { position: fixed; z-index: 100; pointer-events: none; }
+    .shard { position: absolute; inset: 0; will-change: transform, opacity; }
+    .shard > * { position: absolute; inset: 0; }
+    .glow { background: linear-gradient(135deg, #ffd27a, #ff7a1a 55%, #b4300a); opacity: 0; }
+    .char { background: linear-gradient(135deg, #2b1a10, #0d0705); opacity: 0; }
+    .ember { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: radial-gradient(#ffe7a8, #ff7a1a 70%); opacity: 0; will-change: transform, opacity; }
+
+    /* auth */
+    #auth { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 20px; background: var(--bg); }
+    .auth-card { width: min(360px, 100%); display: grid; gap: 12px; }
+    .auth-card h1 { margin: 0 0 6px; font-size: 2rem; letter-spacing: -.05em; }
+    .auth-card input {
+      min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 11px;
+      background: rgba(255,255,255,.05); color: var(--text); font: inherit;
+    }
+    .auth-row { display: flex; gap: 10px; }
+    .auth-row .btn { flex: 1; }
+    #authError, #toast { margin: 0; color: #ff9d8a; font-size: .85rem; min-height: 1.2em; }
+    #toast { position: fixed; left: 20px; bottom: 20px; z-index: 150; }
+
+    @media (prefers-reduced-motion: reduce) { * { transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-bin" viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10 11v5M14 11v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </svg>
+
+  <div class="topbar">
+    <span class="title">Notes</span>
+    <div class="topbar-right">
+      <span id="userEmail"></span>
+      <button class="btn-link btn" id="signOut" type="button">Switch user</button>
+      <button class="btn btn-primary" id="newNote" type="button">New note</button>
+    </div>
+  </div>
+
+  <main id="desk"></main>
+  <p class="hint" id="hint" hidden>Your desk is empty. Add a note to get started.</p>
+
+  <button id="binBtn" type="button" aria-expanded="false" aria-controls="binPanel" aria-label="Open bin">
+    <svg viewBox="0 0 64 72" aria-hidden="true">
+      <g class="lid"><rect x="8" y="12" width="48" height="6" rx="3"/><rect x="24" y="5" width="16" height="8" rx="3"/></g>
+      <path d="M12 22h40l-3.5 42a5 5 0 0 1-5 4.5H20.5a5 5 0 0 1-5-4.5L12 22Z"/>
+    </svg>
+    <span class="badge" id="binCount" hidden>0</span>
+  </button>
+
+  <section id="binPanel" aria-label="Bin" hidden>
+    <div class="panel-head"><span>Bin</span><button class="btn" id="emptyBin" type="button">Empty my bin</button></div>
+    <p class="bin-note">A note you take back to the table burns after 20 seconds.</p>
+    <ul id="binList"></ul>
+  </section>
+
+  <div id="auth">
+    <form class="auth-card" id="authForm">
+      <h1>Notes</h1>
+      <input id="username" type="text" placeholder="Your username" autocomplete="username" maxlength="30" required />
+      <button class="btn btn-primary" type="submit">Open my notes</button>
+      <p id="authError" role="alert">Letters, numbers, _ and - only. New usernames start with an empty desk.</p>
+    </form>
+  </div>
+  <p id="toast" role="status"></p>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, serverTimestamp }
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // ⬇️ Paste your Firebase web app config here
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const $ = (id) => document.getElementById(id);
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const TOP = 60, BURN_MS = 20000;
+
+    let col = null, unsub = null, notes = new Map(), els = new Map(), z = 10, pendingFocus = null, busy = false;
+
+    /* ---------- helpers ---------- */
+    const toast = (m) => { $("toast").textContent = m; setTimeout(() => { if ($("toast").textContent === m) $("toast").textContent = ""; }, 4000); };
+    const rand = (a, b) => a + Math.random() * (b - a);
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const ref = (id) => doc(col, id);
+
+    /* ---------- username (no auth) ---------- */
+    // Notes live at users/{username}/notes. Anyone who types a username sees that folder.
+    const clean = (v) => v.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
+    let username = null;
+
+    function startSession(name) {
+      username = name;
+      try { localStorage.setItem("notes-username", name); } catch {}
+      if (unsub) { unsub(); unsub = null; }
+      els.forEach((el) => el.remove()); els.clear(); notes.clear();
+      $("binPanel").hidden = true; $("binBtn").setAttribute("aria-expanded", false);
+      $("auth").hidden = true; $("userEmail").textContent = name;
+      col = collection(db, "users", name, "notes");
+      unsub = onSnapshot(col, (snap) => {
+        notes = new Map(); snap.forEach((d) => notes.set(d.id, d.data())); render();
+      }, (err) => toast("Sync error: " + err.code));
+    }
+
+    $("authForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = clean($("username").value);
+      if (!name) { $("authError").textContent = "Please use letters, numbers, _ or -."; return; }
+      startSession(name);
+    });
+
+    $("signOut").addEventListener("click", () => {
+      if (unsub) { unsub(); unsub = null; }
+      els.forEach((el) => el.remove()); els.clear(); notes.clear(); col = null; username = null;
+      try { localStorage.removeItem("notes-username"); } catch {}
+      $("binPanel").hidden = true; $("hint").hidden = true;
+      $("username").value = ""; $("auth").hidden = false; $("username").focus();
+    });
+
+    let saved = null;
+    try { saved = localStorage.getItem("notes-username"); } catch {}
+    if (saved) startSession(saved); else $("username").focus();
+
+    /* ---------- notes ---------- */
+    $("newNote").addEventListener("click", async () => {
+      const r = doc(col); pendingFocus = r.id;
+      try {
+        await setDoc(r, { text: "", x: rand(.15, .75), y: rand(.1, .6), rot: rand(-3, 3), binned: false, updatedAt: serverTimestamp() });
+      } catch (e) { pendingFocus = null; toast("Couldn't create note: " + e.code); }
+    });
+
+    function paint(el, rot) { el.style.transform = `translate3d(${el._px}px,${el._py}px,0) rotate(${rot}deg)`; }
+    function place(el) {
+      const d = el._d, W = Math.max(0, innerWidth - el.offsetWidth), H = Math.max(0, innerHeight - el.offsetHeight - TOP);
+      el._px = d.x * W; el._py = TOP + d.y * H; paint(el, d.rot);
+    }
+
+    function makeNote(id) {
+      const el = document.createElement("article");
+      el.className = "note";
+      el.innerHTML = `<div class="grip"><span class="dots"></span><span class="fuse" aria-live="off"></span>
+        <button class="toss" type="button" aria-label="Move note to bin" title="Move to bin"><svg><use href="#i-bin"/></svg></button></div>
+        <textarea aria-label="Note" placeholder="Write something…" maxlength="2000"></textarea>`;
+      const ta = el.querySelector("textarea"), grip = el.querySelector(".grip");
+      let timer;
+      ta.addEventListener("input", () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => updateDoc(ref(id), { text: ta.value, updatedAt: serverTimestamp() }).catch((e) => toast("Save failed: " + e.code)), 500);
+      });
+      ta.addEventListener("focus", () => { el.style.zIndex = ++z; });
+      el.querySelector(".toss").addEventListener("click", () => toss(id, el));
+
+      grip.addEventListener("pointerdown", (e) => {
+        if (e.target.closest("button")) return;
+        e.preventDefault(); grip.setPointerCapture(e.pointerId);
+        el.style.zIndex = ++z; el.classList.add("lift"); el._drag = true;
+        const sx = e.clientX, sy = e.clientY, x0 = el._px, y0 = el._py;
+        const binHit = (ev) => {
+          const b = $("binBtn").getBoundingClientRect();
+          return ev.clientX > b.left - 24 && ev.clientX < b.right + 24 && ev.clientY > b.top - 24 && ev.clientY < b.bottom + 24;
+        };
+        const move = (ev) => {
+          el._px = Math.min(Math.max(0, x0 + ev.clientX - sx), innerWidth - el.offsetWidth);
+          el._py = Math.min(Math.max(TOP - 4, y0 + ev.clientY - sy), innerHeight - el.offsetHeight);
+          paint(el, el._d.rot);
+          $("binBtn").classList.toggle("over", binHit(ev));
+        };
+        const up = (ev) => {
+          grip.removeEventListener("pointermove", move); grip.removeEventListener("pointerup", up); grip.removeEventListener("pointercancel", up);
+          el.classList.remove("lift"); el._drag = false; $("binBtn").classList.remove("over");
+          if (ev.type === "pointerup" && binHit(ev)) return toss(id, el);
+          const W = Math.max(1, innerWidth - el.offsetWidth), H = Math.max(1, innerHeight - el.offsetHeight - TOP);
+          el._d = { ...el._d, x: el._px / W, y: Math.min(1, Math.max(0, (el._py - TOP) / H)) };
+          updateDoc(ref(id), { x: el._d.x, y: el._d.y }).catch((err) => toast("Save failed: " + err.code));
+        };
+        grip.addEventListener("pointermove", move); grip.addEventListener("pointerup", up); grip.addEventListener("pointercancel", up);
+      });
+      return el;
+    }
+
+    async function toss(id, el) {
+      const b = $("binBtn").getBoundingClientRect();
+      const tx = b.left + b.width / 2 - el.offsetWidth / 2, ty = b.top + b.height / 2 - el.offsetHeight / 2, rot = el._d.rot;
+      try {
+        $("binBtn").classList.add("over");
+        if (!reduce) {
+          await el.animate([
+            { transform: `translate3d(${el._px}px,${el._py}px,0) rotate(${rot}deg) scale(1)` },
+            { transform: `translate3d(${tx}px,${ty}px,0) rotate(${rot + 25}deg) scale(.12)`, opacity: .2 }
+          ], { duration: 380, easing: "cubic-bezier(.6,0,.9,.5)", fill: "forwards" }).finished;
+        }
+        el.style.visibility = "hidden";
+        await updateDoc(ref(id), { binned: true, binnedAt: Date.now(), burnAt: null });
+      } catch (e) {
+        el.getAnimations().forEach((a) => a.cancel()); el.style.visibility = ""; toast("Couldn't move to bin: " + e.code);
+      }
+      $("binBtn").classList.remove("over");
+    }
+
+    /* ---------- render ---------- */
+    function render() {
+      const live = [...notes].filter(([, d]) => !d.binned);
+      const keep = new Set(live.map(([id]) => id));
+      for (const [id, el] of els) if (!keep.has(id)) { el.remove(); els.delete(id); }
+      for (const [id, d] of live) {
+        let el = els.get(id);
+        if (!el) { el = makeNote(id); els.set(id, el); $("desk").append(el); el.style.zIndex = ++z; }
+        el._d = d;
+        const ta = el.querySelector("textarea");
+        if (document.activeElement !== ta && ta.value !== (d.text || "")) ta.value = d.text || "";
+        if (!el._drag) place(el);
+      }
+      $("hint").hidden = !(col && live.length === 0);
+      renderBin(); tick();
+      if (pendingFocus && els.has(pendingFocus)) { els.get(pendingFocus).querySelector("textarea").focus(); pendingFocus = null; }
+    }
+
+    /* ---------- fuse: a note taken back from the bin burns after 20s ---------- */
+    function tick() {
+      for (const [id, el] of els) {
+        const at = el._d && el._d.burnAt, fuse = el.querySelector(".fuse");
+        if (!at) { if (fuse.textContent) fuse.textContent = ""; continue; }
+        const left = Math.ceil((at - Date.now()) / 1000);
+        if (left > 0) { fuse.textContent = `Burns in ${left}s`; continue; }
+        if (el._burning) continue;
+        el._burning = true; fuse.textContent = "";
+        el.querySelector("textarea").blur();
+        burn(el, { note: true }).then(() => deleteDoc(ref(id))).catch((e) => { el._burning = false; toast("Couldn't delete: " + e.code); });
+      }
+    }
+    setInterval(tick, 500);
+
+    function renderBin() {
+      const items = [...notes].filter(([, d]) => d.binned).sort((a, b) => (b[1].binnedAt || 0) - (a[1].binnedAt || 0));
+      $("binCount").textContent = items.length; $("binCount").hidden = !items.length;
+      $("emptyBin").disabled = !items.length;
+      if (busy) return;
+      const list = $("binList"); list.textContent = "";
+      if (!items.length) { const li = document.createElement("li"); li.className = "bin-empty"; li.textContent = "The bin is empty."; list.append(li); return; }
+      for (const [id, d] of items) {
+        const li = document.createElement("li"); li.dataset.id = id;
+        const paper = document.createElement("div"); paper.className = "bin-paper"; paper.textContent = d.text || "(empty note)";
+        const acts = document.createElement("div"); acts.className = "bin-actions";
+        const pick = document.createElement("button"); pick.className = "btn"; pick.type = "button"; pick.textContent = "Take back to table";
+        pick.addEventListener("click", () => updateDoc(ref(id), { binned: false, burnAt: Date.now() + BURN_MS, x: rand(.15, .75), y: rand(.1, .6), rot: rand(-3, 3) }).catch((e) => toast(e.code)));
+        acts.append(pick); li.append(paper, acts); list.append(li);
+      }
+    }
+
+    $("binBtn").addEventListener("click", () => {
+      const open = $("binPanel").hidden; $("binPanel").hidden = !open; $("binBtn").setAttribute("aria-expanded", open);
+    });
+    addEventListener("keydown", (e) => { if (e.key === "Escape") { $("binPanel").hidden = true; $("binBtn").setAttribute("aria-expanded", false); } });
+    $("emptyBin").addEventListener("click", () => burnNotes([...$("binList").querySelectorAll("li[data-id]")].map((li) => li.dataset.id)));
+    addEventListener("resize", () => els.forEach((el) => place(el)));
+
+    async function burnNotes(ids) {
+      if (busy || !ids.length) return;
+      busy = true;
+      document.querySelectorAll("#binPanel .btn").forEach((b) => (b.disabled = true));
+      const papers = ids.map((id) => $("binList").querySelector(`li[data-id="${id}"] .bin-paper`));
+      // Full shatter effect for the first few; the rest just fade, to stay light
+      await Promise.all(papers.map((p, i) => burn(p, { full: i < 4, delay: i * 140 })));
+      try {
+        const batch = writeBatch(db); ids.forEach((id) => batch.delete(ref(id))); await batch.commit();
+      } catch (e) { toast("Couldn't delete: " + e.code); }
+      busy = false; renderBin();
+    }
+
+    /* ---------- burn effect: ~24 clipped shards, animated with transform/opacity only ---------- */
+    const COLS = 4, ROWS = 3, DUR = 1500;
+
+    function burn(el, { full = true, delay = 0, note = false } = {}) {
+      const r = note ? { left: el._px, top: el._py, width: el.offsetWidth, height: el.offsetHeight } : el.getBoundingClientRect();
+      const box = document.createElement("div");
+      box.className = "burn";
+      Object.assign(box.style, { left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px" });
+      if (note) box.style.transform = `rotate(${el._d.rot}deg)`;
+      const clone = () => {
+        const c = el.cloneNode(true);
+        const src = el.querySelectorAll("textarea"), dst = c.querySelectorAll("textarea");
+        src.forEach((t, i) => (dst[i].value = t.value));
+        Object.assign(c.style, { transform: "none", visibility: "visible", zIndex: "auto", position: "absolute", left: 0, top: 0, width: r.width + "px", height: r.height + "px", margin: 0, maxHeight: "none" });
+        return c;
+      };
+
+      if (reduce || !full) {
+        const sh = document.createElement("div"); sh.className = "shard"; sh.append(clone()); box.append(sh);
+        document.body.append(box); el.style.visibility = "hidden";
+        sh.animate([{ opacity: 1, transform: "translate3d(0,0,0)" }, { opacity: 0, transform: "translate3d(0,-10px,0)" }],
+          { duration: 350, delay, fill: "both", easing: "ease-in" });
+        return wait(350 + delay + 40).then(() => box.remove());
+      }
+
+      // jittered grid of shared vertices => ragged tear lines
+      const pts = [];
+      for (let j = 0; j <= ROWS; j++) {
+        pts[j] = [];
+        for (let i = 0; i <= COLS; i++) {
+          let x = (i / COLS) * 100, y = (j / ROWS) * 100;
+          if (i && i < COLS) x += rand(-5, 5);
+          if (j && j < ROWS) y += rand(-7, 7);
+          pts[j][i] = [x, y];
+        }
+      }
+      const tris = [];
+      for (let j = 0; j < ROWS; j++) for (let i = 0; i < COLS; i++) {
+        const a = pts[j][i], b = pts[j][i + 1], c = pts[j + 1][i + 1], d = pts[j + 1][i];
+        tris.push(...(Math.random() > .5 ? [[a, b, c], [a, c, d]] : [[a, b, d], [b, c, d]]));
+      }
+
+      const ox = rand(.2, .8), oy = rand(.2, .8); // where the fire starts
+      let maxEnd = 0;
+      for (const t of tris) {
+        const cx = t.reduce((s, p) => s + p[0], 0) / 300, cy = t.reduce((s, p) => s + p[1], 0) / 300;
+        const dirx = cx - .5, diry = cy - .5;
+        const sh = document.createElement("div");
+        sh.className = "shard";
+        sh.style.clipPath = `polygon(${t.map((p) => p[0].toFixed(1) + "% " + p[1].toFixed(1) + "%").join(",")})`;
+        const glow = document.createElement("div"); glow.className = "glow";
+        const char = document.createElement("div"); char.className = "char";
+        sh.append(clone(), glow, char); box.append(sh);
+
+        const d = delay + Math.hypot(cx - ox, cy - oy) * 420 + rand(0, 120);
+        const dx = dirx * 140 + rand(-30, 30), dy = diry * 90 + rand(-25, 5), rot = rand(-70, 70);
+        const o = { duration: DUR, delay: d, fill: "both" };
+        sh.animate([
+          { offset: 0, transform: "translate3d(0,0,0) rotate(0deg)", opacity: 1 },
+          { offset: .22, transform: `translate3d(${dirx * 24}px,${diry * 20}px,0) rotate(${rot * .15}deg)`, opacity: 1 },
+          { offset: .6, transform: `translate3d(${dx * .55}px,${dy * .55 + 12}px,0) rotate(${rot * .55}deg) scale(.85)`, opacity: .9 },
+          { offset: 1, transform: `translate3d(${dx}px,${dy + 140}px,0) rotate(${rot}deg) scale(.35)`, opacity: 0 }
+        ], { ...o, easing: "ease-in" });
+        glow.animate([{ offset: 0, opacity: 0 }, { offset: .12, opacity: 0 }, { offset: .38, opacity: 1 }, { offset: .75, opacity: .5 }, { offset: 1, opacity: 0 }], o);
+        char.animate([{ offset: 0, opacity: 0 }, { offset: .25, opacity: 0 }, { offset: .65, opacity: .95 }, { offset: 1, opacity: 1 }], o);
+        maxEnd = Math.max(maxEnd, d + DUR);
+      }
+
+      for (let k = 0; k < 14; k++) {
+        const e = document.createElement("i"); e.className = "ember";
+        e.style.left = rand(0, r.width) + "px"; e.style.top = rand(r.height * .2, r.height) + "px";
+        box.append(e);
+        const ed = delay + rand(250, 900), rise = rand(70, 170);
+        e.animate([
+          { opacity: 0, transform: "translate3d(0,0,0) scale(1)" },
+          { opacity: 1, offset: .2 },
+          { opacity: 0, transform: `translate3d(${rand(-30, 30)}px,${-rise}px,0) scale(.3)` }
+        ], { duration: rand(700, 1100), delay: ed, fill: "both", easing: "ease-out" });
+        maxEnd = Math.max(maxEnd, ed + 1100);
+      }
+
+      document.body.append(box);
+      el.style.visibility = "hidden"; // hide the original only after the clones exist
+      return wait(maxEnd + 80).then(() => box.remove());
+    }
+  </script>
+</body>
+</html>
