@@ -177,7 +177,23 @@
       from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // ⬇️ Paste your Firebase web app config here
-    const firebaseConfig = FIREBASE_CONFIG
+    const firebaseConfig = {
+
+  apiKey: "AIzaSyCGdF9m5jAC_PV7ainjGr2vsRvxRSuHRgE",
+
+  authDomain: "myrithm-storage.firebaseapp.com",
+
+  projectId: "myrithm-storage",
+
+  storageBucket: "myrithm-storage.firebasestorage.app",
+
+  messagingSenderId: "1069448713700",
+
+  appId: "1:1069448713700:web:248cd3e46328c2a89823f1",
+
+  measurementId: "G-37Y5JS94HH"
+
+};
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
