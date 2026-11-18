@@ -199,7 +199,7 @@
     const db = getFirestore(app);
     const $ = (id) => document.getElementById(id);
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const TOP = 60, BURN_MS = 20000;
+    const TOP = 60, BURN_MS = 5000;
 
     let col = null, unsub = null, notes = new Map(), els = new Map(), z = 10, pendingFocus = null, busy = false;
 
