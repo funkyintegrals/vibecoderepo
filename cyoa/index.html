@@ -54,7 +54,7 @@
 
   function uid(){ return "e" + Math.random().toString(36).slice(2,9); }
   function starter(){ return [{id:uid(),title:"Opening scene",description:"Describe what happens in this event.",x:100,y:100,outcomes:[{id:uid(),text:"Make a choice",target:""}],variables:[{id:uid(),key:"health",value:"100"},{id:uid(),key:"trust",value:"0"},{id:uid(),key:"inventory",value:"none"}]}]; }
-  function load(){ try { const value=JSON.parse(localStorage.getItem(STORAGE_KEY)); if(Array.isArray(value)&&value.every(n=>n&&typeof n.id==="string"&&Array.isArray(n.outcomes))){value.forEach(n=>{if(!Array.isArray(n.variables))n.variables=[];});return value;} } catch(e){} return starter(); }
+  function load(){ try { const value=JSON.parse(localStorage.getItem(STORAGE_KEY)); if(Array.isArray(value)&&value.every(n=>n&&typeof n.id==="string"&&Array.isArray(n.outcomes))){value.forEach(n=>{if(!Array.isArray(n.variables)||n.variables.length===0)n.variables=[{id:uid(),key:"health",value:"100"},{id:uid(),key:"mood",value:"neutral"}];});return value;} } catch(e){} return starter(); }
   function escapeHtml(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
   function save(){ saveStatus.textContent="Saving…"; clearTimeout(saveTimer); saveTimer=setTimeout(()=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(map));saveStatus.textContent="Saved locally";}catch(e){saveStatus.textContent="Could not save";}},180); }
   function nodeById(id){return map.find(n=>n.id===id);}
