@@ -75,7 +75,7 @@
     drawLinks();
   }
   function drawLinks(){
-    wires.innerHTML="";
+    wires.innerHTML='<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#8e9bb5"/></marker></defs>';
     map.forEach(node=>{
       const source=board.querySelector('[data-node="'+node.id+'"]');if(!source)return;
       node.outcomes.forEach(outcome=>{
@@ -109,13 +109,14 @@
   }
   board.addEventListener("click",event=>{
     const el=event.target.closest(".node");if(!el)return;const node=nodeById(el.dataset.node);if(!node)return;selected=node.id;
+    if(event.target.closest("input,textarea,select"))return;
     if(event.target.closest("[data-add-outcome]")){node.outcomes.push({id:uid(),text:"New choice",target:""});save();render();return;}
     if(event.target.closest("[data-remove-outcome]")){const row=event.target.closest("[data-outcome]");node.outcomes=node.outcomes.filter(o=>o.id!==row.dataset.outcome);save();render();return;}
     if(event.target.closest("[data-delete]")){map=map.filter(n=>n.id!==node.id);map.forEach(n=>n.outcomes.forEach(o=>{if(o.target===node.id)o.target="";}));selected=null;save();render();return;}
-    render();
+    board.querySelectorAll(".node").forEach(card=>card.classList.toggle("selected",card.dataset.node===selected));
   });
   board.addEventListener("pointerdown",event=>{
-    const handle=event.target.closest("[data-drag-handle]");if(!handle||event.button!==0)return;const el=handle.closest(".node");const node=nodeById(el.dataset.node);selected=node.id;drag={id:node.id,startX:event.clientX,startY:event.clientY,nodeX:node.x,nodeY:node.y};handle.setPointerCapture(event.pointerId);event.preventDefault();render();
+    const handle=event.target.closest("[data-drag-handle]");if(!handle||event.button!==0)return;const el=handle.closest(".node");const node=nodeById(el.dataset.node);selected=node.id;drag={id:node.id,startX:event.clientX,startY:event.clientY,nodeX:node.x,nodeY:node.y};handle.setPointerCapture(event.pointerId);event.preventDefault();board.querySelectorAll(".node").forEach(card=>card.classList.toggle("selected",card.dataset.node===selected));
   });
   board.addEventListener("pointermove",event=>{
     if(!drag)return;const node=nodeById(drag.id);if(!node)return;node.x=Math.max(0,drag.nodeX+event.clientX-drag.startX);node.y=Math.max(0,drag.nodeY+event.clientY-drag.startY);const el=board.querySelector('[data-node="'+node.id+'"]');if(el){el.style.left=node.x+"px";el.style.top=node.y+"px";}drawLinks();
@@ -124,7 +125,6 @@
   board.addEventListener("pointercancel",()=>{if(drag){drag=null;save();}});
   document.getElementById("addBtn").addEventListener("click",addNode);
   document.getElementById("resetBtn").addEventListener("click",()=>{if(!confirm("Clear this story map and start over?"))return;map=[];selected=null;save();render();});
-  const defs=document.createElementNS("http://www.w3.org/2000/svg","defs");defs.innerHTML='<marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#8e9bb5"/></marker>';wires.appendChild(defs);
   window.addEventListener("resize",drawLinks);
   render();
 })();
