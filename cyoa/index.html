@@ -113,7 +113,8 @@
     const el=event.target.closest(".node");if(!el)return;const node=nodeById(el.dataset.node);if(!node)return;selected=node.id;
     if(event.target.closest("input,textarea,select"))return;
     if(event.target.closest("[data-add-variable]")){node.variables.push({id:uid(),key:"new_variable",value:""});save();render();return;}
-    if(event.target.closest("[data-remove-variable]")){const row=event.target.closest("[data-variable]");node.variables=node.variables.filter(v=>v.id!==row.dataset.variable);save();render();return;}\n    if(event.target.closest("[data-add-outcome]")){node.outcomes.push({id:uid(),text:"New choice",target:""});save();render();return;}
+    if(event.target.closest("[data-remove-variable]")){const row=event.target.closest("[data-variable]");node.variables=node.variables.filter(v=>v.id!==row.dataset.variable);save();render();return;}
+    if(event.target.closest("[data-add-outcome]")){node.outcomes.push({id:uid(),text:"New choice",target:""});save();render();return;}
     if(event.target.closest("[data-remove-outcome]")){const row=event.target.closest("[data-outcome]");node.outcomes=node.outcomes.filter(o=>o.id!==row.dataset.outcome);save();render();return;}
     if(event.target.closest("[data-delete]")){map=map.filter(n=>n.id!==node.id);map.forEach(n=>n.outcomes.forEach(o=>{if(o.target===node.id)o.target="";}));selected=null;save();render();return;}
     board.querySelectorAll(".node").forEach(card=>card.classList.toggle("selected",card.dataset.node===selected));
