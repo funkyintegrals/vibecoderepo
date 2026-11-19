@@ -98,7 +98,8 @@
   board.addEventListener("input",event=>{
     const el=event.target.closest(".node");if(!el)return;const node=nodeById(el.dataset.node);if(!node)return;
     const field=event.target.dataset.field;if(field){node[field]=event.target.value;if(field==="title"){el.querySelector(".node-title").textContent=node.title;refreshTargetMenus();}save();drawLinks();return;}
-    const variableEl=event.target.closest("[data-variable]");if(variableEl){const variable=node.variables.find(v=>v.id===variableEl.dataset.variable);if(variable){const field=event.target.dataset.variableField;if(field)variable[field]=event.target.value;save();}return;}\n    const outcomeEl=event.target.closest("[data-outcome]");if(outcomeEl){const outcome=node.outcomes.find(o=>o.id===outcomeEl.dataset.outcome);if(outcome&&event.target.dataset.outcomeField==="text"){outcome.text=event.target.value;save();}}
+    const variableEl=event.target.closest("[data-variable]");if(variableEl){const variable=node.variables.find(v=>v.id===variableEl.dataset.variable);if(variable){const field=event.target.dataset.variableField;if(field)variable[field]=event.target.value;save();}return;}
+    const outcomeEl=event.target.closest("[data-outcome]");if(outcomeEl){const outcome=node.outcomes.find(o=>o.id===outcomeEl.dataset.outcome);if(outcome&&event.target.dataset.outcomeField==="text"){outcome.text=event.target.value;save();}}
   });
   board.addEventListener("change",event=>{
     const el=event.target.closest(".node");if(!el)return;const node=nodeById(el.dataset.node);const row=event.target.closest("[data-outcome]");if(!node||!row||event.target.dataset.outcomeField!=="target")return;
@@ -110,7 +111,8 @@
   board.addEventListener("click",event=>{
     const el=event.target.closest(".node");if(!el)return;const node=nodeById(el.dataset.node);if(!node)return;selected=node.id;
     if(event.target.closest("input,textarea,select"))return;
-    if(event.target.closest("[data-add-variable]")){node.variables.push({id:uid(),key:"new_variable",value:""});save();render();return;}\n    if(event.target.closest("[data-remove-variable]")){const row=event.target.closest("[data-variable]");node.variables=node.variables.filter(v=>v.id!==row.dataset.variable);save();render();return;}\n    if(event.target.closest("[data-add-outcome]")){node.outcomes.push({id:uid(),text:"New choice",target:""});save();render();return;}
+    if(event.target.closest("[data-add-variable]")){node.variables.push({id:uid(),key:"new_variable",value:""});save();render();return;}
+    if(event.target.closest("[data-remove-variable]")){const row=event.target.closest("[data-variable]");node.variables=node.variables.filter(v=>v.id!==row.dataset.variable);save();render();return;}\n    if(event.target.closest("[data-add-outcome]")){node.outcomes.push({id:uid(),text:"New choice",target:""});save();render();return;}
     if(event.target.closest("[data-remove-outcome]")){const row=event.target.closest("[data-outcome]");node.outcomes=node.outcomes.filter(o=>o.id!==row.dataset.outcome);save();render();return;}
     if(event.target.closest("[data-delete]")){map=map.filter(n=>n.id!==node.id);map.forEach(n=>n.outcomes.forEach(o=>{if(o.target===node.id)o.target="";}));selected=null;save();render();return;}
     board.querySelectorAll(".node").forEach(card=>card.classList.toggle("selected",card.dataset.node===selected));
